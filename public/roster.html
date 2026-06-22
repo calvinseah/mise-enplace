@@ -190,9 +190,8 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 
 <!-- Tabs -->
 <div class="tabs-bar">
-  <button class="tab-btn active" onclick="switchTab('fillin')">Fill In</button>
+  <button class="tab-btn active" onclick="switchTab('final')">Schedule</button>
   <button class="tab-btn" onclick="switchTab('overview')">Overview</button>
-  <button class="tab-btn" onclick="switchTab('final')">Final Schedule</button>
   <button class="tab-btn" onclick="switchTab('col')">COL</button>
 </div>
 
@@ -262,7 +261,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 let curYear = new Date().getFullYear();
 let curMonth = new Date().getMonth() + 1;
 let curOutlet = '';
-let curTab = 'fillin';
+let curTab = 'final';
 let selectedStaff = null;
 let allStaff = [];
 let settings = { closed_days: [], shift_times: {} };
@@ -363,7 +362,7 @@ function updateClosedBadge() {
 function switchTab(tab) {
   curTab = tab;
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['fillin','overview','final','col'][i] === tab);
+    b.classList.toggle('active', ['final','overview','col'][i] === tab);
   });
   render();
 }
@@ -536,9 +535,8 @@ async function clearAll() {
 function renderOverview() {
   const content = document.getElementById('mainContent');
   const legend = `<div class="overview-legend">
-    <div class="legend-item"><div class="legend-dot" style="background:#EFF6FF;border:1.5px solid #93C5FD"></div> Opening</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#FEF3C7;border:1.5px solid #FCD34D"></div> Closing</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#F0FDF4;border:1.5px solid #86EFAC"></div> Full Shift</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--foh);border:1.5px solid #93C5FD"></div> FOH</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--boh);border:1.5px solid #FCD34D"></div> BOH</div>
   </div>`;
 
   const calHtml = buildCalendarCols((day, wi) => {
@@ -546,15 +544,18 @@ function renderOverview() {
     const dowName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][wi];
     if (closed) return `<div class="ov-day day-closed"><div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div><div class="closed-label">Closed</div></div>`;
 
-    const opening  = availability.filter(a => a.day == day && a.shift_type === 'opening'   && a.available).map(a => `<span class="ov-name name-opening">${a.staff_name}</span>`).join('');
-    const closing  = availability.filter(a => a.day == day && a.shift_type === 'closing'   && a.available).map(a => `<span class="ov-name name-closing">${a.staff_name}</span>`).join('');
-    const fullshift= availability.filter(a => a.day == day && a.shift_type === 'fullshift' && a.available).map(a => `<span class="ov-name name-fullshift">${a.staff_name}</span>`).join('');
+    const daySchedule = schedule.filter(s => s.day == day && !s.removed);
+    const foh = daySchedule.filter(s => s.role_group === 'foh');
+    const boh = daySchedule.filter(s => s.role_group === 'boh');
+
+    if (!daySchedule.length) {
+      return `<div class="ov-day"><div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div><div style="padding:6px 8px;font-size:10.5px;color:var(--ink-30);font-style:italic">Unscheduled</div></div>`;
+    }
 
     return `<div class="ov-day">
       <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
-      ${opening  ? `<div class="ov-group"><div class="ov-group-label">Opening</div>${opening}</div>` : ''}
-      ${closing  ? `<div class="ov-group"><div class="ov-group-label">Closing</div>${closing}</div>` : ''}
-      ${fullshift? `<div class="ov-group"><div class="ov-group-label">Full Shift</div>${fullshift}</div>` : ''}
+      ${foh.length ? `<div class="ov-group"><div class="ov-group-label">FOH</div>${foh.map(s=>`<span class="ov-name" style="background:var(--foh);color:var(--foh-text)">${s.staff_name}${s.shift_label?' <span style='font-weight:400;opacity:.7'>'+s.shift_label+'</span>':''}</span>`).join('')}</div>` : ''}
+      ${boh.length ? `<div class="ov-group"><div class="ov-group-label">BOH</div>${boh.map(s=>`<span class="ov-name" style="background:var(--boh);color:var(--boh-text)">${s.staff_name}${s.shift_label?' <span style='font-weight:400;opacity:.7'>'+s.shift_label+'</span>':''}</span>`).join('')}</div>` : ''}
     </div>`;
   });
 
