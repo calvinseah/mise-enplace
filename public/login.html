@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Manager Login — Mise</title>
+<style>
+:root{
+  --ink:#0F172A;--accent:#6366F1;--surface:#F8FAFC;
+  --ink-60:rgba(15,23,42,.60);--ink-08:rgba(15,23,42,.08);--ink-04:rgba(15,23,42,.04);
+  --accent-10:rgba(99,102,241,.10);--white:#ffffff;
+  --card-radius:8px;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --input-radius:6px;--input-border:1px solid rgba(15,23,42,.18);
+  --danger:#EF4444;--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--surface);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:32px 28px;width:100%;max-width:360px}
+.wordmark{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.wordmark-icon{width:34px;height:34px;background:var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wordmark-icon svg{width:18px;height:18px;stroke:#fff}
+.wordmark-text{font-size:18px;font-weight:400;color:var(--ink);font-family:var(--font-display)}
+.wordmark-sub{font-size:12px;color:var(--ink-60);margin-top:1px}
+.divider{height:1px;background:var(--ink-08);margin-bottom:24px}
+.field-label{display:block;font-size:11px;font-weight:500;color:var(--ink-60);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.input-wrap{position:relative;margin-bottom:16px}
+input[type=password],input[type=text]{width:100%;height:36px;padding:0 38px 0 10px;border:var(--input-border);border-radius:var(--input-radius);font-size:13px;font-family:var(--font);color:var(--ink);background:var(--white);outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-10)}
+.eye-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-60);padding:4px;display:flex;align-items:center;transition:color .12s}
+.eye-btn:hover{color:var(--ink)}
+.eye-btn svg{width:15px;height:15px}
+.btn{width:100%;height:36px;background:var(--ink);color:var(--white);border:none;border-radius:var(--input-radius);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn svg{width:14px;height:14px}
+.btn:hover{opacity:.85}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.error-msg{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger);border-radius:5px;padding:8px 12px;font-size:12px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:7px}
+.error-msg svg{width:13px;height:13px;flex-shrink:0}
+.back{text-align:center;margin-top:16px;font-size:12px;color:var(--ink-60);display:flex;align-items:center;justify-content:center;gap:5px}
+.back svg{width:13px;height:13px;opacity:.5}
+.back a{color:var(--accent);text-decoration:none;font-weight:500}
+.back a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="wordmark">
+    <div class="wordmark-icon">
+      <!-- Lucide: beer mug -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 11h1a3 3 0 0 1 0 6h-1"/><path d="M9 12v6"/><path d="M13 12v6"/><path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5"/><path d="M3 7.5V17a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V7.5"/><path d="M5 7.5c0-1.5.5-3 3.5-3s3 2 5 2 2.5-2 4-2"/></svg>
+    </div>
+    <div>
+      <div class="wordmark-text">Mise</div>
+      <div class="wordmark-sub">Manager access</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div class="error-msg" id="err">
+    <!-- Lucide: alert-circle -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="errText"></span>
+  </div>
+
+  <label class="field-label" for="pw">Password</label>
+  <div class="input-wrap">
+    <input type="password" id="pw" placeholder="Enter manager password" autofocus onkeydown="if(event.key==='Enter')login()">
+    <button class="eye-btn" id="eyeBtn" onclick="togglePw()" tabindex="-1" title="Show/hide password">
+      <!-- Eye icon — toggled by JS -->
+      <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+  </div>
+
+  <button class="btn" id="loginBtn" onclick="login()">
+    <!-- Lucide: arrow-right -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    Sign in
+  </button>
+
+  <div class="back">
+    <!-- Lucide: arrow-left -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    <a href="/">Staff clock-in</a>
+  </div>
+</div>
+
+<script>
+const eyeOpen=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const eyeClosed=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+function togglePw(){
+  const i=document.getElementById('pw');
+  const showing=i.type==='text';
+  i.type=showing?'password':'text';
+  document.getElementById('eyeBtn').innerHTML=showing?eyeOpen:eyeClosed;
+}
+async function login(){
+  const pw=document.getElementById('pw').value;
+  const btn=document.getElementById('loginBtn');
+  const errEl=document.getElementById('err');
+  if(!pw){showErr('Please enter a password');return;}
+  btn.disabled=true;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Signing in…`;
+  errEl.style.display='none';
+  try{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    const d=await r.json();
+    if(d.success){const p=new URLSearchParams(location.search);location.href=p.get('next')||'/dashboard';}
+    else{showErr(d.error||'Incorrect password');btn.disabled=false;btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> Sign in`;}
+  }catch(e){showErr('Network error');btn.disabled=false;btn.innerHTML='Sign in';}
+}
+function showErr(m){const e=document.getElementById('err');document.getElementById('errText').textContent=m;e.style.display='flex';}
+const s=document.createElement('style');s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);
+</script>
+</body>
+</html>
