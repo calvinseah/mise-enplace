@@ -9,28 +9,28 @@
 <title>Payslip — Mise</title>
 <style>
 :root{
-  --ink:#0F172A;--accent:#6366F1;--surface:#F8FAFC;
-  --ink-60:rgba(15,23,42,.60);--ink-30:rgba(15,23,42,.30);
-  --ink-08:rgba(15,23,42,.08);--ink-04:rgba(15,23,42,.04);
-  --accent-10:rgba(99,102,241,.10);
-  --white:#ffffff;--card-radius:8px;
-  --card-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;
+  --ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);
+  --ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);
+  --accent-10:rgba(61,82,64,.10);--accent-20:rgba(61,82,64,.20);
+  --white:#ffffff;--card-radius:16px;
+  --card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);
   --font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
-  --danger:#EF4444;--success:#10B981;--warn:#F59E0B;
+  --danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--surface);color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
 
 /* Sidebar */
-.sidebar{width:216px;background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
 .sb-logo-row{display:flex;align-items:center;gap:9px}
-.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-icon svg{width:15px;height:15px;stroke:#fff}
 .sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
 .sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
 .sb-nav{padding:8px;flex:1}
-.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
 .sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
 .sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
 .sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .12s}
@@ -51,14 +51,14 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s,box-shadow .12s;min-width:160px}
+.fg input,.fg select{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s,box-shadow .12s;min-width:160px}
 .fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-10)}
 .fg select{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%230F172A' stroke-opacity='.4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 
 /* Buttons */
-.btn{height:32px;padding:0 14px;border-radius:5px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn svg{width:13px;height:13px;flex-shrink:0}
-.btn-primary{background:var(--ink);color:#fff}
+.btn-primary{background:#1A2318;color:#fff}
 .btn-primary:hover{opacity:.85}
 .btn-accent{background:var(--accent);color:#fff}
 .btn-accent:hover{opacity:.85}
@@ -72,7 +72,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 .ps-wrap{border:1px solid var(--ink-08);border-radius:var(--card-radius);overflow:hidden;font-size:12.5px;margin:20px}
 
 /* Payslip layout */
-.ps-head{background:var(--ink);color:#fff;padding:22px 24px;display:flex;align-items:center;gap:14px}
+.ps-head{background:#1A2318;color:#fff;padding:22px 24px;display:flex;align-items:center;gap:14px}
 .ps-head-icon{width:36px;height:36px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ps-head-icon svg{width:18px;height:18px;stroke:#fff}
 .ps-head-name{font-size:16px;font-weight:400;font-family:var(--font-display);letter-spacing:0}
@@ -96,15 +96,15 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
 .tot-table tr td{padding:5px 0;font-size:12.5px}
 .tot-table tr td:last-child{text-align:right;font-weight:500}
 .tot-table tr.gross td{border-top:1px solid var(--ink-08);padding-top:10px;font-weight:600;color:var(--ink);font-size:13px}
-.tot-table tr.net-row td{background:var(--ink);color:#fff;padding:10px 14px;border-radius:5px;font-weight:600;font-size:14px}
+.tot-table tr.net-row td{background:#1A2318;color:#fff;padding:10px 14px;border-radius:10px;font-weight:600;font-size:14px}
 .tot-table tr.emp-cpf td{color:var(--danger)}
 .tot-table tr.er-cpf td{color:var(--ink-30);font-size:11.5px}
-.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:5px;padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:10px;font-weight:500;display:flex;align-items:center;gap:7px}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--warn);margin-bottom:10px;font-weight:500;display:flex;align-items:center;gap:7px}
 .warn-box svg{width:13px;height:13px;flex-shrink:0}
 .badge-ph{background:rgba(99,102,241,.1);color:var(--accent);font-size:10.5px;padding:1px 6px;border-radius:3px;font-weight:500}
 .badge-ed{background:rgba(245,158,11,.1);color:var(--warn);font-size:10.5px;padding:1px 6px;border-radius:3px}
 .ps-footer{padding:10px 24px;background:var(--surface);text-align:center;font-size:11px;color:var(--ink-30);border-top:1px solid var(--ink-08);font-style:italic}
-.alert{padding:8px 14px;border-radius:5px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
+.alert{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
 .alert svg{width:14px;height:14px;flex-shrink:0}
 .alert-err{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.2)}
 .empty{color:var(--ink-30);font-size:12.5px;padding:32px;text-align:center}

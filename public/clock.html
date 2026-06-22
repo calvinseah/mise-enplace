@@ -7,196 +7,172 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0F172A">
+<meta name="theme-color" content="#F0F2EC">
 <title>Mise — Clock In / Out</title>
 <style>
 :root {
-  --ink: #0F172A; --accent: #6366F1; --surface: #F8FAFC;
-  --ink-60: rgba(15,23,42,.60); --ink-30: rgba(15,23,42,.30);
-  --ink-08: rgba(15,23,42,.08); --ink-04: rgba(15,23,42,.04);
-  --accent-10: rgba(99,102,241,.10);
-  --white: #fff;
-  --danger: #EF4444; --success: #10B981;
-  --font: 'Inter', sans-serif; --font-display: 'DM Serif Display', serif;
-  --card-radius: 16px;
-  --card-shadow: 0 2px 16px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.04);
+  --bg: #F0F2EC; --green: #3D5240; --green-l: #C8D5B9; --green-m: #7A9E7E;
+  --card: #ffffff; --card2: #E8EDE3;
+  --text: #1A2318; --muted: rgba(26,35,24,.5);
+  --danger: #C0392B; --success: #2E6B3E;
+  --font: 'Inter', sans-serif; --font-d: 'DM Serif Display', serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { height: 100%; }
-body {
-  font-family: var(--font);
-  background: var(--surface);
-  min-height: 100vh; min-height: 100dvh;
-  display: flex; flex-direction: column;
-}
+html, body { height: 100%; }
+body { font-family: var(--font); background: var(--bg); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
 
-/* Top bar */
-.topbar {
-  background: var(--ink); color: #fff;
-  padding: 14px 20px;
-  padding-top: max(14px, env(safe-area-inset-top));
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
+/* Header */
+.header {
+  padding: 16px 20px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  display: flex; align-items: center; gap: 12px; background: var(--bg); flex-shrink: 0;
 }
-.topbar-left { display: flex; align-items: center; gap: 10px; }
 .back-btn {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: rgba(255,255,255,.08);
-  border: none; cursor: pointer;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--card); border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,.7); flex-shrink: 0;
-  transition: background .12s;
+  box-shadow: 0 1px 4px rgba(26,35,24,.1); flex-shrink: 0; text-decoration: none;
+  transition: transform .12s;
 }
-.back-btn:active { background: rgba(255,255,255,.15); }
-.back-btn svg { width: 18px; height: 18px; stroke: currentColor; }
-.topbar-name { font-size: 17px; font-weight: 400; font-family: var(--font-display); }
-.topbar-time { font-size: 12px; color: rgba(255,255,255,.4); font-variant-numeric: tabular-nums; }
+.back-btn:active { transform: scale(.93); }
+.back-btn svg { width: 18px; height: 18px; stroke: var(--text); }
+.header-title { font-size: 18px; font-weight: 400; font-family: var(--font-d); color: var(--text); }
+.header-time { margin-left: auto; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* PH banner */
 .ph-banner {
-  background: rgba(99,102,241,.08);
-  border-bottom: 1px solid rgba(99,102,241,.15);
-  padding: 10px 20px;
-  font-size: 13px; font-weight: 500; color: var(--accent);
-  text-align: center; display: none;
-  align-items: center; justify-content: center; gap: 6px;
+  margin: 0 20px 4px;
+  background: rgba(61,82,64,.08); border: 1px solid rgba(61,82,64,.15);
+  border-radius: 14px; padding: 10px 16px;
+  font-size: 13px; font-weight: 500; color: var(--green);
+  display: none; align-items: center; gap: 8px;
 }
-.ph-banner svg { width: 14px; height: 14px; flex-shrink: 0; }
+.ph-banner svg { width: 14px; height: 14px; flex-shrink: 0; stroke: var(--green); }
 
-/* Scroll content */
+/* Content */
 .content {
-  flex: 1; overflow-y: auto;
-  padding: 20px 16px;
-  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  flex: 1; overflow-y: auto; padding: 12px 20px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
 }
-.inner { max-width: 420px; margin: 0 auto; }
+
+/* Steps pill */
+.steps-pill {
+  background: var(--card2); border-radius: 20px; padding: 4px;
+  display: flex; margin-bottom: 20px;
+}
+.step-seg {
+  flex: 1; padding: 7px 10px; border-radius: 16px;
+  font-size: 12px; font-weight: 500; color: var(--muted);
+  text-align: center; transition: all .2s;
+}
+.step-seg.active { background: var(--green); color: #fff; }
+.step-seg.done { color: var(--green-m); }
 
 /* Card */
 .card {
-  background: var(--white);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  border: 1px solid var(--ink-08);
-  padding: 22px 20px;
-  margin-bottom: 12px;
+  background: var(--card); border-radius: 24px;
+  padding: 22px 20px; margin-bottom: 12px;
+  box-shadow: 0 2px 16px rgba(26,35,24,.06), 0 1px 4px rgba(26,35,24,.04);
 }
+.card-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
 
-/* Step indicator */
-.steps { display: flex; align-items: center; margin-bottom: 24px; }
-.step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--ink-30); }
-.step.active { color: var(--accent); }
-.step.done { color: var(--success); }
-.step-num {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 1.5px solid currentColor;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10.5px; font-weight: 600; flex-shrink: 0;
-}
-.step.done .step-num { background: var(--success); border-color: var(--success); color: #fff; }
-.step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
-.step-line { flex: 1; height: 1.5px; background: var(--ink-08); margin: 0 8px; }
-.step-line.done { background: var(--success); }
-
-/* Field */
-.field-label { font-size: 11px; font-weight: 600; color: var(--ink-60); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; display: block; }
-.select-wrap { position: relative; }
+/* Select */
+.sel-wrap { position: relative; }
 select {
-  width: 100%; height: 52px; padding: 0 44px 0 14px;
-  border: 1.5px solid var(--ink-08); border-radius: 10px;
-  font-size: 16px; color: var(--ink); background: var(--white);
-  font-family: var(--font); outline: none; -webkit-appearance: none;
-  transition: border-color .12s, box-shadow .12s;
+  width: 100%; height: 54px; padding: 0 44px 0 16px;
+  background: var(--card2); border: none; border-radius: 16px;
+  font-size: 16px; font-family: var(--font); color: var(--text);
+  outline: none; -webkit-appearance: none; cursor: pointer;
+  font-weight: 500;
 }
-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-10); }
-select:disabled { opacity: .4; }
-.select-wrap::after {
-  content: ''; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-  width: 0; height: 0;
+.sel-wrap::after {
+  content: ''; position: absolute; right: 16px; top: 50%;
+  transform: translateY(-50%); width: 0; height: 0;
   border-left: 5px solid transparent; border-right: 5px solid transparent;
-  border-top: 5px solid var(--ink-30); pointer-events: none;
+  border-top: 6px solid var(--muted); pointer-events: none;
 }
 
 /* Status chip */
-.status-chip { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-top: 12px; }
-.chip-in { background: rgba(16,185,129,.08); color: var(--success); }
-.chip-out { background: var(--ink-04); color: var(--ink-60); }
-
-/* Confirm card */
-.confirm-card { background: var(--surface); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--ink-08); margin-bottom: 0; }
-.confirm-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-60); margin-bottom: 10px; }
-.confirm-row:last-child { margin-bottom: 0; }
-.confirm-row svg { width: 15px; height: 15px; stroke: var(--ink-30); flex-shrink: 0; }
-.confirm-row strong { color: var(--ink); }
-
-/* Break */
-.break-label { font-size: 13px; font-weight: 500; color: var(--ink-60); margin: 16px 0 10px; display: block; }
-.break-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 4px; }
-.break-btn {
-  height: 48px; border-radius: 10px; border: 1.5px solid var(--ink-08);
-  background: var(--white); font-size: 13px; font-weight: 500;
-  font-family: var(--font); color: var(--ink-60); cursor: pointer;
-  transition: all .12s;
+.status-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 12px;
+  font-size: 13px; font-weight: 500; margin-top: 10px;
 }
-.break-btn.sel { background: var(--ink); color: #fff; border-color: var(--ink); }
-.break-btn:active { transform: scale(.96); }
+.chip-in { background: rgba(46,107,62,.1); color: var(--success); }
+.chip-out { background: var(--card2); color: var(--muted); }
+
+/* Confirm rows */
+.confirm-card { background: var(--card2); border-radius: 16px; padding: 16px; }
+.confirm-row { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.confirm-row:last-child { margin-bottom: 0; }
+.confirm-row svg { width: 16px; height: 16px; stroke: var(--green-m); flex-shrink: 0; }
+.confirm-row strong { color: var(--text); }
+
+/* Break grid */
+.break-label { font-size: 13px; font-weight: 500; color: var(--muted); margin: 16px 0 10px; display: block; }
+.break-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.break-btn {
+  height: 48px; border-radius: 14px; border: none;
+  background: var(--card2); font-size: 13px; font-weight: 500;
+  font-family: var(--font); color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.break-btn.sel { background: var(--green); color: #fff; }
+.break-btn:active { transform: scale(.95); }
 
 /* Action button */
 .action-btn {
-  width: 100%; height: 56px; border-radius: 12px; border: none;
-  font-size: 16px; font-weight: 500; font-family: var(--font); cursor: pointer;
-  transition: all .15s; display: flex; align-items: center; justify-content: center;
-  gap: 10px; margin-top: 14px; letter-spacing: -.01em;
+  width: 100%; height: 58px; border-radius: 18px; border: none;
+  font-size: 17px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: all .15s; margin-top: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  letter-spacing: -.02em;
 }
-.action-btn svg { width: 18px; height: 18px; }
+.action-btn svg { width: 20px; height: 20px; }
 .action-btn:active { transform: scale(.97); }
-.action-btn:disabled { opacity: .4; cursor: not-allowed; }
-.action-in { background: var(--success); color: #fff; }
-.action-out { background: var(--danger); color: #fff; }
+.action-btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-in { background: var(--green); color: #fff; box-shadow: 0 4px 16px rgba(61,82,64,.3); }
+.btn-out { background: var(--danger); color: #fff; box-shadow: 0 4px 16px rgba(192,57,43,.25); }
 
 /* Error */
 .err-msg {
-  background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.18);
-  color: var(--danger); border-radius: 8px; padding: 10px 14px;
-  font-size: 13px; font-weight: 500; margin-top: 12px;
-  display: none; align-items: center; gap: 8px;
+  background: rgba(192,57,43,.08); border-radius: 12px;
+  padding: 12px 16px; font-size: 13px; font-weight: 500;
+  color: var(--danger); margin-top: 12px; display: none;
+  align-items: center; gap: 8px;
 }
-.err-msg svg { width: 15px; height: 15px; flex-shrink: 0; }
+.err-msg svg { width: 15px; height: 15px; flex-shrink: 0; stroke: var(--danger); }
 
 /* Success */
-#successScreen { display: none; text-align: center; padding: 32px 16px; }
-.success-icon {
-  width: 64px; height: 64px;
-  background: rgba(16,185,129,.1); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
+#successScreen { display: none; text-align: center; padding: 20px 0; }
+.success-circle {
+  width: 80px; height: 80px; background: rgba(46,107,62,.1);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
   margin: 0 auto 20px;
 }
-.success-icon svg { width: 30px; height: 30px; stroke: var(--success); }
-.success-title { font-size: 28px; font-weight: 400; color: var(--ink); font-family: var(--font-display); margin-bottom: 8px; }
-.success-sub { font-size: 14px; color: var(--ink-60); line-height: 1.65; margin-bottom: 28px; white-space: pre-line; }
-.back-home-btn {
-  height: 48px; padding: 0 24px; border-radius: 10px;
-  border: 1.5px solid var(--ink-08); background: transparent;
-  font-size: 14px; font-weight: 500; font-family: var(--font);
-  color: var(--ink-60); cursor: pointer;
-  display: inline-flex; align-items: center; gap: 7px; transition: all .12s;
+.success-circle svg { width: 36px; height: 36px; stroke: var(--success); }
+.success-title { font-size: 32px; font-weight: 400; font-family: var(--font-d); color: var(--text); margin-bottom: 8px; }
+.success-sub { font-size: 14px; color: var(--muted); line-height: 1.65; white-space: pre-line; margin-bottom: 28px; }
+.back-home {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 50px; padding: 0 24px; border-radius: 16px;
+  background: var(--card2); border: none;
+  font-size: 14px; font-weight: 600; color: var(--green);
+  cursor: pointer; font-family: var(--font); text-decoration: none;
+  transition: transform .12s;
 }
-.back-home-btn:hover { background: var(--ink-04); color: var(--ink); }
-.back-home-btn svg { width: 14px; height: 14px; }
+.back-home:active { transform: scale(.96); }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-left">
-    <a href="/" class="back-btn" title="Back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-      </svg>
-    </a>
-    <div class="topbar-name">Clock In / Out</div>
-  </div>
-  <div class="topbar-time" id="topTime"></div>
+<div class="header">
+  <a href="/" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+  </a>
+  <div class="header-title">Clock In / Out</div>
+  <div class="header-time" id="topTime"></div>
 </div>
 
 <div class="ph-banner" id="phBanner">
@@ -207,277 +183,188 @@ select:disabled { opacity: .4; }
 </div>
 
 <div class="content">
-  <div class="inner">
 
-    <div class="card" id="mainCard">
-      <div id="mainSection">
+  <div id="mainCard" class="card">
+    <div id="mainSection">
 
-        <!-- Steps -->
-        <div class="steps" id="stepIndicator">
-          <div class="step active" id="step1"><div class="step-num">1</div><span>Name</span></div>
-          <div class="step-line" id="line1"></div>
-          <div class="step" id="step2"><div class="step-num">2</div><span>Outlet</span></div>
-          <div class="step-line" id="line2"></div>
-          <div class="step" id="step3"><div class="step-num">3</div><span>Confirm</span></div>
-        </div>
-
-        <!-- Step 1: Name -->
-        <div id="stepName">
-          <label class="field-label">Who are you?</label>
-          <div class="select-wrap">
-            <select id="staffSel" onchange="onStaffSelect()">
-              <option value="">Select your name…</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Step 2: Outlet -->
-        <div id="stepOutlet" style="display:none; margin-top:18px">
-          <label class="field-label">Which outlet?</label>
-          <div class="select-wrap">
-            <select id="outletSel" onchange="onOutletSelect()">
-              <option value="">Select outlet…</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Step 3: Confirm -->
-        <div id="confirmSection" style="display:none; margin-top:18px">
-          <div class="confirm-card">
-            <div class="confirm-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-              <span><strong id="confirmName"></strong></span>
-            </div>
-            <div class="confirm-row" id="confirmOutletRow">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span><strong id="confirmOutlet"></strong></span>
-            </div>
-            <div class="confirm-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span id="confirmTime"></span>
-            </div>
-          </div>
-
-          <div id="statusChip" style="display:none"></div>
-
-          <!-- Break (clock out) -->
-          <div id="breakSection" style="display:none">
-            <span class="break-label">Break duration</span>
-            <div class="break-grid">
-              <button class="break-btn sel" onclick="selBreak(0,this)">No break</button>
-              <button class="break-btn" onclick="selBreak(15,this)">15 min</button>
-              <button class="break-btn" onclick="selBreak(30,this)">30 min</button>
-              <button class="break-btn" onclick="selBreak(45,this)">45 min</button>
-              <button class="break-btn" onclick="selBreak(60,this)">60 min</button>
-              <button class="break-btn" onclick="selBreak(90,this)">90 min</button>
-            </div>
-          </div>
-
-          <button class="action-btn action-in" id="actionBtn" onclick="doAction()">
-            <svg id="actionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
-            </svg>
-            <span id="actionLabel">Clock in</span>
-          </button>
-
-          <div class="err-msg" id="errMsg">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span id="errText"></span>
-          </div>
-        </div>
-
+      <!-- Step pills -->
+      <div class="steps-pill" id="stepPills">
+        <div class="step-seg active" id="sp1">1 · Name</div>
+        <div class="step-seg" id="sp2">2 · Outlet</div>
+        <div class="step-seg" id="sp3">3 · Confirm</div>
       </div>
 
-      <!-- Success -->
-      <div id="successScreen">
-        <div class="success-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 12 4 10"/>
-          </svg>
+      <!-- Step 1 -->
+      <div id="stepName">
+        <div class="card-label">Who are you?</div>
+        <div class="sel-wrap">
+          <select id="staffSel" onchange="onStaffSelect()">
+            <option value="">Select your name…</option>
+          </select>
         </div>
-        <div class="success-title" id="successTitle"></div>
-        <div class="success-sub" id="successSub"></div>
-        <button class="back-home-btn" onclick="reset()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="stepOutlet" style="display:none;margin-top:16px">
+        <div class="card-label">Which outlet?</div>
+        <div class="sel-wrap">
+          <select id="outletSel" onchange="onOutletSelect()">
+            <option value="">Select outlet…</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="confirmSection" style="display:none;margin-top:16px">
+        <div class="confirm-card">
+          <div class="confirm-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span><strong id="confirmName"></strong></span>
+          </div>
+          <div class="confirm-row" id="confirmOutletRow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span><strong id="confirmOutlet"></strong></span>
+          </div>
+          <div class="confirm-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="confirmTime"></span>
+          </div>
+        </div>
+
+        <div id="statusChip" style="display:none"></div>
+
+        <div id="breakSection" style="display:none">
+          <span class="break-label">Break duration</span>
+          <div class="break-grid">
+            <button class="break-btn sel" onclick="selBreak(0,this)">No break</button>
+            <button class="break-btn" onclick="selBreak(15,this)">15 min</button>
+            <button class="break-btn" onclick="selBreak(30,this)">30 min</button>
+            <button class="break-btn" onclick="selBreak(45,this)">45 min</button>
+            <button class="break-btn" onclick="selBreak(60,this)">60 min</button>
+            <button class="break-btn" onclick="selBreak(90,this)">90 min</button>
+          </div>
+        </div>
+
+        <button class="action-btn btn-in" id="actionBtn" onclick="doAction()">
+          <svg id="actionIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>
           </svg>
-          Back
+          <span id="actionLabel">Clock in</span>
         </button>
+
+        <div class="err-msg" id="errMsg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="errText"></span>
+        </div>
       </div>
     </div>
 
+    <!-- Success -->
+    <div id="successScreen">
+      <div class="success-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 12 4 10"/>
+        </svg>
+      </div>
+      <div class="success-title" id="successTitle"></div>
+      <div class="success-sub" id="successSub"></div>
+      <a href="/" class="back-home">Back to home</a>
+    </div>
   </div>
+
 </div>
 
 <script>
 let staffId=null, outletId=null, isIn=false, breakMins=0, multiOutlet=false;
-const icDot = (c) => `<svg width="9" height="9" viewBox="0 0 24 24" fill="${c}" stroke="none"><circle cx="12" cy="12" r="8"/></svg>`;
+const icDot=(c)=>`<svg width="9" height="9" viewBox="0 0 24 24" fill="${c}" stroke="none"><circle cx="12" cy="12" r="8"/></svg>`;
 
-function tick() { document.getElementById('topTime').textContent = new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
-tick(); setInterval(tick, 15000);
-function now12() { return new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+function tick(){ document.getElementById('topTime').textContent=new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
+tick(); setInterval(tick,15000);
+function now12(){ return new Date().toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}); }
 
-async function init() {
-  try {
-    const r = await fetch('/api/attendance/active-staff');
-    const staff = await r.json();
-    const sel = document.getElementById('staffSel');
-    staff.forEach(s => { const o = document.createElement('option'); o.value=s.id; o.textContent=s.name; sel.appendChild(o); });
-  } catch(e) {}
-
-  try {
-    const r = await fetch('/api/attendance/outlets');
-    const outlets = await r.json();
-    if (outlets.length === 1) {
-      outletId = outlets[0].id;
-      multiOutlet = false;
-      document.getElementById('step2').style.display='none';
-      document.getElementById('line1').style.display='none';
-      document.getElementById('line2').style.display='none';
-      document.getElementById('confirmOutletRow').style.display='none';
-    } else {
-      multiOutlet = true;
-      const sel = document.getElementById('outletSel');
-      outlets.forEach(o => { const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.name; sel.appendChild(opt); });
-    }
-  } catch(e) {}
-
-  try {
-    const today = new Date().toISOString().slice(0,10);
-    const r = await fetch('/api/attendance/holiday-check?date='+today);
-    const d = await r.json();
-    if (d.isHoliday) {
-      document.getElementById('phText').textContent = 'Today is '+d.holiday.name+' — public holiday rates apply';
-      document.getElementById('phBanner').style.display = 'flex';
-    }
-  } catch(e) {}
+async function init(){
+  try{ const r=await fetch('/api/attendance/active-staff'); const s=await r.json(); const sel=document.getElementById('staffSel'); s.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;sel.appendChild(o);}); }catch(e){}
+  try{
+    const r=await fetch('/api/attendance/outlets'); const outlets=await r.json();
+    if(outlets.length===1){ outletId=outlets[0].id; multiOutlet=false; document.getElementById('sp2').style.display='none'; document.getElementById('confirmOutletRow').style.display='none'; }
+    else{ multiOutlet=true; const sel=document.getElementById('outletSel'); outlets.forEach(o=>{const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;sel.appendChild(opt);}); }
+  }catch(e){}
+  try{
+    const today=new Date().toISOString().slice(0,10);
+    const r=await fetch('/api/attendance/holiday-check?date='+today); const d=await r.json();
+    if(d.isHoliday){ document.getElementById('phText').textContent='Today is '+d.holiday.name+' — public holiday rates apply'; document.getElementById('phBanner').style.display='flex'; }
+  }catch(e){}
 }
 
-async function onStaffSelect() {
-  staffId = document.getElementById('staffSel').value;
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('sp'+i); if(!el)return;
+    el.classList.remove('active','done');
+    if(i<n)el.classList.add('done'); else if(i===n)el.classList.add('active');
+  });
+}
+
+async function onStaffSelect(){
+  staffId=document.getElementById('staffSel').value;
   document.getElementById('confirmSection').style.display='none';
   document.getElementById('errMsg').style.display='none';
-  if (!staffId) { document.getElementById('stepOutlet').style.display='none'; setStep(1); return; }
-
-  try {
-    const r = await fetch('/api/attendance/current/'+staffId);
-    const d = await r.json();
-    isIn = d.active;
-  } catch(e) { isIn=false; }
-
-  if (multiOutlet) {
-    document.getElementById('stepOutlet').style.display='block';
-    document.getElementById('outletSel').value='';
-    outletId=null;
-    setStep(2);
-  } else {
-    showConfirm();
-  }
+  if(!staffId){ document.getElementById('stepOutlet').style.display='none'; setStep(1); return; }
+  try{ const r=await fetch('/api/attendance/current/'+staffId); const d=await r.json(); isIn=d.active; }catch(e){ isIn=false; }
+  if(multiOutlet){ document.getElementById('stepOutlet').style.display='block'; document.getElementById('outletSel').value=''; outletId=null; setStep(2); }
+  else { showConfirm(); }
 }
 
-function onOutletSelect() {
-  outletId = document.getElementById('outletSel').value;
-  if (!outletId) { document.getElementById('confirmSection').style.display='none'; setStep(2); return; }
+function onOutletSelect(){
+  outletId=document.getElementById('outletSel').value;
+  if(!outletId){ document.getElementById('confirmSection').style.display='none'; setStep(2); return; }
   showConfirm();
 }
 
-function showConfirm() {
-  const staffSel = document.getElementById('staffSel');
-  document.getElementById('confirmName').textContent = staffSel.options[staffSel.selectedIndex]?.text || '';
-
-  if (multiOutlet) {
-    const oSel = document.getElementById('outletSel');
-    document.getElementById('confirmOutlet').textContent = oSel.options[oSel.selectedIndex]?.text || '';
-  }
-
-  document.getElementById('confirmTime').textContent = now12();
-
-  const chip = document.getElementById('statusChip');
-  chip.style.display = 'block';
-  if (isIn) {
-    chip.innerHTML = `<div class="status-chip chip-in">${icDot('var(--success)')} Currently clocked in — tap below to clock out</div>`;
+function showConfirm(){
+  const ss=document.getElementById('staffSel'); document.getElementById('confirmName').textContent=ss.options[ss.selectedIndex]?.text||'';
+  if(multiOutlet){ const os=document.getElementById('outletSel'); document.getElementById('confirmOutlet').textContent=os.options[os.selectedIndex]?.text||''; }
+  document.getElementById('confirmTime').textContent=now12();
+  const chip=document.getElementById('statusChip'); chip.style.display='block';
+  if(isIn){
+    chip.innerHTML=`<div class="status-chip chip-in">${icDot('var(--success)')} Currently clocked in — tap to clock out</div>`;
     document.getElementById('breakSection').style.display='block';
-    document.getElementById('actionBtn').className='action-btn action-out';
+    document.getElementById('actionBtn').className='action-btn btn-out';
     document.getElementById('actionIcon').innerHTML='<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>';
     document.getElementById('actionLabel').textContent='Clock out';
   } else {
-    chip.innerHTML = `<div class="status-chip chip-out">${icDot('var(--ink-30)')} Not clocked in</div>`;
+    chip.innerHTML=`<div class="status-chip chip-out">${icDot('var(--muted)')} Not clocked in</div>`;
     document.getElementById('breakSection').style.display='none';
-    document.getElementById('actionBtn').className='action-btn action-in';
+    document.getElementById('actionBtn').className='action-btn btn-in';
     document.getElementById('actionIcon').innerHTML='<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/>';
     document.getElementById('actionLabel').textContent='Clock in';
   }
-
   document.getElementById('confirmSection').style.display='block';
   setStep(3);
 }
 
-function setStep(n) {
-  [1,2,3].forEach(i => {
-    const el = document.getElementById('step'+i);
-    if(!el) return;
-    el.classList.remove('active','done');
-    if(i<n) el.classList.add('done');
-    else if(i===n) el.classList.add('active');
-  });
-  [1,2].forEach(i => {
-    const el = document.getElementById('line'+i);
-    if(el) el.classList.toggle('done', i<n);
-  });
-}
+function selBreak(m,btn){ breakMins=m; document.querySelectorAll('.break-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
 
-function selBreak(m, btn) {
-  breakMins = m;
-  document.querySelectorAll('.break-btn').forEach(b => b.classList.remove('sel'));
-  btn.classList.add('sel');
-}
-
-async function doAction() {
-  const btn = document.getElementById('actionBtn');
-  btn.disabled = true;
+async function doAction(){
+  const btn=document.getElementById('actionBtn'); btn.disabled=true;
   document.getElementById('errMsg').style.display='none';
-  try {
-    if (isIn) {
-      const r = await fetch('/api/attendance/clock-out', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({staffId, breakMinutes:breakMins}) });
-      const d = await r.json();
-      if(d.success) showSuccess('Clocked out', `${now12()} · ${d.totalHours?d.totalHours.toFixed(2):'—'} hours worked.\nGreat shift!`);
-      else showErr(d.error||'Error clocking out');
+  try{
+    if(isIn){
+      const r=await fetch('/api/attendance/clock-out',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,breakMinutes:breakMins})});
+      const d=await r.json();
+      if(d.success) showSuccess('Clocked out',`${now12()} · ${d.totalHours?d.totalHours.toFixed(2):'—'} hrs worked.\nGreat shift!`);
+      else showErr(d.error||'Error');
     } else {
-      const r = await fetch('/api/attendance/clock-in', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({staffId, outletId}) });
-      const d = await r.json();
-      if(d.success) showSuccess('Clocked in', `Time: ${now12()}.\nSee you on the floor!`);
-      else showErr(d.error||'Error clocking in');
+      const r=await fetch('/api/attendance/clock-in',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,outletId})});
+      const d=await r.json();
+      if(d.success) showSuccess('Clocked in',`Time: ${now12()}.\nSee you on the floor!`);
+      else showErr(d.error||'Error');
     }
-  } catch(e) { showErr('Network error. Please try again.'); }
-  btn.disabled = false;
+  }catch(e){ showErr('Network error. Try again.'); }
+  btn.disabled=false;
 }
 
-function showErr(m) { document.getElementById('errText').textContent=m; document.getElementById('errMsg').style.display='flex'; }
-
-function showSuccess(title, sub) {
-  document.getElementById('mainSection').style.display='none';
-  document.getElementById('successScreen').style.display='block';
-  document.getElementById('successTitle').textContent=title;
-  document.getElementById('successSub').textContent=sub;
-}
-
-function reset() {
-  document.getElementById('mainSection').style.display='block';
-  document.getElementById('successScreen').style.display='none';
-  document.getElementById('staffSel').value='';
-  document.getElementById('outletSel').value='';
-  document.getElementById('stepOutlet').style.display='none';
-  document.getElementById('confirmSection').style.display='none';
-  document.getElementById('statusChip').style.display='none';
-  document.getElementById('errMsg').style.display='none';
-  document.getElementById('breakSection').style.display='none';
-  staffId=null; outletId=multiOutlet?null:outletId; isIn=false; breakMins=0;
-  document.querySelectorAll('.break-btn').forEach((b,i)=>b.classList.toggle('sel',i===0));
-  setStep(1);
-}
-
+function showErr(m){ document.getElementById('errText').textContent=m; document.getElementById('errMsg').style.display='flex'; }
+function showSuccess(title,sub){ document.getElementById('mainSection').style.display='none'; document.getElementById('successScreen').style.display='block'; document.getElementById('successTitle').textContent=title; document.getElementById('successSub').textContent=sub; }
 init();
 </script>
 </body>

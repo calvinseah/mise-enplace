@@ -9,18 +9,20 @@
 <title>Manager Login — Mise</title>
 <style>
 :root{
-  --ink:#0F172A;--accent:#6366F1;--surface:#F8FAFC;
-  --ink-60:rgba(15,23,42,.60);--ink-08:rgba(15,23,42,.08);--ink-04:rgba(15,23,42,.04);
-  --accent-10:rgba(99,102,241,.10);--white:#ffffff;
-  --card-radius:8px;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --input-radius:6px;--input-border:1px solid rgba(15,23,42,.18);
-  --danger:#EF4444;--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
+  --ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;
+  --ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);
+  --ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);
+  --accent-10:rgba(61,82,64,.10);--accent-20:rgba(61,82,64,.20);
+  --white:#ffffff;--card-radius:16px;
+  --card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);
+  --font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
+  --danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--surface);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+body{font-family:var(--font);background:#F0F2EC;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:32px 28px;width:100%;max-width:360px}
 .wordmark{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-.wordmark-icon{width:34px;height:34px;background:var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wordmark-icon{width:34px;height:34px;background:#1A2318;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .wordmark-icon svg{width:18px;height:18px;stroke:#fff}
 .wordmark-text{font-size:18px;font-weight:400;color:var(--ink);font-family:var(--font-display)}
 .wordmark-sub{font-size:12px;color:var(--ink-60);margin-top:1px}
@@ -32,11 +34,11 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-10)}
 .eye-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-60);padding:4px;display:flex;align-items:center;transition:color .12s}
 .eye-btn:hover{color:var(--ink)}
 .eye-btn svg{width:15px;height:15px}
-.btn{width:100%;height:36px;background:var(--ink);color:var(--white);border:none;border-radius:var(--input-radius);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn{width:100%;height:36px;background:#1A2318;color:var(--white);border:none;border-radius:var(--input-radius);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
 .btn svg{width:14px;height:14px}
 .btn:hover{opacity:.85}
 .btn:disabled{opacity:.4;cursor:not-allowed}
-.error-msg{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger);border-radius:5px;padding:8px 12px;font-size:12px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:7px}
+.error-msg{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:7px}
 .error-msg svg{width:13px;height:13px;flex-shrink:0}
 .back{text-align:center;margin-top:16px;font-size:12px;color:var(--ink-60);display:flex;align-items:center;justify-content:center;gap:5px}
 .back svg{width:13px;height:13px;opacity:.5}

@@ -9,26 +9,26 @@
 <title>Staff — Mise</title>
 <style>
 :root{
-  --ink:#0F172A;--accent:#6366F1;--surface:#F8FAFC;
-  --ink-60:rgba(15,23,42,.60);--ink-30:rgba(15,23,42,.30);
-  --ink-08:rgba(15,23,42,.08);--ink-04:rgba(15,23,42,.04);
-  --accent-10:rgba(99,102,241,.10);
-  --white:#ffffff;--card-radius:8px;
-  --card-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;
+  --ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);
+  --ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);
+  --accent-10:rgba(61,82,64,.10);--accent-20:rgba(61,82,64,.20);
+  --white:#ffffff;--card-radius:16px;
+  --card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);
   --font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
-  --danger:#EF4444;--success:#10B981;--warn:#F59E0B;
+  --danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:var(--surface);color:var(--ink);display:flex;min-height:100vh;font-size:13px}
-.sidebar{width:216px;background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+.sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
 .sb-logo-row{display:flex;align-items:center;gap:9px}
-.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-icon svg{width:15px;height:15px;stroke:#fff}
 .sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
 .sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
 .sb-nav{padding:8px;flex:1}
-.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
 .sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
 .sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
 .sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .12s}
@@ -41,9 +41,9 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
 .page-title{font-size:20px;font-weight:400;color:var(--ink);font-family:var(--font-display);letter-spacing:-.01em;line-height:1.2}
 .page-sub{font-size:12.5px;color:var(--ink-60);margin-top:3px}
-.btn{height:32px;padding:0 14px;border-radius:5px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn svg{width:13px;height:13px;flex-shrink:0}
-.btn-primary{background:var(--ink);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-primary{background:#1A2318;color:#fff}.btn-primary:hover{opacity:.85}
 .btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:var(--ink-04);color:var(--ink)}
 .btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{opacity:.85}
 .btn-sm{height:26px;padding:0 10px;font-size:11.5px}
@@ -86,7 +86,7 @@ tbody tr:last-child td{border-bottom:none}
 .fg{display:flex;flex-direction:column;gap:4px}
 .fg-full{grid-column:1/-1}
 .fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s,box-shadow .12s;width:100%}
+.fg input,.fg select{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s,box-shadow .12s;width:100%}
 .fg input:focus,.fg select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-10)}
 .fg select{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%230F172A' stroke-opacity='.4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .hint{font-size:11px;color:var(--ink-30);margin-top:2px}
@@ -95,20 +95,20 @@ tbody tr:last-child td{border-bottom:none}
 /* PIN keypad */
 .pin-display{display:flex;justify-content:center;gap:12px;margin:16px 0}
 .pin-dot{width:12px;height:12px;border-radius:50%;background:var(--ink-08);transition:background .1s}
-.pin-dot.filled{background:var(--ink)}
+.pin-dot.filled{background:#1A2318}
 .pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
-.pk{height:52px;border-radius:5px;border:1px solid var(--ink-08);background:var(--white);font-size:18px;font-weight:400;font-family:var(--font-display);cursor:pointer;color:var(--ink);transition:all .1s;display:flex;align-items:center;justify-content:center}
+.pk{height:52px;border-radius:10px;border:1px solid var(--ink-08);background:var(--white);font-size:18px;font-weight:400;font-family:var(--font-display);cursor:pointer;color:var(--ink);transition:all .1s;display:flex;align-items:center;justify-content:center}
 .pk:active,.pk:hover{background:var(--surface)}.pk:active{transform:scale(.96)}
 .pk-del svg{width:16px;height:16px;stroke:var(--danger)}
 .pk-blank{border:none;background:transparent;pointer-events:none}
-.pin-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:var(--danger);border-radius:5px;padding:8px 12px;font-size:12.5px;font-weight:500;margin-top:10px;display:none}
+.pin-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:var(--danger);border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:500;margin-top:10px;display:none}
 /* Upload area */
-.upload-zone{border:2px dashed var(--ink-08);border-radius:8px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface)}
+.upload-zone{border:2px dashed var(--ink-08);border-radius:16px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--surface)}
 .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:var(--accent-10)}
 .upload-zone svg{width:32px;height:32px;stroke:var(--ink-30);margin:0 auto 10px;display:block}
 .upload-zone p{font-size:12.5px;color:var(--ink-60);margin-bottom:4px}
 .upload-zone span{font-size:11.5px;color:var(--ink-30)}
-.upload-result{margin-top:14px;padding:12px 14px;border-radius:6px;font-size:12.5px;display:none}
+.upload-result{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:12.5px;display:none}
 .upload-ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--success)}
 .upload-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger)}
 /* Outlets */
@@ -119,7 +119,7 @@ tbody tr:last-child td{border-bottom:none}
 .outlet-del{background:none;border:none;cursor:pointer;color:var(--ink-30);padding:4px;border-radius:4px;display:flex;align-items:center;transition:all .12s}
 .outlet-del svg{width:14px;height:14px}
 .outlet-del:hover{background:rgba(239,68,68,.08);color:var(--danger)}
-.alert{padding:8px 14px;border-radius:5px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
+.alert{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
 .alert svg{width:14px;height:14px;flex-shrink:0}
 .alert-ok{background:rgba(16,185,129,.08);color:var(--success);border-color:rgba(16,185,129,.2)}
 .alert-err{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.2)}
@@ -542,7 +542,7 @@ async function loadApplications(){
     else{badge.style.display='none';}
     if(!apps.length){el.innerHTML='<div class="empty">No pending applications</div>';return;}
     el.innerHTML=apps.map(a=>`
-      <div style="border:1px solid var(--ink-08);border-radius:8px;padding:16px;margin-bottom:10px;background:var(--white)">
+      <div style="border:1px solid var(--ink-08);border-radius:16px;padding:16px;margin-bottom:10px;background:var(--white)">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <div>
             <div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:6px">${a.name}</div>
@@ -589,8 +589,8 @@ function openApprove(id,name){
           <option value="fulltime">Full-time</option>
         </select>
       </div>
-      <div class="fg" id="approveHourlyGrp"><label>Hourly rate (SGD)</label><input type="number" id="approveHourly" placeholder="9.50" step="0.5" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
-      <div class="fg" id="approveSalaryGrp" style="display:none"><label>Monthly salary (SGD)</label><input type="number" id="approveSalary" placeholder="2400" step="100" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
+      <div class="fg" id="approveHourlyGrp"><label>Hourly rate (SGD)</label><input type="number" id="approveHourly" placeholder="9.50" step="0.5" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;width:100%;outline:none"></div>
+      <div class="fg" id="approveSalaryGrp" style="display:none"><label>Monthly salary (SGD)</label><input type="number" id="approveSalary" placeholder="2400" step="100" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;width:100%;outline:none"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" style="width:auto;height:32px;padding:0 14px;font-size:12.5px" onclick="document.getElementById('approveDialog').remove()">Cancel</button>
