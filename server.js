@@ -51,9 +51,10 @@ app.get('/api/auth/status', (req, res) => res.json({ loggedIn: !!req.session?.is
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
-const attendanceRoutes = require('./routes/attendance');
-const staffRoutes      = require('./routes/staff');
-const payslipRoutes    = require('./routes/payslip');
+const attendanceRoutes  = require('./routes/attendance');
+const staffRoutes       = require('./routes/staff');
+const payslipRoutes     = require('./routes/payslip');
+const applicationRoutes = require('./routes/applications');
 
 // Public clock-in endpoints
 const PUBLIC_ATTENDANCE = ['/active-staff','/current/','/holiday-check','/verify-pin','/clock-in','/clock-out','/outlets'];
@@ -64,10 +65,21 @@ app.use('/api/attendance', (req, res, next) => {
 }, attendanceRoutes);
 
 app.use('/api/staff',   requireAuthAPI, staffRoutes);
-app.use('/api/payslip', requireAuthAPI, payslipRoutes);
+app.use('/api/payslip',       requireAuthAPI, payslipRoutes);
+app.use('/api/applications',  requireAuthAPI, applicationRoutes);
+// Public: staff submit their own application
+app.post('/api/apply', (req, res) => {
+  // Proxy to the submit handler without auth
+  req.url = '/submit';
+  applicationRoutes(req, res, (err) => {
+    if (err) res.status(500).json({ error: err.message });
+  });
+});
 
 // ── HTML pages ────────────────────────────────────────────────────────────────
-app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'clock-in.html')));
+app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/clock',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'clock.html')));
+app.get('/join',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'join.html')));
 app.get('/dashboard', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 app.get('/staff',     requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'staff.html')));
 app.get('/payslip',   requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));

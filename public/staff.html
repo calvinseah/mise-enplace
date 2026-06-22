@@ -125,6 +125,26 @@ tbody tr:last-child td{border-bottom:none}
 .alert-err{background:rgba(239,68,68,.08);color:var(--danger);border-color:rgba(239,68,68,.2)}
 .empty{color:var(--ink-30);font-size:12.5px;padding:40px;text-align:center}
 </style>
+<style>
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  .sidebar { width: 100%; height: auto; position: relative; padding: 10px 12px; }
+  .sb-logo { padding: 6px 0 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .sb-nav { display: flex; flex-direction: row; padding: 6px 0 4px; overflow-x: auto; gap: 2px; flex-wrap: nowrap; }
+  .sb-nav a { padding: 6px 10px; white-space: nowrap; margin-bottom: 0; border-radius: 5px; font-size: 12px; }
+  .sb-nav a svg { display: none; }
+  .sb-footer { display: none; }
+  .main { padding: 16px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { font-size: 11.5px; }
+  thead th, tbody td { padding: 8px 10px; }
+  .modal { width: 96%; margin: 8px; }
+  .page-title { font-size: 17px; }
+  .card { padding: 14px 16px; }
+}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -170,6 +190,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="tab active" onclick="switchTab('staff')">Staff members</div>
       <div class="tab" onclick="switchTab('outlets')">Outlets</div>
       <div class="tab" onclick="switchTab('bulk')">Bulk upload</div>
+      <div class="tab" onclick="switchTab('applications')" id="appTab">Applications <span id="appBadge" style="display:none;background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:600;margin-left:4px"></span></div>
     </div>
 
     <!-- Staff tab -->
@@ -193,6 +214,23 @@ tbody tr:last-child td{border-bottom:none}
         </button>
       </div>
       <div id="outletList"><div class="empty">Loading…</div></div>
+    </div>
+
+    <!-- Applications tab -->
+    <div id="tab-applications" class="tab-panel" style="padding:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px">Pending Applications</div>
+          <div style="font-size:12px;color:var(--ink-60)">Staff who submitted via the join form. Approve to add them to the system.</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <a href="/join" target="_blank" class="btn btn-ghost" style="text-decoration:none;height:32px;padding:0 14px;font-size:12.5px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View join form
+          </a>
+        </div>
+      </div>
+      <div id="appList"><div class="empty">Loading…</div></div>
     </div>
 
     <!-- Bulk upload tab -->
@@ -301,10 +339,11 @@ function onPr(){document.getElementById('grpPrYr').style.display=document.getEle
 function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['staff','outlets','bulk'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['staff','outlets','bulk','applications'][i]===t));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='outlets')loadOutlets();
+  if(t==='applications')loadApplications();
 }
 
 /* SVG strings for JS-rendered cells */
@@ -481,13 +520,125 @@ async function handleFile(file){
   }
 }
 
+async function loadApplicationsBadge(){
+  try{
+    const r=await fetch('/api/applications?status=pending');
+    const apps=await r.json();
+    const badge=document.getElementById('appBadge');
+    if(apps.length>0){badge.textContent=apps.length;badge.style.display='inline';}
+    else{badge.style.display='none';}
+  }catch(e){}
+}
+
+/* Applications */
+async function loadApplications(){
+  try{
+    const r=await fetch('/api/applications?status=pending');
+    const apps=await r.json();
+    const el=document.getElementById('appList');
+    // Update badge
+    const badge=document.getElementById('appBadge');
+    if(apps.length>0){badge.textContent=apps.length;badge.style.display='inline';}
+    else{badge.style.display='none';}
+    if(!apps.length){el.innerHTML='<div class="empty">No pending applications</div>';return;}
+    el.innerHTML=apps.map(a=>`
+      <div style="border:1px solid var(--ink-08);border-radius:8px;padding:16px;margin-bottom:10px;background:var(--white)">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:600;font-size:14px;color:var(--ink);margin-bottom:6px">${a.name}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;font-size:12px;color:var(--ink-60)">
+              ${a.date_of_birth?`<span>DOB: <strong style="color:var(--ink)">${a.date_of_birth}</strong></span>`:''}
+              ${a.nric_full?`<span>NRIC: <strong style="color:var(--ink)">${a.nric_full}</strong></span>`:''}
+              ${a.bank_name?`<span>Bank: <strong style="color:var(--ink)">${a.bank_name}</strong></span>`:''}
+              ${a.bank_account?`<span>Account: <strong style="color:var(--ink)">${a.bank_account}</strong></span>`:''}
+            </div>
+            <div style="font-size:11px;color:var(--ink-30);margin-top:6px">Submitted ${new Date(a.submitted_at).toLocaleString('en-SG')}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn btn-primary btn-sm" onclick="openApprove(${a.id},'${a.name.replace(/'/g,"\'")}')">Approve</button>
+            <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="rejectApp(${a.id})">Reject</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){document.getElementById('appList').innerHTML='<div class="empty">Error loading applications</div>';}
+}
+
+let currentAppId=null;
+function openApprove(id,name){
+  currentAppId=id;
+  // Show a simple inline approve dialog
+  const el=document.getElementById('appList');
+  const existingDialog=document.getElementById('approveDialog');
+  if(existingDialog)existingDialog.remove();
+  const dialog=document.createElement('div');
+  dialog.id='approveDialog';
+  dialog.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)';
+  dialog.innerHTML=`<div style="background:var(--white);border-radius:10px;padding:24px;width:90%;max-width:400px;box-shadow:0 20px 40px rgba(0,0,0,.15)">
+    <div style="font-size:16px;font-weight:400;font-family:var(--font-display);color:var(--ink);margin-bottom:18px">Approve — ${name}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="fg"><label>Role</label>
+        <select id="approveRole">
+          <option value="">— Select —</option>
+          <option value="FOH">FOH</option>
+          <option value="BOH">BOH</option>
+        </select>
+      </div>
+      <div class="fg"><label>Staff type</label>
+        <select id="approveType" onchange="toggleApproveRate()">
+          <option value="parttime">Part-time</option>
+          <option value="fulltime">Full-time</option>
+        </select>
+      </div>
+      <div class="fg" id="approveHourlyGrp"><label>Hourly rate (SGD)</label><input type="number" id="approveHourly" placeholder="9.50" step="0.5" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
+      <div class="fg" id="approveSalaryGrp" style="display:none"><label>Monthly salary (SGD)</label><input type="number" id="approveSalary" placeholder="2400" step="100" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" style="width:auto;height:32px;padding:0 14px;font-size:12.5px" onclick="document.getElementById('approveDialog').remove()">Cancel</button>
+      <button class="btn btn-primary" style="width:auto;height:32px;padding:0 14px;font-size:12.5px" onclick="confirmApprove()">Approve & add staff</button>
+    </div>
+  </div>`;
+  document.body.appendChild(dialog);
+}
+
+function toggleApproveRate(){
+  const t=document.getElementById('approveType').value;
+  document.getElementById('approveHourlyGrp').style.display=t==='parttime'?'':'none';
+  document.getElementById('approveSalaryGrp').style.display=t==='fulltime'?'':'none';
+}
+
+async function confirmApprove(){
+  const role=document.getElementById('approveRole').value;
+  const type=document.getElementById('approveType').value;
+  if(!role){alert('Please select a role');return;}
+  const payload={role,staff_type:type,
+    hourly_rate:type==='parttime'?parseFloat(document.getElementById('approveHourly').value)||null:null,
+    monthly_salary:type==='fulltime'?parseFloat(document.getElementById('approveSalary').value)||null:null};
+  try{
+    const r=await fetch('/api/applications/'+currentAppId+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.success){document.getElementById('approveDialog').remove();showAlert('Staff member added','ok');loadApplications();loadStaff();}
+    else showAlert(d.error||'Error','err');
+  }catch(e){showAlert('Network error','err');}
+}
+
+async function rejectApp(id){
+  const reason=prompt('Reason for rejection (optional):');
+  if(reason===null)return; // cancelled
+  try{
+    const r=await fetch('/api/applications/'+id+'/reject',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});
+    const d=await r.json();
+    if(d.success){showAlert('Application rejected','ok');loadApplications();}
+    else showAlert(d.error||'Error','err');
+  }catch(e){showAlert('Network error','err');}
+}
+
 function showAlert(m,t){
   const el=document.getElementById('alertBox');
   const ic=t==='err'?`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
   el.className='alert alert-'+(t==='err'?'err':'ok');el.innerHTML=ic+m;el.style.display='flex';setTimeout(()=>el.style.display='none',4000);
 }
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
-onType();onPr();loadStaff();
+onType();onPr();loadStaff();loadApplicationsBadge();
 </script>
 </body>
 </html>

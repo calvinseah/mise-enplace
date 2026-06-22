@@ -16,6 +16,7 @@ async function initDB() {
     db = new SQL.Database();
   }
   createSchema();
+  createApplicationsTable();
   await seedData();
   saveDB();
   return db;
@@ -227,3 +228,23 @@ module.exports = {
   encryptField, decryptField,
   computeShiftCost, computeCPF, getCPFRates, getAge,
 };
+
+// ─── APPLICATIONS SCHEMA (appended at runtime via initDB migration) ───────────
+// Called separately so we can add to existing DBs cleanly
+function createApplicationsTable() {
+  db.run(`CREATE TABLE IF NOT EXISTS applications (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,
+    date_of_birth   TEXT,
+    nric_full_enc   TEXT,
+    bank_name       TEXT,
+    bank_account_enc TEXT,
+    status          TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),
+    submitted_at    TEXT NOT NULL,
+    reviewed_at     TEXT,
+    reviewed_by     TEXT,
+    reject_reason   TEXT
+  )`);
+}
+
+module.exports.createApplicationsTable = createApplicationsTable;

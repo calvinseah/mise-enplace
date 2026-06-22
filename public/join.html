@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0F172A">
+<title>Mise — Join the Team</title>
+<style>
+:root {
+  --ink: #0F172A; --accent: #6366F1; --surface: #F8FAFC;
+  --ink-60: rgba(15,23,42,.60); --ink-30: rgba(15,23,42,.30);
+  --ink-08: rgba(15,23,42,.08);
+  --accent-10: rgba(99,102,241,.10);
+  --white: #fff; --danger: #EF4444; --success: #10B981;
+  --font: 'Inter', sans-serif; --font-display: 'DM Serif Display', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; }
+body { font-family: var(--font); background: var(--surface); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+
+.topbar {
+  background: var(--ink); color: #fff;
+  padding: 14px 20px;
+  padding-top: max(14px, env(safe-area-inset-top));
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.back-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,.08); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.7); flex-shrink: 0; text-decoration: none;
+}
+.back-btn:active { background: rgba(255,255,255,.15); }
+.back-btn svg { width: 18px; height: 18px; stroke: currentColor; }
+.topbar-name { font-size: 17px; font-weight: 400; font-family: var(--font-display); }
+
+.content {
+  flex: 1; overflow-y: auto;
+  padding: 24px 16px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.inner { max-width: 480px; margin: 0 auto; }
+
+.page-title { font-size: 28px; font-weight: 400; color: var(--ink); font-family: var(--font-display); margin-bottom: 6px; }
+.page-sub { font-size: 13.5px; color: var(--ink-60); margin-bottom: 22px; line-height: 1.6; }
+
+.card {
+  background: var(--white); border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(15,23,42,.07), 0 1px 3px rgba(15,23,42,.04);
+  border: 1px solid var(--ink-08); padding: 20px; margin-bottom: 12px;
+}
+.section-title {
+  font-size: 11px; font-weight: 600; color: var(--ink-60);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--ink-08);
+  display: flex; align-items: center; gap: 6px;
+}
+.section-title svg { width: 12px; height: 12px; }
+
+.fg { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.fg:last-child { margin-bottom: 0; }
+.fg label { font-size: 11.5px; font-weight: 500; color: var(--ink-60); }
+.fg input, .fg select {
+  width: 100%; height: 50px; padding: 0 14px;
+  border: 1.5px solid var(--ink-08); border-radius: 10px;
+  font-size: 16px; color: var(--ink); background: var(--white);
+  font-family: var(--font); outline: none;
+  transition: border-color .12s, box-shadow .12s;
+  -webkit-appearance: none;
+}
+.fg input:focus, .fg select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-10); }
+.fg select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%230F172A' stroke-opacity='.4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 36px;
+}
+.hint { font-size: 11.5px; color: var(--ink-30); }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.secure-note {
+  background: rgba(99,102,241,.06); border: 1px solid rgba(99,102,241,.14);
+  border-radius: 8px; padding: 10px 14px; font-size: 12.5px; color: var(--accent);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.secure-note svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.submit-btn {
+  width: 100%; height: 56px; background: var(--ink); color: #fff;
+  border: none; border-radius: 12px; font-size: 16px; font-weight: 500;
+  font-family: var(--font); cursor: pointer; transition: opacity .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 4px;
+}
+.submit-btn svg { width: 18px; height: 18px; }
+.submit-btn:active { opacity: .85; transform: scale(.98); }
+.submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.alert {
+  padding: 10px 16px; border-radius: 8px; font-size: 13px;
+  font-weight: 500; margin-bottom: 14px; border: 1px solid;
+  display: flex; align-items: center; gap: 8px;
+}
+.alert svg { width: 15px; height: 15px; flex-shrink: 0; }
+.alert-err { background: rgba(239,68,68,.08); color: var(--danger); border-color: rgba(239,68,68,.2); }
+
+/* Success */
+#successScreen { display: none; text-align: center; padding: 48px 20px; }
+.success-icon {
+  width: 72px; height: 72px; background: rgba(16,185,129,.1);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 22px;
+}
+.success-icon svg { width: 36px; height: 36px; stroke: var(--success); }
+.success-title { font-size: 30px; font-weight: 400; color: var(--ink); font-family: var(--font-display); margin-bottom: 12px; }
+.success-sub { font-size: 14px; color: var(--ink-60); line-height: 1.7; margin-bottom: 28px; }
+.go-home {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 48px; padding: 0 22px; border-radius: 10px;
+  border: 1.5px solid var(--ink-08); background: transparent;
+  font-size: 14px; font-weight: 500; font-family: var(--font);
+  color: var(--ink-60); cursor: pointer; text-decoration: none;
+  transition: all .12s;
+}
+.go-home:hover { background: var(--ink-04); color: var(--ink); }
+.go-home svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+  </a>
+  <div class="topbar-name">Join the Team</div>
+</div>
+
+<div class="content">
+  <div class="inner">
+
+    <div id="formSection">
+      <div class="page-title">Submit your details</div>
+      <div class="page-sub">Fill this in once. A manager will review and add you to the system — usually within 24 hours.</div>
+
+      <div id="alertBox" style="display:none"></div>
+
+      <div class="card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Personal details
+        </div>
+
+        <div class="fg">
+          <label>Full name (as per NRIC) *</label>
+          <input type="text" id="fName" placeholder="Your full legal name" autocomplete="name">
+        </div>
+        <div class="fg">
+          <label>Date of birth</label>
+          <input type="date" id="fDob" autocomplete="bday">
+        </div>
+        <div class="fg">
+          <label>NRIC / FIN number</label>
+          <input type="text" id="fNric" placeholder="e.g. S1234567A" maxlength="9" style="text-transform:uppercase" autocomplete="off" autocorrect="off" autocapitalize="characters">
+          <span class="hint">Stored securely and encrypted</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+          Bank details
+          <span style="font-size:10.5px;color:var(--ink-30);font-weight:400;margin-left:2px">for payroll</span>
+        </div>
+
+        <div class="secure-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Your bank details are encrypted and only visible to your manager.
+        </div>
+
+        <div class="row">
+          <div class="fg">
+            <label>Bank</label>
+            <select id="fBank">
+              <option value="">— Select —</option>
+              <option>DBS</option><option>POSB</option><option>OCBC</option><option>UOB</option>
+              <option>Standard Chartered</option><option>Citibank</option><option>HSBC</option>
+              <option>Maybank</option><option>CIMB</option><option>RHB</option>
+              <option>Maribank</option><option>Trust Bank</option><option>GXS</option>
+              <option>Others</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Account number</label>
+            <input type="text" id="fBankAcc" placeholder="123456789" autocomplete="off" inputmode="numeric">
+          </div>
+        </div>
+        <span class="hint" style="margin-top:4px;display:block">Stored securely and encrypted</span>
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="submitForm()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        Submit application
+      </button>
+    </div>
+
+    <!-- Success -->
+    <div id="successScreen">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 12 4 10"/>
+        </svg>
+      </div>
+      <div class="success-title">All done!</div>
+      <div class="success-sub">
+        Your details have been sent to the manager for review.<br>
+        You'll be added to the system once approved.
+      </div>
+      <a href="/" class="go-home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back to home
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function submitForm() {
+  const name    = document.getElementById('fName').value.trim();
+  const dob     = document.getElementById('fDob').value;
+  const nric    = document.getElementById('fNric').value.trim().toUpperCase();
+  const bank    = document.getElementById('fBank').value;
+  const bankAcc = document.getElementById('fBankAcc').value.trim();
+
+  if (!name) { showErr('Please enter your full name.'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Submitting…`;
+
+  try {
+    const r = await fetch('/api/apply', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, date_of_birth: dob||null, nric_full: nric||null, bank_name: bank||null, bank_account: bankAcc||null })
+    });
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('formSection').style.display='none';
+      document.getElementById('successScreen').style.display='block';
+    } else {
+      showErr(d.error || 'Something went wrong. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = 'Submit application';
+    }
+  } catch(e) {
+    showErr('Network error. Please check your connection.');
+    btn.disabled = false;
+    btn.innerHTML = 'Submit application';
+  }
+}
+
+function showErr(m) {
+  const el = document.getElementById('alertBox');
+  el.className = 'alert alert-err';
+  el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>${m}`;
+  el.style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const s = document.createElement('style');
+s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(s);
+</script>
+</body>
+</html>
