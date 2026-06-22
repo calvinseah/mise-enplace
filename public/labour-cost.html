@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mise — Labour vs Revenue</title>
+<style>
+:root{--ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;--ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);--ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);--accent-10:rgba(61,82,64,.10);--white:#ffffff;--card-radius:16px;--card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;--danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+.sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo-row{display:flex;align-items:center;gap:9px}
+.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon span{font-family:var(--font-display);font-size:16px;color:#fff;line-height:1}
+.sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
+.sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+.sb-nav{padding:8px;flex:1}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
+.sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
+.sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .12s}
+.sb-nav a:hover svg,.sb-nav a.active svg{opacity:1}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s}
+.sb-logout:hover{color:rgba(255,255,255,.6)}
+.sb-logout svg{width:13px;height:13px}
+.main{flex:1;padding:28px 32px;min-width:0;overflow:auto}
+.page-title{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink);margin-bottom:4px}
+.page-sub{font-size:12.5px;color:var(--ink-60);margin-bottom:24px}
+.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:20px 24px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:16px 20px}
+.stat-label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-val{font-size:26px;font-weight:400;font-family:var(--font-display);color:var(--ink);line-height:1}
+.stat-val.green{color:var(--success)}
+.stat-val.warn{color:var(--warn)}
+.stat-val.red{color:var(--danger)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:20px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s;min-width:130px}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A2318' stroke-opacity='.4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn svg{width:13px;height:13px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:var(--ink-04);color:var(--ink)}
+.btn-sm{height:26px;padding:0 10px;font-size:11.5px}
+/* Target line */
+.target-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--ink-04)}
+.target-row:last-child{border-bottom:none}
+.target-label{font-size:12.5px;color:var(--ink-60);flex:1}
+.pct-bar-wrap{width:180px;height:8px;background:var(--ink-04);border-radius:4px;overflow:hidden;flex-shrink:0}
+.pct-bar{height:100%;border-radius:4px;transition:width .4s}
+.pct-green{background:var(--success)}
+.pct-warn{background:var(--warn)}
+.pct-red{background:var(--danger)}
+/* Entry table */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--ink-08)}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--ink-04)}
+tbody tr:hover td{background:var(--surface)}
+tbody tr:last-child td{border-bottom:none}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--ink-30);padding:3px 6px;border-radius:5px;transition:all .12s}
+.del-btn:hover{background:rgba(192,57,43,.08);color:var(--danger)}
+.del-btn svg{width:13px;height:13px}
+.alert{padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
+.alert svg{width:14px;height:14px;flex-shrink:0}
+.alert-ok{background:rgba(46,107,62,.08);color:var(--success);border-color:rgba(46,107,62,.2)}
+.alert-err{background:rgba(192,57,43,.08);color:var(--danger);border-color:rgba(192,57,43,.2)}
+.empty{text-align:center;color:var(--ink-30);padding:32px;font-size:12.5px}
+.target-hint{font-size:11px;color:var(--ink-30);margin-top:3px}
+@media(max-width:768px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:relative}.sb-logo{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}.sb-nav{display:flex;flex-direction:row;padding:6px 0 4px;overflow-x:auto;gap:2px}.sb-nav a{padding:6px 10px;white-space:nowrap;margin-bottom:0;font-size:12px}.sb-nav a svg{display:none}.sb-footer{display:none}.main{padding:16px}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div style="display:flex;min-height:100vh;width:100%">
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-row">
+      <div class="sb-icon"><span>M</span></div>
+      <div><div class="sb-name">Mise</div><div class="sb-addr">Restaurant Management</div></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
+    <a href="/staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
+    <a href="/payslip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Payslip</a>
+    <a href="/payroll-summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
+    <a href="/labour-cost" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
+    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>Clock-in</a>
+  </nav>
+  <div class="sb-footer">
+    <button class="sb-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">Labour Cost Tracker</div>
+  <div class="page-sub">Compare weekly labour cost against revenue per outlet</div>
+
+  <div id="alertBox" style="display:none"></div>
+
+  <!-- Summary stats -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-label">Labour cost</div><div class="stat-val" id="statLabour">—</div></div>
+    <div class="stat"><div class="stat-label">Revenue</div><div class="stat-val" id="statRevenue">—</div></div>
+    <div class="stat"><div class="stat-label">Labour %</div><div class="stat-val" id="statPct">—</div></div>
+  </div>
+
+  <!-- Filters / date range -->
+  <div class="card">
+    <div class="filters">
+      <div class="fg"><label>From</label><input type="date" id="filterFrom"></div>
+      <div class="fg"><label>To</label><input type="date" id="filterTo"></div>
+      <div class="fg"><label>Outlet</label><select id="filterOutlet"><option value="">All outlets</option></select></div>
+      <div style="align-self:flex-end;display:flex;gap:6px">
+        <button class="btn btn-primary" onclick="loadSummary()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Calculate
+        </button>
+      </div>
+    </div>
+
+    <!-- Target % indicator -->
+    <div id="targetSection" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--ink-08)">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Labour % benchmark</div>
+      <div class="target-row">
+        <div><div style="font-size:12.5px;font-weight:500;color:var(--ink)" id="pctDisplay"></div><div class="target-hint">F&B benchmark: 25–35% is healthy, &gt;40% is a concern</div></div>
+        <div class="pct-bar-wrap"><div class="pct-bar" id="pctBar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add revenue entry -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px">Add weekly revenue</div>
+    <div class="filters">
+      <div class="fg"><label>Week starting</label><input type="date" id="newWeek"></div>
+      <div class="fg"><label>Outlet</label><select id="newOutlet"><option value="">All / General</option></select></div>
+      <div class="fg"><label>Revenue (SGD)</label><input type="number" id="newRevenue" placeholder="0.00" step="0.01" min="0" style="min-width:120px"></div>
+      <div class="fg"><label>Notes (optional)</label><input type="text" id="newNotes" placeholder="e.g. Including catering" style="min-width:160px"></div>
+      <div style="align-self:flex-end">
+        <button class="btn btn-primary" onclick="addRevenue()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue entries table -->
+  <div class="card" style="padding:0">
+    <div style="padding:14px 20px;border-bottom:1px solid var(--ink-08);font-size:12.5px;font-weight:600;color:var(--ink)">Revenue entries</div>
+    <table>
+      <thead><tr><th>Week starting</th><th>Outlet</th><th>Revenue</th><th>Notes</th><th></th></tr></thead>
+      <tbody id="revenueBody"><tr><td colspan="5" class="empty">No entries yet</td></tr></tbody>
+    </table>
+  </div>
+</main>
+</div>
+
+<script>
+const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('filterFrom').value=`${y}-${m}-01`;
+document.getElementById('filterTo').value=now.toISOString().slice(0,10);
+// Default new week to start of current week (Monday)
+const monday=new Date(now);monday.setDate(now.getDate()-((now.getDay()+6)%7));
+document.getElementById('newWeek').value=monday.toISOString().slice(0,10);
+
+async function init(){
+  try{
+    const r=await fetch('/api/staff/outlets/list');const o=await r.json();
+    ['filterOutlet','newOutlet'].forEach(id=>{
+      const sel=document.getElementById(id);
+      o.forEach(x=>{const opt=document.createElement('option');opt.value=x.id;opt.textContent=x.name;sel.appendChild(opt);});
+    });
+  }catch(e){}
+  loadRevenue();loadSummary();
+}
+
+async function loadSummary(){
+  const from=document.getElementById('filterFrom').value;
+  const to=document.getElementById('filterTo').value;
+  const oid=document.getElementById('filterOutlet').value;
+  try{
+    const p=new URLSearchParams({from,to});if(oid)p.set('outletId',oid);
+    const r=await fetch('/api/revenue/summary?'+p);const d=await r.json();
+    document.getElementById('statLabour').textContent='$'+d.labour.toFixed(0);
+    document.getElementById('statRevenue').textContent='$'+d.revenue.toFixed(0);
+    if(d.pct!==null){
+      const pct=d.pct;
+      const cls=pct<=30?'green':pct<=40?'warn':'red';
+      document.getElementById('statPct').textContent=pct+'%';
+      document.getElementById('statPct').className='stat-val '+cls;
+      document.getElementById('pctDisplay').textContent=`Your labour cost is ${pct}% of revenue`;
+      const barCls=pct<=30?'pct-green':pct<=40?'pct-warn':'pct-red';
+      const bar=document.getElementById('pctBar');
+      bar.style.width=Math.min(pct*2,100)+'%';
+      bar.className='pct-bar '+barCls;
+      document.getElementById('targetSection').style.display='block';
+    } else {
+      document.getElementById('statPct').textContent='—';
+      document.getElementById('targetSection').style.display='none';
+    }
+  }catch(e){}
+}
+
+async function loadRevenue(){
+  try{
+    const r=await fetch('/api/revenue');const entries=await r.json();
+    const tb=document.getElementById('revenueBody');
+    if(!entries.length){tb.innerHTML='<tr><td colspan="5" class="empty">No revenue entries yet. Add one above.</td></tr>';return;}
+    tb.innerHTML=entries.map(e=>`<tr>
+      <td>${e.week_start}</td>
+      <td>${e.outlet_name||'General'}</td>
+      <td style="font-weight:500">$${parseFloat(e.revenue).toFixed(2)}</td>
+      <td style="color:var(--ink-60)">${e.notes||'—'}</td>
+      <td><button class="del-btn" onclick="delRevenue(${e.id})" title="Delete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button></td>
+    </tr>`).join('');
+  }catch(e){}
+}
+
+async function addRevenue(){
+  const week=document.getElementById('newWeek').value;
+  const outlet=document.getElementById('newOutlet').value;
+  const revenue=document.getElementById('newRevenue').value;
+  const notes=document.getElementById('newNotes').value.trim();
+  if(!week||!revenue){showAlert('Please enter a week and revenue amount','err');return;}
+  try{
+    const r=await fetch('/api/revenue',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({week_start:week,outlet_id:outlet||null,revenue:parseFloat(revenue),notes:notes||null})});
+    const d=await r.json();
+    if(d.success){document.getElementById('newRevenue').value='';document.getElementById('newNotes').value='';showAlert('Revenue added','ok');loadRevenue();loadSummary();}
+    else showAlert(d.error||'Error','err');
+  }catch(e){showAlert('Network error','err');}
+}
+
+async function delRevenue(id){
+  if(!confirm('Delete this entry?'))return;
+  await fetch('/api/revenue/'+id,{method:'DELETE'});loadRevenue();loadSummary();
+}
+
+function showAlert(m,t){const el=document.getElementById('alertBox');el.className='alert alert-'+(t==='err'?'err':'ok');el.innerHTML=(t==='err'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')+m;el.style.display='flex';setTimeout(()=>el.style.display='none',4000);}
+async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
+init();
+</script>
+</body>
+</html>

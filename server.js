@@ -54,7 +54,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const attendanceRoutes  = require('./routes/attendance');
 const staffRoutes       = require('./routes/staff');
 const payslipRoutes     = require('./routes/payslip');
-const applicationRoutes = require('./routes/applications');
+const applicationRoutes  = require('./routes/applications');
+const revenueRoutes      = require('./routes/revenue');
+const payrollSummaryRoutes = require('./routes/payrollSummary');
 
 // Public clock-in endpoints
 const PUBLIC_ATTENDANCE = ['/active-staff','/current/','/holiday-check','/verify-pin','/clock-in','/clock-out','/outlets'];
@@ -67,6 +69,8 @@ app.use('/api/attendance', (req, res, next) => {
 app.use('/api/staff',   requireAuthAPI, staffRoutes);
 app.use('/api/payslip',       requireAuthAPI, payslipRoutes);
 app.use('/api/applications',  requireAuthAPI, applicationRoutes);
+app.use('/api/revenue',       requireAuthAPI, revenueRoutes);
+app.use('/api/payroll-summary', requireAuthAPI, payrollSummaryRoutes);
 // Public: staff submit their own application
 app.post('/api/apply', (req, res) => {
   // Proxy to the submit handler without auth
@@ -80,9 +84,12 @@ app.post('/api/apply', (req, res) => {
 app.get('/',          (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 app.get('/clock',      (req, res) => res.sendFile(path.join(__dirname, 'public', 'clock.html')));
 app.get('/join',       (req, res) => res.sendFile(path.join(__dirname, 'public', 'join.html')));
+app.get('/my-shifts',  (req, res) => res.sendFile(path.join(__dirname, 'public', 'my-shifts.html')));
 app.get('/dashboard', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 app.get('/staff',     requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'staff.html')));
-app.get('/payslip',   requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
+app.get('/payslip',          requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
+app.get('/payroll-summary',  requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
+app.get('/labour-cost',      requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'labour-cost.html')));
 
 initDB().then(() => {
   app.listen(PORT, () => {

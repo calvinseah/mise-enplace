@@ -202,4 +202,63 @@ router.delete('/holidays/:id', (req, res) => {
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── PUBLIC: Staff shift history via NRIC lookup ───────────────────────────────
+router.get('/my-shifts', (req, res) => {
+  const { nric, from, to } = req.query;
+  if (!nric || nric.length < 4) return res.status(400).json({ error: 'NRIC required' });
+  try {
+    // Find staff by last 4 of NRIC or full encrypted NRIC
+    const { decryptField } = require('../database');
+    const last4 = nric.slice(-4).toUpperCase();
+    const allStaff = require('../database').all(
+      `SELECT id, name, role, nric_last4, nric_full_enc FROM staff WHERE is_active=1`
+    );
+
+    // Match by last 4, then verify full NRIC if provided and stored
+    const matched = allStaff.filter(s => {
+      if (s.nric_last4 && s.nric_last4.toUpperCase() === last4) return true;
+      const full = decryptField(s.nric_full_enc);
+      if (full && full.toUpperCase() === nric.toUpperCase()) return true;
+      return false;
+    });
+
+    if (!matched.length) return res.status(404).json({ error: 'No staff found with that NRIC.' });
+    const staff = matched[0];
+
+    const fromDate = from || new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
+    const toDate   = to   || new Date().toISOString().slice(0,10);
+
+    const records = require('../database').all(
+      `SELECT a.clock_in, a.clock_out, a.total_hours, a.break_minutes, a.is_public_holiday,
+              o.name as outlet_name
+       FROM attendance a
+       LEFT JOIN outlets o ON a.outlet_id=o.id
+       WHERE a.staff_id=? AND substr(a.clock_in,1,10)>=? AND substr(a.clock_in,1,10)<=?
+         AND a.clock_out IS NOT NULL
+       ORDER BY a.clock_in DESC`,
+      [staff.id, fromDate, toDate]
+    );
+
+    const totalHours = records.reduce((s,r) => s + (r.total_hours||0), 0);
+
+    res.json({
+      name: staff.name,
+      role: staff.role,
+      from: fromDate,
+      to: toDate,
+      totalHours: Math.round(totalHours*100)/100,
+      shifts: records.map(r => ({
+        date:        r.clock_in.slice(0,10),
+        clockIn:     r.clock_in,
+        clockOut:    r.clock_out,
+        hours:       r.total_hours || 0,
+        breakMins:   r.break_minutes || 0,
+        isPublicHoliday: r.is_public_holiday === 1,
+        outlet:      r.outlet_name || null,
+      }))
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

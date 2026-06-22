@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mise — Payroll Summary</title>
+<style>
+:root{--ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;--ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);--ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);--white:#ffffff;--card-radius:16px;--card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;--danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+.sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo-row{display:flex;align-items:center;gap:9px}
+.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon span{font-family:var(--font-display);font-size:16px;color:#fff;line-height:1}
+.sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
+.sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+.sb-nav{padding:8px;flex:1}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
+.sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
+.sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.sb-nav a:hover svg,.sb-nav a.active svg{opacity:1}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s}
+.sb-logout:hover{color:rgba(255,255,255,.6)}
+.sb-logout svg{width:13px;height:13px}
+.main{flex:1;padding:28px 32px;min-width:0;overflow:auto}
+.page-title{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink);margin-bottom:4px}
+.page-sub{font-size:12.5px;color:var(--ink-60);margin-bottom:24px}
+.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:20px 24px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:14px 18px}
+.stat-label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.stat-val{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink);line-height:1}
+.stat-val.green{color:var(--success)}
+.filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+.fg input{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:130px}
+.fg input:focus{border-color:var(--accent)}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
+.btn svg{width:13px;height:13px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:var(--ink-04);color:var(--ink)}
+.export-row{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--ink-08)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--ink-08);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--ink-04)}
+tbody tr:hover td{background:var(--surface)}
+tbody tr:last-child td{border-bottom:none}
+.sum-row td{background:#E8EDE3;font-weight:600;color:var(--accent);border-top:1px solid var(--ink-08);border-bottom:none}
+.cpf-note{font-size:11px;color:var(--ink-30);margin-top:10px}
+.empty{text-align:center;color:var(--ink-30);padding:40px;font-size:12.5px}
+.avatar{width:26px;height:26px;border-radius:50%;background:#E8EDE3;color:var(--accent);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.name-cell{display:flex;align-items:center;gap:8px}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}.sb-nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px 0}.sb-nav a{padding:6px 10px;white-space:nowrap;margin-bottom:0;font-size:12px}.sb-nav a svg{display:none}.sb-footer{display:none}.main{padding:16px}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-row">
+      <div class="sb-icon"><span>M</span></div>
+      <div><div class="sb-name">Mise</div><div class="sb-addr">Restaurant Management</div></div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
+    <a href="/staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
+    <a href="/payslip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Payslip</a>
+    <a href="/payroll-summary" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
+    <a href="/labour-cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
+    <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>Clock-in</a>
+  </nav>
+  <div class="sb-footer">
+    <button class="sb-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-title">Payroll Summary</div>
+  <div class="page-sub">All staff for a pay period — export as Excel or PDF</div>
+
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-label">Staff</div><div class="stat-val" id="sStaff">—</div></div>
+    <div class="stat"><div class="stat-label">Total hours</div><div class="stat-val" id="sHours">—</div></div>
+    <div class="stat"><div class="stat-label">Gross pay</div><div class="stat-val" id="sGross">—</div></div>
+    <div class="stat"><div class="stat-label">Net pay</div><div class="stat-val green" id="sNet">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="filters">
+      <div class="fg"><label>Pay period from</label><input type="date" id="psFrom"></div>
+      <div class="fg"><label>Pay period to</label><input type="date" id="psTo"></div>
+      <div style="align-self:flex-end;display:flex;gap:6px">
+        <button class="btn btn-primary" onclick="loadSummary()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Generate
+        </button>
+      </div>
+    </div>
+    <div class="export-row" id="exportRow" style="display:none">
+      <button class="btn btn-ghost" onclick="exportExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Excel
+      </button>
+      <button class="btn btn-ghost" onclick="exportPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Download PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0">
+    <table>
+      <thead><tr>
+        <th>Name</th><th>Role</th><th>Type</th><th>Shifts</th>
+        <th>Hours</th><th>OT hrs</th><th>Gross pay</th>
+        <th>Emp CPF (–)</th><th>Net pay</th><th>Er CPF *</th>
+      </tr></thead>
+      <tbody id="payrollBody"><tr><td colspan="10" class="empty">Select a pay period and click Generate</td></tr></tbody>
+    </table>
+    <div class="cpf-note" style="padding:10px 16px">* Employer CPF is for company records and is not deducted from staff pay.</div>
+  </div>
+</main>
+
+<script>
+const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('psFrom').value=`${y}-${m}-01`;
+document.getElementById('psTo').value=now.toISOString().slice(0,10);
+
+function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function params(){return new URLSearchParams({from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});}
+
+async function loadSummary(){
+  const from=document.getElementById('psFrom').value,to=document.getElementById('psTo').value;
+  if(!from||!to)return;
+  try{
+    const r=await fetch('/api/payroll-summary/summary?'+params());
+    const d=await r.json();
+    if(!d.rows){return;}
+    renderTable(d.rows,d.totals);
+    document.getElementById('sStaff').textContent=d.rows.length;
+    document.getElementById('sHours').textContent=d.totals.totalHours.toFixed(1);
+    document.getElementById('sGross').textContent='$'+(Math.round(d.totals.grossPay*100)/100).toFixed(2);
+    document.getElementById('sNet').textContent='$'+(Math.round(d.totals.netPay*100)/100).toFixed(2);
+    document.getElementById('exportRow').style.display='flex';
+  }catch(e){console.error(e);}
+}
+
+function renderTable(rows,totals){
+  const tb=document.getElementById('payrollBody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="10" class="empty">No shifts found in this period</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>`<tr>
+    <td><div class="name-cell"><div class="avatar">${initials(r.name)}</div><div><div style="font-weight:500">${r.name}</div>${r.nric_last4?`<div style="font-size:11px;color:var(--ink-60)">****${r.nric_last4}</div>`:''}</div></div></td>
+    <td>${r.role}</td>
+    <td>${r.staff_type==='fulltime'?'Full-time':'Part-time'}</td>
+    <td>${r.shifts}</td>
+    <td style="font-variant-numeric:tabular-nums">${r.totalHours.toFixed(2)}</td>
+    <td style="font-variant-numeric:tabular-nums;color:var(--ink-60)">${r.otHours>0?r.otHours.toFixed(2):'—'}</td>
+    <td style="font-weight:500">$${r.grossPay.toFixed(2)}</td>
+    <td style="color:var(--danger)">${r.hasCPF?'–$'+r.empCPF.toFixed(2):'—'}</td>
+    <td style="font-weight:600;color:var(--success)">$${r.netPay.toFixed(2)}</td>
+    <td style="color:var(--ink-60)">${r.hasCPF?'$'+r.erCPF.toFixed(2):'—'}</td>
+  </tr>`).join('');
+
+  tb.innerHTML+=`<tr class="sum-row">
+    <td colspan="4">Total — ${rows.length} staff</td>
+    <td>${(Math.round(totals.totalHours*100)/100).toFixed(2)} hrs</td>
+    <td>—</td>
+    <td>$${(Math.round(totals.grossPay*100)/100).toFixed(2)}</td>
+    <td>–$${(Math.round(totals.empCPF*100)/100).toFixed(2)}</td>
+    <td>$${(Math.round(totals.netPay*100)/100).toFixed(2)}</td>
+    <td>$${(Math.round(totals.erCPF*100)/100).toFixed(2)}</td>
+  </tr>`;
+}
+
+function exportExcel(){window.open('/api/payroll-summary/export/excel?'+params(),'_blank');}
+function exportPDF(){window.open('/api/payroll-summary/export/pdf?'+params(),'_blank');}
+async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
+loadSummary();
+</script>
+</body>
+</html>

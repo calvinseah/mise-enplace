@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F0F2EC">
+<title>Mise — My Shifts</title>
+<style>
+:root{--bg:#F0F2EC;--green:#3D5240;--green-l:#C8D5B9;--green-m:#7A9E7E;--card:#fff;--card2:#E8EDE3;--text:#1A2318;--muted:rgba(26,35,24,.5);--danger:#C0392B;--font:'Inter',sans-serif;--font-d:'DM Serif Display',serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.header{padding:16px 20px;padding-top:max(16px,env(safe-area-inset-top));display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back-btn{width:38px;height:38px;border-radius:50%;background:var(--card);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(26,35,24,.1);flex-shrink:0;text-decoration:none;transition:transform .12s}
+.back-btn:active{transform:scale(.93)}
+.back-btn svg{width:18px;height:18px;stroke:var(--text)}
+.header-brand{display:flex;align-items:center;gap:8px}
+.m-mark{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.m-mark span{font-family:var(--font-d);font-size:16px;color:#fff;line-height:1}
+.header-title{font-size:17px;font-weight:400;font-family:var(--font-d);color:var(--text)}
+.content{flex:1;overflow-y:auto;padding:12px 20px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+.hero{padding:8px 0 20px}
+.hero-title{font-size:28px;font-weight:400;font-family:var(--font-d);color:var(--text);line-height:1.2;margin-bottom:6px}
+.hero-sub{font-size:13.5px;color:var(--muted);line-height:1.6}
+.card{background:var(--card);border-radius:20px;padding:20px;margin-bottom:12px;box-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04)}
+.fg{margin-bottom:14px}
+.fg:last-child{margin-bottom:0}
+.fg label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.fg input{width:100%;height:52px;padding:0 16px;background:var(--card2);border:none;border-radius:14px;font-size:16px;font-family:var(--font);color:var(--text);outline:none;transition:box-shadow .15s;text-transform:uppercase;letter-spacing:.08em}
+.fg input:focus{box-shadow:0 0 0 3px rgba(61,82,64,.15)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row .fg{margin-bottom:0}
+.submit-btn{width:100%;height:54px;background:var(--green);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 14px rgba(61,82,64,.25);transition:transform .12s;margin-top:4px}
+.submit-btn:active{transform:scale(.97)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed}
+.submit-btn svg{width:18px;height:18px}
+.err-msg{background:rgba(192,57,43,.08);border-radius:12px;padding:12px 16px;font-size:13px;font-weight:500;color:var(--danger);margin-bottom:14px;display:none;align-items:center;gap:8px}
+.err-msg svg{width:15px;height:15px;flex-shrink:0;stroke:var(--danger)}
+#resultsSection{display:none}
+.staff-pill{background:var(--green);border-radius:16px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.staff-name{font-size:17px;font-weight:400;font-family:var(--font-d);color:#fff}
+.staff-role{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px}
+.total-hours{font-size:28px;font-weight:400;font-family:var(--font-d);color:#fff;text-align:right}
+.total-label{font-size:11px;color:rgba(255,255,255,.6);text-align:right}
+.shift-item{padding:12px 0;border-bottom:1px solid var(--card2);display:flex;align-items:center;gap:12px}
+.shift-item:last-child{border-bottom:none}
+.shift-date-block{width:44px;text-align:center;flex-shrink:0}
+.shift-day{font-size:20px;font-weight:500;color:var(--green);line-height:1}
+.shift-mon{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.shift-detail{flex:1}
+.shift-times{font-size:13.5px;font-weight:500;color:var(--text)}
+.shift-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.shift-hours{font-size:15px;font-weight:600;color:var(--green);text-align:right;flex-shrink:0}
+.ph-badge{background:rgba(61,82,64,.1);color:var(--green);border-radius:6px;padding:2px 7px;font-size:10.5px;font-weight:600;margin-left:6px}
+.empty-shifts{text-align:center;color:var(--muted);padding:32px 0;font-size:14px}
+.new-search-btn{width:100%;height:46px;background:var(--card2);border:none;border-radius:14px;font-size:14px;font-weight:500;font-family:var(--font);color:var(--green);cursor:pointer;margin-top:4px;transition:transform .12s}
+.new-search-btn:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+<div class="header">
+  <a href="/" class="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></a>
+  <div class="header-brand">
+    <div class="m-mark"><span>M</span></div>
+    <div class="header-title">My Shifts</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div id="searchSection">
+    <div class="hero">
+      <div class="hero-title">View your<br>shift history</div>
+      <div class="hero-sub">Enter your NRIC to see your hours for any period.</div>
+    </div>
+
+    <div class="err-msg" id="errMsg">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errText"></span>
+    </div>
+
+    <div class="card">
+      <div class="fg">
+        <label>Your NRIC / FIN</label>
+        <input type="text" id="nricInput" placeholder="S1234567A" maxlength="9" autocomplete="off" autocapitalize="characters" onkeydown="if(event.key==='Enter')search()">
+      </div>
+      <div class="row">
+        <div class="fg">
+          <label>From</label>
+          <input type="date" id="fromDate" style="text-transform:none;letter-spacing:normal">
+        </div>
+        <div class="fg">
+          <label>To</label>
+          <input type="date" id="toDate" style="text-transform:none;letter-spacing:normal">
+        </div>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="searchBtn" onclick="search()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      View my shifts
+    </button>
+  </div>
+
+  <div id="resultsSection">
+    <div class="staff-pill" id="staffPill"></div>
+
+    <div class="card" id="shiftsCard"></div>
+
+    <button class="new-search-btn" onclick="reset()">Search again</button>
+  </div>
+
+</div>
+
+<script>
+const now = new Date();
+const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('fromDate').value = `${y}-${m}-01`;
+document.getElementById('toDate').value = now.toISOString().slice(0,10);
+
+function fmtTime(dt){if(!dt)return'—';try{return new Date(dt).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true});}catch{return dt.slice(11,16);}}
+function fmtDate(d){const[yr,mo,day]=d.slice(0,10).split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return{day:parseInt(day),mon:mn[parseInt(mo)-1]};}
+
+async function search(){
+  const nric = document.getElementById('nricInput').value.trim().toUpperCase();
+  const from = document.getElementById('fromDate').value;
+  const to   = document.getElementById('toDate').value;
+  if(!nric){showErr('Please enter your NRIC or FIN.');return;}
+  const btn = document.getElementById('searchBtn');
+  btn.disabled=true;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Looking up…`;
+  document.getElementById('errMsg').style.display='none';
+  try{
+    const r = await fetch(`/api/attendance/my-shifts?nric=${encodeURIComponent(nric)}&from=${from}&to=${to}`);
+    const d = await r.json();
+    if(!r.ok){showErr(d.error||'Not found. Check your NRIC and try again.');btn.disabled=false;btn.innerHTML='View my shifts';return;}
+    renderResults(d);
+  }catch(e){showErr('Network error. Please try again.');btn.disabled=false;btn.innerHTML='View my shifts';}
+}
+
+function renderResults(d){
+  document.getElementById('searchSection').style.display='none';
+  document.getElementById('resultsSection').style.display='block';
+
+  document.getElementById('staffPill').innerHTML=`
+    <div>
+      <div class="staff-name">${d.name}</div>
+      <div class="staff-role">${d.role} · ${d.from} to ${d.to}</div>
+    </div>
+    <div>
+      <div class="total-hours">${d.totalHours.toFixed(1)}</div>
+      <div class="total-label">total hours</div>
+    </div>`;
+
+  const card = document.getElementById('shiftsCard');
+  if(!d.shifts.length){
+    card.innerHTML='<div class="empty-shifts">No completed shifts in this period</div>';
+    return;
+  }
+  card.innerHTML = d.shifts.map(s=>{
+    const {day,mon}=fmtDate(s.date);
+    const meta = [
+      s.outlet ? s.outlet : null,
+      s.breakMins > 0 ? `${s.breakMins}m break` : null,
+      s.isPublicHoliday ? '<span class="ph-badge">PH</span>' : null,
+    ].filter(Boolean).join(' · ');
+    return `<div class="shift-item">
+      <div class="shift-date-block"><div class="shift-day">${day}</div><div class="shift-mon">${mon}</div></div>
+      <div class="shift-detail">
+        <div class="shift-times">${fmtTime(s.clockIn)} – ${fmtTime(s.clockOut)}</div>
+        <div class="shift-meta">${meta}</div>
+      </div>
+      <div class="shift-hours">${s.hours.toFixed(2)}<span style="font-size:10px;color:var(--muted);font-weight:400"> hrs</span></div>
+    </div>`;
+  }).join('');
+}
+
+function showErr(m){document.getElementById('errText').textContent=m;document.getElementById('errMsg').style.display='flex';}
+function reset(){
+  document.getElementById('searchSection').style.display='block';
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('searchBtn').disabled=false;
+  document.getElementById('searchBtn').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> View my shifts';
+}
+const s=document.createElement('style');s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);
+</script>
+</body>
+</html>

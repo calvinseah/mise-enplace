@@ -1,0 +1,259 @@
+'use strict';
+const express    = require('express');
+const PDFDocument = require('pdfkit');
+const XLSX       = require('xlsx');
+const router     = express.Router();
+const db         = require('../database');
+
+// ── Helper: compute payroll for all staff in a period ──────────────────────────
+function computeAllPayroll(from, to) {
+  const staff = db.all(`SELECT * FROM staff WHERE is_active=1`);
+  const { computeShiftCost, computeCPF, decryptField } = db;
+  const results = [];
+
+  for (const s of staff) {
+    const records = db.all(
+      `SELECT * FROM attendance WHERE staff_id=? AND substr(clock_in,1,10)>=? AND substr(clock_in,1,10)<=? AND clock_out IS NOT NULL`,
+      [s.id, from, to]
+    );
+    if (!records.length) continue;
+
+    let totalHours = 0, grossPay = 0, regularHours = 0, otHours = 0, phHours = 0;
+
+    for (const r of records) {
+      const hrs = r.total_hours || 0;
+      totalHours += hrs;
+      if (r.is_public_holiday) phHours += hrs;
+
+      if (s.staff_type === 'parttime') {
+        const rate = s.hourly_rate || 0;
+        grossPay += r.is_public_holiday ? hrs * rate * 1.5 : hrs * rate;
+        regularHours += r.is_public_holiday ? 0 : hrs;
+      } else {
+        const salary = s.monthly_salary || 0;
+        const heq    = salary / 26 / 8;
+        if (salary > 2600) {
+          grossPay = salary;
+          regularHours += hrs;
+        } else {
+          const reg = Math.min(hrs, 8), ot = Math.max(0, hrs - 8);
+          grossPay += reg * heq + ot * heq * 1.5;
+          regularHours += reg; otHours += ot;
+        }
+      }
+    }
+
+    grossPay = Math.round(grossPay * 100) / 100;
+    const cpf = grossPay > 50 ? computeCPF(s, grossPay, to) : null;
+
+    results.push({
+      id:           s.id,
+      name:         s.name,
+      role:         s.role,
+      staff_type:   s.staff_type,
+      nric_last4:   s.nric_last4 || '',
+      shifts:       records.length,
+      totalHours:   Math.round(totalHours * 100) / 100,
+      regularHours: Math.round(regularHours * 100) / 100,
+      otHours:      Math.round(otHours * 100) / 100,
+      phHours:      Math.round(phHours * 100) / 100,
+      grossPay,
+      empCPF:       cpf ? cpf.empCPF   : 0,
+      erCPF:        cpf ? cpf.erCPF    : 0,
+      netPay:       cpf ? cpf.netPay   : grossPay,
+      hasCPF:       !!cpf,
+    });
+  }
+
+  return results;
+}
+
+// ── JSON preview ───────────────────────────────────────────────────────────────
+router.get('/summary', (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  try {
+    const rows = computeAllPayroll(from, to);
+    const totals = rows.reduce((acc, r) => ({
+      totalHours: acc.totalHours + r.totalHours,
+      grossPay:   acc.grossPay  + r.grossPay,
+      empCPF:     acc.empCPF    + r.empCPF,
+      erCPF:      acc.erCPF     + r.erCPF,
+      netPay:     acc.netPay    + r.netPay,
+    }), { totalHours: 0, grossPay: 0, empCPF: 0, erCPF: 0, netPay: 0 });
+    res.json({ rows, totals, from, to });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Excel export ───────────────────────────────────────────────────────────────
+router.get('/export/excel', (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  try {
+    const rows = computeAllPayroll(from, to);
+    const wb   = XLSX.utils.book_new();
+
+    // Main payroll sheet
+    const headers = [
+      'Name','Role','Type','NRIC Last 4','Shifts','Total Hours',
+      'Regular Hours','OT Hours','PH Hours',
+      'Gross Pay ($)','Employee CPF ($)','Net Pay ($)','Employer CPF ($)'
+    ];
+    const data = rows.map(r => [
+      r.name, r.role,
+      r.staff_type === 'fulltime' ? 'Full-time' : 'Part-time',
+      r.nric_last4,
+      r.shifts, r.totalHours, r.regularHours, r.otHours, r.phHours,
+      r.grossPay, r.empCPF, r.netPay, r.erCPF,
+    ]);
+
+    // Totals row
+    const totals = rows.reduce((a, r) => ({
+      hrs: a.hrs + r.totalHours, gross: a.gross + r.grossPay,
+      emp: a.emp + r.empCPF, net: a.net + r.netPay, er: a.er + r.erCPF
+    }), { hrs:0, gross:0, emp:0, net:0, er:0 });
+
+    data.push([]);
+    data.push(['TOTAL','','','','',
+      Math.round(totals.hrs*100)/100,'','','',
+      Math.round(totals.gross*100)/100,
+      Math.round(totals.emp*100)/100,
+      Math.round(totals.net*100)/100,
+      Math.round(totals.er*100)/100,
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    ws['!cols'] = headers.map((h,i) => ({ wch: i === 0 ? 24 : 14 }));
+
+    // Style header row bold (basic)
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+      if (cell) cell.s = { font: { bold: true }, fill: { fgColor: { rgb: '3D5240' } } };
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Payroll Summary');
+
+    // Meta sheet
+    const metaWs = XLSX.utils.aoa_to_sheet([
+      ['Payroll Summary'],
+      ['Pay Period', `${from} to ${to}`],
+      ['Generated', new Date().toLocaleString('en-SG')],
+      ['Staff count', rows.length],
+      [''],
+      ['Note: Employer CPF is for company records only — not deducted from staff pay.'],
+      ['This is a computer-generated document. Not a tax document.'],
+    ]);
+    XLSX.utils.book_append_sheet(wb, metaWs, 'Info');
+
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="mise_payroll_${from}_${to}.xlsx"`);
+    res.send(buf);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PDF export ─────────────────────────────────────────────────────────────────
+router.get('/export/pdf', (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  try {
+    const rows = computeAllPayroll(from, to);
+    const doc  = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="mise_payroll_${from}_${to}.pdf"`);
+    doc.pipe(res);
+
+    const GREEN = '#3D5240';
+    const W     = doc.page.width - 80;
+
+    // Header
+    doc.fontSize(18).font('Helvetica-Bold').fillColor(GREEN).text('Mise — Payroll Summary', 40, 40);
+    doc.fontSize(10).font('Helvetica').fillColor('#555')
+       .text(`Pay period: ${from} to ${to}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
+    doc.moveTo(40, 78).lineTo(doc.page.width - 40, 78).strokeColor(GREEN).lineWidth(1.5).stroke();
+
+    // Table
+    const cols = [
+      { label: 'Name',         w: 110 },
+      { label: 'Role',         w: 50  },
+      { label: 'Type',         w: 55  },
+      { label: 'Shifts',       w: 40  },
+      { label: 'Hours',        w: 48  },
+      { label: 'OT hrs',       w: 48  },
+      { label: 'Gross Pay',    w: 68  },
+      { label: 'Emp CPF (–)',  w: 68  },
+      { label: 'Net Pay',      w: 68  },
+      { label: 'Er CPF*',      w: 62  },
+    ];
+
+    let y = 88;
+    // Header row
+    doc.rect(40, y, W, 16).fill(GREEN);
+    let x = 40;
+    cols.forEach(c => {
+      doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff')
+         .text(c.label, x + 3, y + 3, { width: c.w - 6, ellipsis: true });
+      x += c.w;
+    });
+    y += 17;
+
+    // Data rows
+    rows.forEach((r, i) => {
+      const bg = i % 2 === 0 ? '#F5F7F2' : '#fff';
+      doc.rect(40, y, W, 15).fill(bg);
+      x = 40;
+      const vals = [
+        r.name, r.role,
+        r.staff_type === 'fulltime' ? 'Full-time' : 'Part-time',
+        r.shifts,
+        r.totalHours.toFixed(2),
+        r.otHours > 0 ? r.otHours.toFixed(2) : '—',
+        '$' + r.grossPay.toFixed(2),
+        r.hasCPF ? '–$' + r.empCPF.toFixed(2) : '—',
+        '$' + r.netPay.toFixed(2),
+        r.hasCPF ? '$' + r.erCPF.toFixed(2) : '—',
+      ];
+      cols.forEach((c, ci) => {
+        doc.fontSize(8).font('Helvetica').fillColor('#222')
+           .text(String(vals[ci]), x + 3, y + 3, { width: c.w - 6, ellipsis: true });
+        x += c.w;
+      });
+      y += 16;
+    });
+
+    // Totals row
+    const tot = rows.reduce((a,r) => ({
+      hrs: a.hrs+r.totalHours, ot: a.ot+r.otHours,
+      gross: a.gross+r.grossPay, emp: a.emp+r.empCPF,
+      net: a.net+r.netPay, er: a.er+r.erCPF
+    }), {hrs:0,ot:0,gross:0,emp:0,net:0,er:0});
+
+    y += 2;
+    doc.rect(40, y, W, 16).fill('#E8EDE3');
+    x = 40;
+    const totVals = [
+      'TOTAL', '', '', rows.length + ' staff',
+      tot.hrs.toFixed(2), tot.ot.toFixed(2),
+      '$'+Math.round(tot.gross*100)/100,
+      '–$'+Math.round(tot.emp*100)/100,
+      '$'+Math.round(tot.net*100)/100,
+      '$'+Math.round(tot.er*100)/100,
+    ];
+    cols.forEach((c, ci) => {
+      doc.fontSize(8).font('Helvetica-Bold').fillColor(GREEN)
+         .text(totVals[ci], x + 3, y + 3, { width: c.w - 6 });
+      x += c.w;
+    });
+
+    // Footer
+    const fy = doc.page.height - 36;
+    doc.moveTo(40, fy).lineTo(doc.page.width-40, fy).strokeColor('#ccc').lineWidth(0.5).stroke();
+    doc.fontSize(7.5).font('Helvetica-Oblique').fillColor('#999')
+       .text('* Employer CPF is for company records only and is not deducted from staff pay.   This is a computer-generated document. Not a tax document.', 40, fy + 6);
+
+    doc.end();
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+module.exports = router;

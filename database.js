@@ -108,6 +108,17 @@ function createSchema() {
     name TEXT NOT NULL
   )`);
 
+
+  db.run(`CREATE TABLE IF NOT EXISTS revenue_entries (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    week_start TEXT NOT NULL,
+    outlet_id  INTEGER,
+    revenue    REAL NOT NULL,
+    notes      TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(outlet_id) REFERENCES outlets(id)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS pin_lockouts (
     staff_id     INTEGER NOT NULL PRIMARY KEY,
     attempts     INTEGER DEFAULT 0,
