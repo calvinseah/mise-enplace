@@ -10,7 +10,7 @@ const upload  = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 
 
 const SG_BANKS = [
   'DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSBC',
-  'Maybank','Bank of China','CIMB','RHB','Hong Leong Finance','Others'
+  'Maybank','CIMB','RHB','Maribank','Trust Bank','GXS','Others'
 ];
 
 // ── Safe staff object (never exposes pin hash or raw encrypted fields) ─────────
@@ -183,12 +183,12 @@ router.get('/bulk/template', (req, res) => {
     'bank_name','bank_account','pin'
   ];
   const example = [
-    'Jamie Tan','Crew','parttime','','9.50',
+    'Jamie Tan','FOH','parttime','','9.50',
     '2001-03-15','citizen','','1234','S1234567A',
     'DBS','123456789','1001'
   ];
   const notes = [
-    'Full name','Job title',
+    'Full name','FOH or BOH',
     'fulltime or parttime',
     'Monthly salary (fulltime only)',
     'Hourly rate (parttime only)',

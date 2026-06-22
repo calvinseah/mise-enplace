@@ -128,9 +128,9 @@ async function seedData() {
   if (noStaff && noStaff.cnt > 0) return;
 
   const staffSeed = [
-    { name: 'Jamie Tan',  role: 'Crew',       staff_type: 'parttime', hourly_rate: 9.50,   pr_status: 'citizen', date_of_birth: '2001-03-15', pin: '1001' },
-    { name: 'Marcus Lim', role: 'Supervisor',  staff_type: 'fulltime', monthly_salary: 2400, pr_status: 'citizen', date_of_birth: '1990-07-22', pin: '2001' },
-    { name: 'Sarah Ng',   role: 'Manager',     staff_type: 'fulltime', monthly_salary: 3200, pr_status: 'pr', pr_year: 2022, date_of_birth: '1988-11-05', pin: '3001' },
+    { name: 'Jamie Tan',  role: 'FOH',       staff_type: 'parttime', hourly_rate: 9.50,   pr_status: 'citizen', date_of_birth: '2001-03-15', pin: '1001' },
+    { name: 'Marcus Lim', role: 'FOH',  staff_type: 'fulltime', monthly_salary: 2400, pr_status: 'citizen', date_of_birth: '1990-07-22', pin: '2001' },
+    { name: 'Sarah Ng',   role: 'BOH',     staff_type: 'fulltime', monthly_salary: 3200, pr_status: 'pr', pr_year: 2022, date_of_birth: '1988-11-05', pin: '3001' },
   ];
 
   for (const s of staffSeed) {

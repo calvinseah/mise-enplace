@@ -228,7 +228,13 @@ tbody tr:last-child td{border-bottom:none}
     <input type="hidden" id="staffId">
     <div class="form-grid">
       <div class="fg"><label>Full name</label><input type="text" id="sName" placeholder="Jamie Tan"></div>
-      <div class="fg"><label>Role</label><input type="text" id="sRole" placeholder="Crew, Supervisor…"></div>
+      <div class="fg"><label>Role</label>
+        <select id="sRole">
+          <option value="">— Select —</option>
+          <option value="FOH">FOH</option>
+          <option value="BOH">BOH</option>
+        </select>
+      </div>
       <div class="fg"><label>Staff type</label>
         <select id="sType" onchange="onType()"><option value="parttime">Part-time</option><option value="fulltime">Full-time</option></select>
       </div>
@@ -245,7 +251,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="fg"><label>NRIC last 4</label><input type="text" id="sNric4" placeholder="567A" maxlength="4"></div>
       <div class="fg"><label>Full NRIC</label><input type="text" id="sNricFull" placeholder="S1234567A" maxlength="9"><div class="hint">Stored encrypted</div></div>
       <div class="fg"><label>Bank</label>
-        <select id="sBank"><option value="">— Select —</option><option>DBS</option><option>POSB</option><option>OCBC</option><option>UOB</option><option>Standard Chartered</option><option>Citibank</option><option>HSBC</option><option>Maybank</option><option>Bank of China</option><option>CIMB</option><option>RHB</option><option>Hong Leong Finance</option><option>Others</option></select>
+        <select id="sBank"><option value="">— Select —</option><option>DBS</option><option>POSB</option><option>OCBC</option><option>UOB</option><option>Standard Chartered</option><option>Citibank</option><option>HSBC</option><option>Maybank</option><option>CIMB</option><option>RHB</option><option>Maribank</option><option>Trust Bank</option><option>GXS</option><option>Others</option></select>
       </div>
       <div class="fg"><label>Account number</label><input type="text" id="sBankAcc" placeholder="123456789"><div class="hint">Stored encrypted</div></div>
     </div>
@@ -288,7 +294,7 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 let pinVal='';
-const SG_BANKS=['DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSBC','Maybank','Bank of China','CIMB','RHB','Hong Leong Finance','Others'];
+const SG_BANKS=['DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSBC','Maybank','CIMB','RHB','Maribank','Trust Bank','GXS','Others'];
 
 function onType(){const t=document.getElementById('sType').value;document.getElementById('grpHourly').style.display=t==='parttime'?'':'none';document.getElementById('grpSalary').style.display=t==='fulltime'?'':'none';}
 function onPr(){document.getElementById('grpPrYr').style.display=document.getElementById('sPr').value==='pr'?'':'none';}
