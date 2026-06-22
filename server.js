@@ -56,6 +56,8 @@ const staffRoutes       = require('./routes/staff');
 const payslipRoutes     = require('./routes/payslip');
 const applicationRoutes  = require('./routes/applications');
 const revenueRoutes      = require('./routes/revenue');
+const rosterRoutes       = require('./routes/roster');
+const maiseRoutes        = require('./routes/maise');
 const payrollSummaryRoutes = require('./routes/payrollSummary');
 
 // Public clock-in endpoints
@@ -70,6 +72,8 @@ app.use('/api/staff',   requireAuthAPI, staffRoutes);
 app.use('/api/payslip',       requireAuthAPI, payslipRoutes);
 app.use('/api/applications',  requireAuthAPI, applicationRoutes);
 app.use('/api/revenue',       requireAuthAPI, revenueRoutes);
+app.use('/api/roster',        requireAuthAPI, rosterRoutes);
+app.use('/api/maise',         requireAuthAPI, maiseRoutes);
 app.use('/api/payroll-summary', requireAuthAPI, payrollSummaryRoutes);
 // Public: staff submit their own application
 app.post('/api/apply', (req, res) => {
@@ -90,6 +94,7 @@ app.get('/staff',     requireAuth, (req, res) => res.sendFile(path.join(__dirnam
 app.get('/payslip',          requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary',  requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/labour-cost',      requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'labour-cost.html')));
+app.get('/roster',           requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'roster.html')));
 
 initDB().then(() => {
   app.listen(PORT, () => {

@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mise — Roster</title>
+<style>
+:root{
+  --ink:#1A2318;--green:#3D5240;--green-l:#C8D5B9;--green-m:#7A9E7E;
+  --surface:#F0F2EC;--card:#ffffff;--card2:#E8EDE3;
+  --ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);--ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);
+  --font:'Inter',sans-serif;--font-d:'DM Serif Display',serif;
+  --danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;
+  --foh:#DBEAFE;--foh-text:#1E40AF;--boh:#FEF3C7;--boh-text:#92400E;--removed:#FFE4E6;--removed-text:#BE123C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
+
+/* Top bar */
+.topbar{background:var(--ink);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:16px;flex-shrink:0;flex-wrap:wrap}
+.tb-brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.tb-icon{width:30px;height:30px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.tb-icon span{font-family:var(--font-d);font-size:17px;color:#fff;line-height:1}
+.tb-name{font-size:17px;font-weight:400;font-family:var(--font-d)}
+.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.15);flex-shrink:0}
+
+/* Month nav */
+.month-nav{display:flex;align-items:center;gap:8px}
+.mnav-btn{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.08);border:none;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.mnav-btn:hover{background:rgba(255,255,255,.15)}
+.mnav-btn svg{width:16px;height:16px;stroke:#fff}
+.month-label{font-size:14px;font-weight:500;color:#fff;min-width:130px;text-align:center}
+
+/* Controls */
+.tb-controls{display:flex;align-items:center;gap:8px;margin-left:auto}
+.tb-select{height:30px;padding:0 10px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:12.5px;font-family:var(--font);outline:none;cursor:pointer}
+.tb-select option{color:var(--ink);background:#fff}
+.closed-badge{background:#FEF3C7;color:#92400E;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:600}
+.settings-btn{height:30px;padding:0 12px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:12px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .12s}
+.settings-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+.settings-btn svg{width:13px;height:13px;stroke:currentColor}
+.back-btn{height:30px;padding:0 12px;border-radius:8px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);font-size:12px;font-family:var(--font);cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:5px}
+.back-btn:hover{color:#fff}
+.back-btn svg{width:13px;height:13px;stroke:currentColor}
+
+/* Tabs */
+.tabs-bar{background:var(--card);border-bottom:1px solid var(--ink-08);padding:0 24px;display:flex;gap:0;flex-shrink:0}
+.tab-btn{padding:12px 20px;font-size:13px;font-weight:500;color:var(--ink-60);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;user-select:none;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--font)}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* Main scroll area */
+.main{flex:1;overflow:auto;padding:20px 24px}
+
+/* ── FILL IN TAB ── */
+.fi-staff-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.fi-staff-btn{padding:8px 16px;border-radius:10px;border:1.5px solid var(--ink-08);background:var(--card);font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.fi-staff-btn:hover{border-color:var(--green)}
+.fi-staff-btn.sel{border-color:var(--green);background:var(--green);color:#fff}
+.fi-actions{display:flex;gap:8px;margin-bottom:8px}
+.fi-hint{font-size:12px;color:var(--ink-60);font-style:italic;margin-bottom:16px}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.btn svg{width:13px;height:13px}
+.btn-outline{background:transparent;color:var(--ink);border:1.5px solid var(--ink-08)}.btn-outline:hover{background:var(--card2)}
+.btn-red{background:transparent;color:var(--danger);border:1.5px solid rgba(192,57,43,.2)}.btn-red:hover{background:rgba(192,57,43,.05)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{opacity:.85}
+
+/* Calendar grid */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day-col{background:var(--card);border-radius:12px;border:1px solid var(--ink-08);overflow:hidden;min-width:0}
+.day-header{display:flex;align-items:baseline;justify-content:space-between;padding:8px 10px 6px;border-bottom:1px solid var(--ink-04)}
+.day-num{font-size:15px;font-weight:600;color:var(--ink)}
+.day-name{font-size:10px;color:var(--ink-30);text-transform:uppercase;letter-spacing:.06em}
+.day-closed{background:#F9F9F7;opacity:.6}
+.day-closed .day-num{color:var(--ink-30)}
+.closed-label{text-align:center;padding:12px 6px;font-size:11px;color:var(--ink-30);font-style:italic}
+.shift-slot{margin:5px 8px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--ink-08);background:var(--surface);font-size:11.5px;color:var(--ink-60);cursor:pointer;text-align:center;transition:all .15s;user-select:none;-webkit-user-select:none}
+.shift-slot:active{transform:scale(.96)}
+.shift-slot.avail{background:#DCFCE7;border-color:#86EFAC;color:#166534;font-weight:600}
+.shift-slot.ph{border-color:#FCD34D;background:#FFFBEB}
+.last-slot{margin-bottom:8px}
+
+/* ── OVERVIEW TAB ── */
+.overview-legend{display:flex;gap:14px;margin-bottom:16px;align-items:center}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-60)}
+.legend-dot{width:14px;height:14px;border-radius:4px}
+.ov-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.ov-day{background:var(--card);border-radius:12px;border:1px solid var(--ink-08);overflow:hidden;min-width:0}
+.ov-group{padding:6px 8px}
+.ov-group-label{font-size:9px;font-weight:700;color:var(--ink-30);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.ov-name{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;margin:2px 2px 2px 0}
+.name-opening{background:#EFF6FF;color:#1D4ED8}
+.name-closing{background:#FEF3C7;color:#92400E}
+.name-fullshift{background:#F0FDF4;color:#166534}
+
+/* ── FINAL SCHEDULE TAB ── */
+.fs-legend{display:flex;gap:14px;margin-bottom:16px;align-items:center}
+.fs-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-60)}
+.fs-legend-box{width:16px;height:16px;border-radius:4px}
+.fs-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.fs-day{background:var(--card);border-radius:12px;border:1px solid var(--ink-08);overflow:hidden;min-width:0}
+.fs-group-label{font-size:9px;font-weight:700;color:var(--ink-30);text-transform:uppercase;letter-spacing:.08em;padding:8px 10px 4px}
+.fs-entry{display:flex;align-items:center;gap:4px;padding:3px 8px 3px}
+.fs-name-pill{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;flex-shrink:0;white-space:nowrap}
+.fs-name-pill:hover{opacity:.8}
+.pill-foh{background:var(--foh);color:var(--foh-text)}
+.pill-boh{background:var(--boh);color:var(--boh-text)}
+.pill-removed{background:var(--removed);color:var(--removed-text);text-decoration:line-through}
+.fs-time-input{flex:1;height:24px;border:1px solid var(--ink-08);border-radius:6px;font-size:11px;font-family:var(--font);color:var(--ink);background:var(--surface);padding:0 6px;min-width:0;outline:none}
+.fs-time-input:focus{border-color:var(--green)}
+.fs-add-wrap{padding:4px 8px 8px}
+.fs-add-select{width:100%;height:26px;border:1px dashed var(--ink-08);border-radius:7px;font-size:11px;font-family:var(--font);color:var(--ink-60);background:transparent;outline:none;cursor:pointer;padding:0 6px;-webkit-appearance:none}
+.fs-add-select:focus{border-color:var(--green)}
+
+/* ── COL TAB ── */
+.col-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.week-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--ink-08);background:var(--card);font-size:12.5px;font-weight:500;color:var(--ink-60);cursor:pointer;transition:all .12s}
+.week-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+.col-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.col-stat{background:var(--card);border-radius:12px;border:1px solid var(--ink-08);padding:14px 18px}
+.col-stat-label{font-size:11px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.col-stat-val{font-size:22px;font-weight:400;font-family:var(--font-d);color:var(--green)}
+.col-staff{background:var(--card);border-radius:12px;border:1px solid var(--ink-08);margin-bottom:8px;overflow:hidden}
+.col-staff-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--ink-04);cursor:pointer;user-select:none}
+.col-staff-name{font-size:13.5px;font-weight:600;color:var(--ink)}
+.col-staff-rate{font-size:11.5px;color:var(--ink-60);margin-left:6px}
+.col-staff-total{font-size:13.5px;font-weight:600;color:var(--green)}
+.col-staff-hours{font-size:12px;color:var(--ink-60);margin-right:8px}
+.col-shift-row{display:flex;align-items:center;padding:8px 16px 8px 32px;border-bottom:1px solid var(--ink-04)}
+.col-shift-row:last-child{border-bottom:none}
+.col-shift-day{font-size:12px;color:var(--ink-60);min-width:80px}
+.col-shift-label{font-size:12px;color:var(--ink);min-width:60px}
+.col-shift-calc{font-size:12px;color:var(--ink-60);flex:1}
+.col-shift-cost{font-size:12.5px;font-weight:600;color:var(--ink);text-align:right}
+
+/* Settings modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:16px;width:90%;max-width:520px;box-shadow:0 20px 40px rgba(0,0,0,.15);padding:24px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:400;font-family:var(--font-d);color:var(--ink);margin-bottom:20px}
+.modal-section{margin-bottom:20px}
+.modal-section-label{font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.closed-days-grid{display:flex;flex-wrap:wrap;gap:6px}
+.dow-btn{width:40px;height:36px;border-radius:8px;border:1.5px solid var(--ink-08);background:var(--card);font-size:12px;font-weight:500;color:var(--ink-60);cursor:pointer;transition:all .12s}
+.dow-btn.closed-day{background:var(--danger);border-color:var(--danger);color:#fff}
+.shift-time-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.st-group label{display:block;font-size:11px;color:var(--ink-60);margin-bottom:4px}
+.st-group input{width:100%;height:32px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--ink);padding:0 10px;outline:none}
+.st-group input:focus{border-color:var(--green)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--ink-08)}
+.empty{text-align:center;color:var(--ink-60);padding:24px;font-size:12.5px}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-icon"><span>M</span></div>
+    <div class="tb-name">Mise</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="month-nav">
+    <button class="mnav-btn" onclick="changeMonth(-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="month-label" id="monthLabel"></div>
+    <button class="mnav-btn" onclick="changeMonth(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+  <select class="tb-select" id="outletSelect" onchange="onOutletChange()">
+    <option value="">All outlets</option>
+  </select>
+  <div class="closed-badge" id="closedBadge" style="display:none"></div>
+  <div class="tb-controls">
+    <button class="settings-btn" onclick="openSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+    <a href="/dashboard" class="back-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+      Dashboard
+    </a>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('fillin')">Fill In</button>
+  <button class="tab-btn" onclick="switchTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab('final')">Final Schedule</button>
+  <button class="tab-btn" onclick="switchTab('col')">COL</button>
+</div>
+
+<!-- Main content -->
+<div class="main" id="mainContent"></div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="modal-title">Roster settings</div>
+
+    <div class="modal-section">
+      <div class="modal-section-label">Closed days of the week</div>
+      <div class="closed-days-grid">
+        <button class="dow-btn" data-dow="1" onclick="toggleDow(1)">Mon</button>
+        <button class="dow-btn" data-dow="2" onclick="toggleDow(2)">Tue</button>
+        <button class="dow-btn" data-dow="3" onclick="toggleDow(3)">Wed</button>
+        <button class="dow-btn" data-dow="4" onclick="toggleDow(4)">Thu</button>
+        <button class="dow-btn" data-dow="5" onclick="toggleDow(5)">Fri</button>
+        <button class="dow-btn" data-dow="6" onclick="toggleDow(6)">Sat</button>
+        <button class="dow-btn" data-dow="0" onclick="toggleDow(0)">Sun</button>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-label">Shift times</div>
+      <div class="shift-time-grid">
+        <div class="st-group">
+          <label>Opening start</label>
+          <input type="time" id="stOpenStart">
+        </div>
+        <div class="st-group">
+          <label>Opening end</label>
+          <input type="time" id="stOpenEnd">
+        </div>
+        <div class="st-group" style="opacity:.4;pointer-events:none"><label></label></div>
+        <div class="st-group">
+          <label>Closing start</label>
+          <input type="time" id="stCloseStart">
+        </div>
+        <div class="st-group">
+          <label>Closing end</label>
+          <input type="time" id="stCloseEnd">
+        </div>
+        <div class="st-group" style="opacity:.4;pointer-events:none"><label></label></div>
+        <div class="st-group">
+          <label>Full shift start</label>
+          <input type="time" id="stFullStart">
+        </div>
+        <div class="st-group">
+          <label>Full shift end</label>
+          <input type="time" id="stFullEnd">
+        </div>
+        <div class="st-group" style="opacity:.4;pointer-events:none"><label></label></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-green" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let curYear = new Date().getFullYear();
+let curMonth = new Date().getMonth() + 1;
+let curOutlet = '';
+let curTab = 'fillin';
+let selectedStaff = null;
+let allStaff = [];
+let settings = { closed_days: [], shift_times: {} };
+let availability = [];
+let schedule = [];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOW_NAMES = {0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat'};
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+async function init() {
+  updateMonthLabel();
+  // Load outlets
+  try {
+    const r = await fetch('/api/staff/outlets/list');
+    const outlets = await r.json();
+    const sel = document.getElementById('outletSelect');
+    outlets.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.id; opt.textContent = o.name;
+      sel.appendChild(opt);
+    });
+    if (outlets.length === 1) { curOutlet = String(outlets[0].id); sel.value = curOutlet; }
+  } catch(e) {}
+
+  // Load staff
+  try {
+    const r = await fetch('/api/staff');
+    allStaff = (await r.json()).filter(s => s.is_active);
+  } catch(e) {}
+
+  await loadAll();
+}
+
+function updateMonthLabel() {
+  document.getElementById('monthLabel').textContent = `${MONTHS[curMonth-1]} ${curYear}`;
+}
+
+async function changeMonth(dir) {
+  curMonth += dir;
+  if (curMonth > 12) { curMonth = 1; curYear++; }
+  if (curMonth < 1)  { curMonth = 12; curYear--; }
+  updateMonthLabel();
+  await loadAll();
+}
+
+async function onOutletChange() {
+  curOutlet = document.getElementById('outletSelect').value;
+  await loadAll();
+}
+
+async function loadAll() {
+  await Promise.all([loadSettings(), loadAvailability(), loadSchedule()]);
+  render();
+}
+
+async function loadSettings() {
+  try {
+    const p = new URLSearchParams({ year: curYear, month: curMonth });
+    if (curOutlet) p.set('outletId', curOutlet);
+    const r = await fetch('/api/roster/settings?' + p);
+    settings = await r.json();
+    updateClosedBadge();
+  } catch(e) {}
+}
+
+async function loadAvailability() {
+  try {
+    const p = new URLSearchParams({ year: curYear, month: curMonth });
+    if (curOutlet) p.set('outletId', curOutlet);
+    const r = await fetch('/api/roster/availability?' + p);
+    availability = await r.json();
+  } catch(e) {}
+}
+
+async function loadSchedule() {
+  try {
+    const p = new URLSearchParams({ year: curYear, month: curMonth });
+    if (curOutlet) p.set('outletId', curOutlet);
+    const r = await fetch('/api/roster/schedule?' + p);
+    schedule = await r.json();
+  } catch(e) {}
+}
+
+function updateClosedBadge() {
+  const badge = document.getElementById('closedBadge');
+  const days = settings.closed_days || [];
+  if (days.length) {
+    const names = days.map(d => DOW_NAMES[d]).join(', ');
+    badge.textContent = `Closed ${names}`;
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── TAB SWITCH ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  curTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['fillin','overview','final','col'][i] === tab);
+  });
+  render();
+}
+
+function render() {
+  switch(curTab) {
+    case 'fillin':   renderFillIn();   break;
+    case 'overview': renderOverview(); break;
+    case 'final':    renderFinal();    break;
+    case 'col':      renderCOL();      break;
+  }
+}
+
+// ── CALENDAR HELPERS ──────────────────────────────────────────────────────────
+function getDaysInMonth(y, m) { return new Date(y, m, 0).getDate(); }
+function getFirstDow(y, m)    { return new Date(y, m-1, 1).getDay(); } // 0=Sun
+function isClosed(day) {
+  const date = new Date(curYear, curMonth-1, day);
+  const dow = date.getDay();
+  return (settings.closed_days || []).includes(dow);
+}
+function isAvail(staffId, day, shift) {
+  return availability.some(a => a.staff_id == staffId && a.day == day && a.shift_type === shift && a.available == 1);
+}
+
+function buildCalendarCols(renderDay) {
+  const total = getDaysInMonth(curYear, curMonth);
+  const firstDow = getFirstDow(curYear, curMonth); // 0=Sun
+  // Convert to Mon-first: Mon=0
+  const startOffset = (firstDow + 6) % 7;
+  const cells = [];
+  // Empty cells before first day
+  for (let i = 0; i < startOffset; i++) cells.push(null);
+  for (let d = 1; d <= total; d++) cells.push(d);
+  // Build 7-col grid rows
+  let html = '';
+  for (let i = 0; i < cells.length; i += 7) {
+    const week = cells.slice(i, i+7);
+    while (week.length < 7) week.push(null);
+    html += `<div class="cal-grid" style="margin-bottom:8px">`;
+    week.forEach((day, wi) => {
+      if (day === null) {
+        html += `<div></div>`;
+      } else {
+        html += renderDay(day, wi);
+      }
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+
+// ── FILL IN ────────────────────────────────────────────────────────────────────
+function renderFillIn() {
+  const content = document.getElementById('mainContent');
+  const staffButtons = allStaff.map(s =>
+    `<button class="fi-staff-btn${selectedStaff === s.id ? ' sel' : ''}" onclick="selectStaff(${s.id})">${s.name}</button>`
+  ).join('');
+
+  const calHtml = selectedStaff
+    ? buildCalendarCols((day, wi) => renderFillInDay(day, wi))
+    : `<div class="empty">Select your name above to mark your availability</div>`;
+
+  content.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Who are you?</div>
+      <div class="fi-staff-grid">${staffButtons}</div>
+    </div>
+    ${selectedStaff ? `
+    <div class="fi-actions">
+      <button class="btn btn-outline" onclick="markAllAvail()">Mark all full days available</button>
+      <button class="btn btn-red" onclick="clearAll()">Clear all</button>
+    </div>
+    <div class="fi-hint">Tap a shift to toggle your availability. Green = available.</div>
+    ` : ''}
+    ${calHtml}
+  `;
+}
+
+function renderFillInDay(day, wi) {
+  const closed = isClosed(day);
+  const dowName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][wi];
+  const st = settings.shift_times || {};
+  const fmtTime = t => {
+    if (!t) return '';
+    const [h,m] = t.split(':');
+    const hr = parseInt(h);
+    return `${hr > 12 ? hr-12 : hr}${m!=='00'?'.'+m:''}${hr >= 12 ? 'pm' : 'am'}`;
+  };
+  const openLabel  = `Opening${st.opening  ? ` ${fmtTime(st.opening.start)}` : ''}`;
+  const closeLabel = `Closing${st.closing  ? ` ${fmtTime(st.closing.start)}` : ''}`;
+  const fullLabel  = `Full Shift`;
+
+  if (closed) {
+    return `<div class="day-col day-closed">
+      <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
+      <div class="closed-label">Closed</div>
+    </div>`;
+  }
+
+  const oAvail  = selectedStaff ? isAvail(selectedStaff, day, 'opening')   : false;
+  const cAvail  = selectedStaff ? isAvail(selectedStaff, day, 'closing')   : false;
+  const fsAvail = selectedStaff ? isAvail(selectedStaff, day, 'fullshift') : false;
+
+  return `<div class="day-col">
+    <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
+    <div class="shift-slot${oAvail  ? ' avail' : ''}" onclick="toggleAvail(${day},'opening')">${openLabel}</div>
+    <div class="shift-slot${cAvail  ? ' avail' : ''}" onclick="toggleAvail(${day},'closing')">${closeLabel}</div>
+    <div class="shift-slot last-slot${fsAvail ? ' avail' : ''}" onclick="toggleAvail(${day},'fullshift')">${fullLabel}</div>
+  </div>`;
+}
+
+function selectStaff(id) {
+  selectedStaff = selectedStaff === id ? null : id;
+  renderFillIn();
+}
+
+async function toggleAvail(day, shift) {
+  if (!selectedStaff) return;
+  const current = isAvail(selectedStaff, day, shift);
+  const newVal = !current;
+  // Optimistic update
+  const existing = availability.find(a => a.staff_id == selectedStaff && a.day == day && a.shift_type === shift);
+  if (existing) { existing.available = newVal ? 1 : 0; }
+  else { availability.push({ staff_id: selectedStaff, day, shift_type: shift, available: newVal ? 1 : 0 }); }
+  renderFillIn();
+
+  try {
+    await fetch('/api/roster/availability', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ staffId: selectedStaff, outletId: curOutlet || null, year: curYear, month: curMonth, day, shift_type: shift, available: newVal })
+    });
+  } catch(e) {}
+}
+
+async function markAllAvail() {
+  if (!selectedStaff) return;
+  const total = getDaysInMonth(curYear, curMonth);
+  const entries = [];
+  for (let d = 1; d <= total; d++) {
+    if (isClosed(d)) continue;
+    ['opening','closing','fullshift'].forEach(s => {
+      entries.push({ day: d, shift_type: s, available: 1 });
+      const ex = availability.find(a => a.staff_id == selectedStaff && a.day == d && a.shift_type === s);
+      if (ex) ex.available = 1;
+      else availability.push({ staff_id: selectedStaff, day: d, shift_type: s, available: 1 });
+    });
+  }
+  renderFillIn();
+  try {
+    await fetch('/api/roster/availability/bulk', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ staffId: selectedStaff, outletId: curOutlet || null, year: curYear, month: curMonth, entries })
+    });
+  } catch(e) {}
+}
+
+async function clearAll() {
+  if (!selectedStaff) return;
+  availability = availability.filter(a => a.staff_id != selectedStaff);
+  renderFillIn();
+  try {
+    const p = new URLSearchParams({ staffId: selectedStaff, year: curYear, month: curMonth });
+    if (curOutlet) p.set('outletId', curOutlet);
+    await fetch('/api/roster/availability?' + p, { method: 'DELETE' });
+  } catch(e) {}
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function renderOverview() {
+  const content = document.getElementById('mainContent');
+  const legend = `<div class="overview-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#EFF6FF;border:1.5px solid #93C5FD"></div> Opening</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FEF3C7;border:1.5px solid #FCD34D"></div> Closing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#F0FDF4;border:1.5px solid #86EFAC"></div> Full Shift</div>
+  </div>`;
+
+  const calHtml = buildCalendarCols((day, wi) => {
+    const closed = isClosed(day);
+    const dowName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][wi];
+    if (closed) return `<div class="ov-day day-closed"><div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div><div class="closed-label">Closed</div></div>`;
+
+    const opening  = availability.filter(a => a.day == day && a.shift_type === 'opening'   && a.available).map(a => `<span class="ov-name name-opening">${a.staff_name}</span>`).join('');
+    const closing  = availability.filter(a => a.day == day && a.shift_type === 'closing'   && a.available).map(a => `<span class="ov-name name-closing">${a.staff_name}</span>`).join('');
+    const fullshift= availability.filter(a => a.day == day && a.shift_type === 'fullshift' && a.available).map(a => `<span class="ov-name name-fullshift">${a.staff_name}</span>`).join('');
+
+    return `<div class="ov-day">
+      <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
+      ${opening  ? `<div class="ov-group"><div class="ov-group-label">Opening</div>${opening}</div>` : ''}
+      ${closing  ? `<div class="ov-group"><div class="ov-group-label">Closing</div>${closing}</div>` : ''}
+      ${fullshift? `<div class="ov-group"><div class="ov-group-label">Full Shift</div>${fullshift}</div>` : ''}
+    </div>`;
+  });
+
+  content.innerHTML = legend + calHtml;
+}
+
+// ── FINAL SCHEDULE ────────────────────────────────────────────────────────────
+function renderFinal() {
+  const content = document.getElementById('mainContent');
+  const legend = `<div class="fs-legend">
+    <div style="font-size:12px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-right:4px">TAP NAME TO REMOVE · TYPE TIMES NEXT TO NAMES</div>
+  </div>
+  <div class="fs-legend" style="margin-bottom:16px">
+    <div class="fs-legend-item"><div class="fs-legend-box" style="background:var(--foh)"></div> FOH</div>
+    <div class="fs-legend-item"><div class="fs-legend-box" style="background:var(--boh)"></div> BOH</div>
+    <div class="fs-legend-item"><div class="fs-legend-box" style="background:var(--removed)"></div> Removed</div>
+  </div>`;
+
+  const calHtml = buildCalendarCols((day, wi) => {
+    const closed = isClosed(day);
+    const dowName = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][wi];
+    if (closed) return `<div class="fs-day day-closed"><div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div><div class="closed-label">Closed</div></div>`;
+
+    const daySchedule = schedule.filter(s => s.day == day);
+    const foh = daySchedule.filter(s => s.role_group === 'foh');
+    const boh = daySchedule.filter(s => s.role_group === 'boh');
+
+    // Get available staff not yet scheduled
+    const scheduledIds = daySchedule.map(s => s.staff_id);
+    const availableStaff = allStaff.filter(s => !scheduledIds.includes(s.id));
+    const addOptions = availableStaff.map(s =>
+      `<option value="${s.id}|${s.role === 'BOH' ? 'boh' : 'foh'}">${s.name}</option>`
+    ).join('');
+
+    const renderEntry = (e) => {
+      const pillClass = e.removed ? 'pill-removed' : (e.role_group === 'boh' ? 'pill-boh' : 'pill-foh');
+      return `<div class="fs-entry">
+        <span class="fs-name-pill ${pillClass}" onclick="toggleRemove(${e.id})" title="${e.removed ? 'Restore' : 'Remove'}">${e.staff_name}${e.removed ? ' ✕' : ''}</span>
+        <input class="fs-time-input" value="${e.shift_label || ''}" placeholder="time" data-id="${e.id}"
+          onchange="updateShiftLabel(${e.id},this.value)" onblur="updateShiftLabel(${e.id},this.value)">
+      </div>`;
+    };
+
+    return `<div class="fs-day">
+      <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
+      ${foh.length ? `<div class="fs-group-label">FOH</div>${foh.map(renderEntry).join('')}` : ''}
+      ${boh.length ? `<div class="fs-group-label">BOH</div>${boh.map(renderEntry).join('')}` : ''}
+      <div class="fs-add-wrap">
+        <select class="fs-add-select" onchange="addToSchedule(${day},this)" title="Add staff">
+          <option value="">+ Add staff…</option>
+          ${addOptions}
+        </select>
+      </div>
+    </div>`;
+  });
+
+  content.innerHTML = legend + calHtml;
+}
+
+async function addToSchedule(day, sel) {
+  if (!sel.value) return;
+  const [staffId, roleGroup] = sel.value.split('|');
+  sel.value = '';
+  try {
+    await fetch('/api/roster/schedule', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ staffId, outletId: curOutlet || null, year: curYear, month: curMonth, day, role_group: roleGroup })
+    });
+    await loadSchedule();
+    renderFinal();
+  } catch(e) {}
+}
+
+async function toggleRemove(id) {
+  const entry = schedule.find(s => s.id === id);
+  if (!entry) return;
+  const newRemoved = !entry.removed;
+  entry.removed = newRemoved;
+  renderFinal();
+  try {
+    await fetch(`/api/roster/schedule/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ removed: newRemoved })
+    });
+  } catch(e) {}
+}
+
+async function updateShiftLabel(id, label) {
+  const entry = schedule.find(s => s.id === id);
+  if (entry) entry.shift_label = label;
+  try {
+    await fetch(`/api/roster/schedule/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shift_label: label })
+    });
+  } catch(e) {}
+}
+
+// ── COL ────────────────────────────────────────────────────────────────────────
+let colWeek = 0; // 0 = full month
+async function renderCOL() {
+  const content = document.getElementById('mainContent');
+  const total = getDaysInMonth(curYear, curMonth);
+  const numWeeks = Math.ceil(total / 7);
+  const weekBtns = `<div class="col-header">
+    <button class="week-btn${colWeek===0?' active':''}" onclick="setColWeek(0)">Full month</button>
+    ${Array.from({length:numWeeks},(_,i)=>`<button class="week-btn${colWeek===i+1?' active':''}" onclick="setColWeek(${i+1})">Week ${i+1}</button>`).join('')}
+  </div>`;
+
+  content.innerHTML = weekBtns + `<div id="colData"><div class="empty">Loading…</div></div>`;
+  await loadColData();
+}
+
+async function setColWeek(w) {
+  colWeek = w;
+  renderCOL();
+}
+
+async function loadColData() {
+  try {
+    const p = new URLSearchParams({ year: curYear, month: curMonth });
+    if (curOutlet) p.set('outletId', curOutlet);
+    if (colWeek)   p.set('week', colWeek);
+    const r = await fetch('/api/roster/col?' + p);
+    const d = await r.json();
+    const el = document.getElementById('colData');
+    if (!el) return;
+
+    let weekLabel = colWeek ? `Week ${colWeek}` : `Full month — ${MONTHS[curMonth-1]} ${curYear}`;
+
+    const statsHtml = `<div style="font-size:12px;color:var(--ink-60);margin-bottom:12px">Cost of Labour — ${weekLabel}</div>
+    <div class="col-stats">
+      <div class="col-stat"><div class="col-stat-label">Total payroll</div><div class="col-stat-val">$${d.totals.totalCost.toFixed(2)}</div></div>
+      <div class="col-stat"><div class="col-stat-label">Total hours</div><div class="col-stat-val">${d.totals.totalHours.toFixed(1)}h</div></div>
+      <div class="col-stat"><div class="col-stat-label">Staff count</div><div class="col-stat-val">${d.staff.length}</div></div>
+    </div>`;
+
+    const staffHtml = d.staff.map(s => {
+      const shifts = s.shifts.map(sh => {
+        const dayName = getDayName(sh.day);
+        return `<div class="col-shift-row">
+          <div class="col-shift-day">${dayName} ${sh.day}</div>
+          <div class="col-shift-label">${sh.shift_label || '—'}</div>
+          <div class="col-shift-calc">${sh.hours.toFixed(1)}h × $${sh.rate.toFixed(2)}</div>
+          <div class="col-shift-cost">$${sh.cost.toFixed(2)}</div>
+        </div>`;
+      }).join('');
+
+      return `<div class="col-staff">
+        <div class="col-staff-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+          <div><span class="col-staff-name">${s.name}</span><span class="col-staff-rate">$${s.hourly_rate}/hr</span></div>
+          <div style="display:flex;align-items:center">
+            <span class="col-staff-hours">${s.totalHours.toFixed(1)}h</span>
+            <span class="col-staff-total">$${s.totalCost.toFixed(2)}</span>
+          </div>
+        </div>
+        <div>${shifts}</div>
+      </div>`;
+    }).join('');
+
+    el.innerHTML = statsHtml + (staffHtml || `<div class="empty">No scheduled shifts with times entered yet.<br>Go to Final Schedule and enter shift times to see COL.</div>`);
+  } catch(e) { console.error(e); }
+}
+
+function getDayName(day) {
+  const date = new Date(curYear, curMonth-1, day);
+  return DAYS[date.getDay()];
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function openSettings() {
+  // Populate closed days
+  const closed = settings.closed_days || [];
+  document.querySelectorAll('.dow-btn').forEach(btn => {
+    const dow = parseInt(btn.dataset.dow);
+    btn.classList.toggle('closed-day', closed.includes(dow));
+  });
+  // Populate shift times
+  const st = settings.shift_times || {};
+  document.getElementById('stOpenStart').value  = st.opening?.start  || '10:00';
+  document.getElementById('stOpenEnd').value    = st.opening?.end    || '17:00';
+  document.getElementById('stCloseStart').value = st.closing?.start  || '17:00';
+  document.getElementById('stCloseEnd').value   = st.closing?.end    || '23:00';
+  document.getElementById('stFullStart').value  = st.fullshift?.start|| '10:00';
+  document.getElementById('stFullEnd').value    = st.fullshift?.end  || '23:00';
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function toggleDow(dow) {
+  const btn = document.querySelector(`.dow-btn[data-dow="${dow}"]`);
+  btn.classList.toggle('closed-day');
+}
+
+async function saveSettings() {
+  const closed = [];
+  document.querySelectorAll('.dow-btn.closed-day').forEach(btn => closed.push(parseInt(btn.dataset.dow)));
+  const shift_times = {
+    opening:   { start: document.getElementById('stOpenStart').value,  end: document.getElementById('stOpenEnd').value },
+    closing:   { start: document.getElementById('stCloseStart').value, end: document.getElementById('stCloseEnd').value },
+    fullshift: { start: document.getElementById('stFullStart').value,  end: document.getElementById('stFullEnd').value },
+  };
+  try {
+    await fetch('/api/roster/settings', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ year: curYear, month: curMonth, outletId: curOutlet || null, closed_days: closed, shift_times })
+    });
+    settings.closed_days = closed;
+    settings.shift_times = shift_times;
+    updateClosedBadge();
+    closeSettings();
+    render();
+  } catch(e) {}
+}
+
+init();
+</script>
+<script src="/maise.js"></script>
+</body>
+</html>

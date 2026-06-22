@@ -119,6 +119,50 @@ function createSchema() {
     FOREIGN KEY(outlet_id) REFERENCES outlets(id)
   )`);
 
+
+  // Roster tables
+  db.run(`CREATE TABLE IF NOT EXISTS roster_settings (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    outlet_id   INTEGER,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    closed_days TEXT DEFAULT '[]',
+    shift_times TEXT DEFAULT '{"opening":{"start":"10:00","end":"17:00"},"closing":{"start":"17:00","end":"23:00"},"fullshift":{"start":"10:00","end":"23:00"}}',
+    UNIQUE(outlet_id, year, month)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS roster_availability (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id    INTEGER NOT NULL,
+    outlet_id   INTEGER,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    day         INTEGER NOT NULL,
+    shift_type  TEXT NOT NULL CHECK(shift_type IN ('opening','closing','fullshift')),
+    available   INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(staff_id, outlet_id, year, month, day, shift_type)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS roster_schedule (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id    INTEGER NOT NULL,
+    outlet_id   INTEGER,
+    year        INTEGER NOT NULL,
+    month       INTEGER NOT NULL,
+    day         INTEGER NOT NULL,
+    role_group  TEXT NOT NULL DEFAULT 'foh' CHECK(role_group IN ('foh','boh')),
+    shift_label TEXT,
+    removed     INTEGER DEFAULT 0,
+    UNIQUE(staff_id, outlet_id, year, month, day)
+  )`);
+
+
+  // Extend revenue_entries with orders + pax if not already there
+  const revCols = all('PRAGMA table_info(revenue_entries)').map(r => r.name);
+  if (!revCols.includes('orders'))  db.run('ALTER TABLE revenue_entries ADD COLUMN orders INTEGER DEFAULT 0');
+  if (!revCols.includes('pax'))     db.run('ALTER TABLE revenue_entries ADD COLUMN pax INTEGER DEFAULT 0');
+  if (!revCols.includes('location'))db.run('ALTER TABLE revenue_entries ADD COLUMN location TEXT');
+
   db.run(`CREATE TABLE IF NOT EXISTS pin_lockouts (
     staff_id     INTEGER NOT NULL PRIMARY KEY,
     attempts     INTEGER DEFAULT 0,
