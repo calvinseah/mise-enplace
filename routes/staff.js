@@ -20,7 +20,7 @@ function safeStaff(s, includeSecure = false, isAdmin = false) {
     monthly_salary: isAdmin ? s.monthly_salary : null,
     hourly_rate: isAdmin || s.staff_type === 'parttime' ? s.hourly_rate : null,
     date_of_birth: isAdmin ? s.date_of_birth : null,
-    pr_status: isAdmin ? s.pr_status : null,
+    pr_status: s.pr_status,
     pr_year: isAdmin ? s.pr_year : null,
     nric_last4: isAdmin ? s.nric_last4 : null,
     bank_name: isAdmin ? s.bank_name : null,
