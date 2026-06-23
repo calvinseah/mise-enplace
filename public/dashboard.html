@@ -482,5 +482,17 @@ document.querySelectorAll('.sb-nav a').forEach(a=>a.addEventListener('click',()=
 </script>
 
 
+
+<script>
+async function backupDB() {
+  try {
+    const r = await fetch('/api/me');
+    const u = await r.json();
+    const token = prompt('Enter your BACKUP_TOKEN to download the database:');
+    if (!token) return;
+    window.location.href = '/api/backup?token=' + encodeURIComponent(token);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+</script>
 </body>
 </html>

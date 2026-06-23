@@ -160,6 +160,32 @@ app.get('/reset-admin', async (req, res) => {
   }
 });
 
+
+// ── Admin DB backup download ──────────────────────────────────────────────────
+app.get('/api/backup', (req, res) => {
+  const { token } = req.query;
+  const validToken = process.env.BACKUP_TOKEN;
+  if (!validToken || token !== validToken) {
+    return res.status(403).send('Invalid token');
+  }
+  try {
+    const fs = require('fs');
+    const dbPath = process.env.DB_PATH || './attendance.db';
+    if (!fs.existsSync(dbPath)) {
+      return res.status(404).send('Database file not found');
+    }
+    // Save latest DB state to disk first
+    const db = require('./database');
+    db.saveDB();
+    const date = new Date().toISOString().slice(0,10);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="mise-backup-${date}.db"`);
+    fs.createReadStream(dbPath).pipe(res);
+  } catch(e) {
+    res.status(500).send('Backup error: ' + e.message);
+  }
+});
+
 initDB().then(() => syncAdminPassword()).then(() => {
   app.listen(PORT, () => {
     const base = process.env.BASE_URL || `http://localhost:${PORT}`;
