@@ -261,4 +261,24 @@ router.get('/my-shifts', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Missed clock-out: staff clocked in but no clock-out from previous days ────
+router.get('/missed-clockout', (req, res) => {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    // Find records where clock_in is before today and clock_out is null
+    const missed = require('../database').all(
+      `SELECT a.id, a.clock_in, a.staff_id, s.name as staff_name, o.name as outlet_name
+       FROM attendance a
+       JOIN staff s ON a.staff_id = s.id
+       LEFT JOIN outlets o ON a.outlet_id = o.id
+       WHERE a.clock_out IS NULL
+         AND substr(a.clock_in, 1, 10) < ?
+       ORDER BY a.clock_in DESC`,
+      [today]
+    );
+    res.json(missed);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
