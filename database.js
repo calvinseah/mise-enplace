@@ -234,16 +234,19 @@ async function seedData() {
     ['2026-11-07','Deepavali'],['2026-12-25','Christmas Day'],
   ];
 
-  // Seed default admin user
-  const noUsers = get('SELECT COUNT(*) as cnt FROM users');
-  if (!noUsers || noUsers.cnt === 0) {
-    const bcrypt = require('bcryptjs');
-    const adminPass = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin1234', 10);
+  // Seed default admin user — always sync password with ADMIN_PASSWORD env var
+  const bcrypt = require('bcryptjs');
+  const adminPass = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin1234', 10);
+  const existingAdmin = get(`SELECT id FROM users WHERE username='admin'`);
+  if (!existingAdmin) {
     db.run(
       `INSERT INTO users (username, password, role, name, is_active, created_at)
        VALUES ('admin', ?, 'admin', 'Administrator', 1, ?)`,
       [adminPass, new Date().toISOString()]
     );
+  } else {
+    // Always update admin password to match current ADMIN_PASSWORD env var
+    db.run(`UPDATE users SET password=? WHERE username='admin'`, [adminPass]);
   }
 
   for (const [date, name] of holidays) {
