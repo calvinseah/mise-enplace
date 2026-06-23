@@ -17,8 +17,8 @@ const SG_BANKS = [
 function safeStaff(s, includeSecure = false, isAdmin = false) {
   const out = {
     id: s.id, name: s.name, role: s.role, staff_type: s.staff_type,
-    monthly_salary: isAdmin || s.staff_type === 'parttime' ? s.monthly_salary : null,
-    hourly_rate: s.hourly_rate,
+    monthly_salary: isAdmin ? s.monthly_salary : null,
+    hourly_rate: isAdmin ? s.hourly_rate : null,
     date_of_birth: isAdmin ? s.date_of_birth : null,
     pr_status: isAdmin ? s.pr_status : null,
     pr_year: isAdmin ? s.pr_year : null,

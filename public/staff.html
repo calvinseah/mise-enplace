@@ -206,7 +206,7 @@ tbody tr:last-child td{border-bottom:none}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Bulk upload
       </button>
-      <button class="btn btn-primary" onclick="openAdd()">
+      <button class="btn btn-primary" onclick="openAdd()" data-admin-only="1">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add staff
       </button>
@@ -219,7 +219,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="tab-row">
       <div class="tab active" onclick="switchTab('staff')">Staff members</div>
       <div class="tab" onclick="switchTab('outlets')">Outlets</div>
-      <div class="tab" onclick="switchTab('bulk')">Bulk upload</div>
+      <div class="tab" onclick="switchTab('bulk')" data-admin-only="1">Bulk upload</div>
 
     </div>
 
@@ -389,7 +389,7 @@ async function loadStaff(){
       <td>${prBadge}</td>
       <td>${bankEl}</td>
       <td><div class="actions">
-        <button class="btn btn-ghost btn-sm" onclick='openEdit(${x.id})'>Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick='openEdit(${x.id})' data-admin-only="1">Edit</button>
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" onclick="togglePinActive(${x.id},${x.pin_active})">${x.pin_active?'Deactivate PIN':'Activate PIN'}</button>`:''}
         <button class="btn btn-ghost btn-sm" onclick="openPin(${x.id},'${x.name}',${x.has_pin})">${x.has_pin?'Reset PIN':'Set PIN'}</button>
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="removePin(${x.id})">Remove PIN</button>`:''}
