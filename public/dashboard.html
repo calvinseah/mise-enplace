@@ -371,6 +371,7 @@ function renderRecords(rows){
     const co=r.clock_out?fmtTime(r.clock_out):`<span class="active-dot" style="color:var(--success)">${icActivity} Active</span>`;
     return`<tr>
       <td><span style="font-weight:500">${r.staff_name}</span></td>
+      <td style="color:var(--ink-60);font-size:12px">${r.outlet_name||'—'}</td>
       <td style="font-variant-numeric:tabular-nums;color:var(--ink-60)">${r.clock_in?r.clock_in.slice(0,10):'—'}</td>
       <td>${r.clock_in?fmtTime(r.clock_in):'—'}</td><td>${co}</td>
       <td style="color:var(--ink-60)">${r.break_minutes||0}m</td>
