@@ -261,6 +261,93 @@ function renderTable(rows,totals){
 
 function exportExcel(){window.open('/api/payroll-summary/export/excel?'+params(),'_blank');}
 function exportPDF(){window.open('/api/payroll-summary/export/pdf?'+params(),'_blank');}
+
+function openStaffDetail(r) {
+  document.getElementById('staffDetailOverlay').style.display = 'flex';
+  document.getElementById('staffDetailName').textContent = r.name;
+  loadStaffDetail(r);
+}
+
+function closeStaffDetail() {
+  document.getElementById('staffDetailOverlay').style.display = 'none';
+}
+
+async function loadStaffDetail(r) {
+  const el = document.getElementById('staffDetailContent');
+  const from = document.getElementById('psFrom').value;
+  const to = document.getElementById('psTo').value;
+  const outletId = document.getElementById('psOutlet').value;
+
+  // Summary header
+  const grossPay = r.gross_pay || r.grossPay || 0;
+  const netPay = r.net_pay || r.netPay || 0;
+  const empCPF = r.employee_cpf || r.employeeCPF || 0;
+  const emplCPF = r.employer_cpf || r.employerCPF || 0;
+  const totalHours = r.total_hours || r.totalHours || 0;
+
+  // Fetch individual shift records
+  try {
+    const p = new URLSearchParams({ from, to });
+    if (outletId) p.set('outletId', outletId);
+    const res = await fetch('/api/attendance?staffId=' + r.staff_id + '&' + p);
+    const shifts = res.ok ? await res.json() : [];
+
+    const summaryHtml = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
+        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gross Pay</div>
+          <div style="font-size:20px;font-weight:400;font-family:var(--font-display);color:var(--accent)">$${grossPay.toFixed(2)}</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Net Pay</div>
+          <div style="font-size:20px;font-weight:400;font-family:var(--font-display);color:var(--accent)">$${netPay.toFixed(2)}</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Total Hours</div>
+          <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)">${totalHours.toFixed(1)}h</div>
+        </div>
+        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Employer CPF</div>
+          <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)">$${emplCPF.toFixed(2)}</div>
+        </div>
+      </div>`;
+
+    const shiftRows = shifts.map(s => {
+      const date = s.clock_in ? s.clock_in.slice(0,10) : '—';
+      const tin = s.clock_in ? new Date(s.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+      const tout = s.clock_out ? new Date(s.clock_out).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : 'Active';
+      const hrs = s.total_hours ? s.total_hours.toFixed(2) : '—';
+      const cost = s.total_cost ? '$' + s.total_cost.toFixed(2) : '—';
+      const ph = s.is_public_holiday ? '<span style="font-size:9px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 5px;margin-left:4px">PH</span>' : '';
+      const outlet = s.outlet_name ? '<div style="font-size:10.5px;color:var(--ink-60)">' + s.outlet_name + '</div>' : '';
+      return '<tr>' +
+        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04)">' + date + ph + outlet + '</td>' +
+        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);color:var(--ink-60)">' + tin + ' – ' + tout + '</td>' +
+        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);text-align:right">' + hrs + 'h</td>' +
+        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);text-align:right;font-weight:500">' + cost + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const tableHtml = shifts.length ? `
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Shift breakdown</div>
+      <div style="overflow-x:auto;margin:0 -4px">
+        <table style="width:100%;border-collapse:collapse;font-family:var(--font)">
+          <thead><tr>
+            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid var(--ink-08)">Date</th>
+            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid var(--ink-08)">Time</th>
+            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:right;border-bottom:1px solid var(--ink-08)">Hrs</th>
+            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:right;border-bottom:1px solid var(--ink-08)">Cost</th>
+          </tr></thead>
+          <tbody>${shiftRows}</tbody>
+        </table>
+      </div>` : '<div style="text-align:center;padding:20px;color:var(--ink-60);font-size:13px">No shifts found for this period</div>';
+
+    el.innerHTML = summaryHtml + tableHtml;
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink-60)">Error loading shifts</div>';
+  }
+}
+
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
 loadOutlets();
 loadSummary();
@@ -310,5 +397,17 @@ async function backupDB() {
   window.location.href = '/api/backup?token=' + encodeURIComponent(token);
 }
 </script>
+
+<!-- Staff detail panel -->
+<div id="staffDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeStaffDetail()">
+  <div id="staffDetailPanel" onclick="event.stopPropagation()" style="background:#fff;width:420px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div id="staffDetailName" style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)"></div>
+      <button onclick="closeStaffDetail()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:20px;line-height:1">×</button>
+    </div>
+    <div id="staffDetailContent"><div style="text-align:center;padding:40px;color:var(--ink-60)">Loading…</div></div>
+  </div>
+</div>
+
 </body>
 </html>
