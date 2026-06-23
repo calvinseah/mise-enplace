@@ -14,16 +14,20 @@ const SG_BANKS = [
 ];
 
 // ── Safe staff object (never exposes pin hash or raw encrypted fields) ─────────
-function safeStaff(s, includeSecure = false) {
+function safeStaff(s, includeSecure = false, isAdmin = false) {
   const out = {
     id: s.id, name: s.name, role: s.role, staff_type: s.staff_type,
-    monthly_salary: s.monthly_salary, hourly_rate: s.hourly_rate,
-    date_of_birth: s.date_of_birth, pr_status: s.pr_status, pr_year: s.pr_year,
-    nric_last4: s.nric_last4, bank_name: s.bank_name,
+    monthly_salary: isAdmin || s.staff_type === 'parttime' ? s.monthly_salary : null,
+    hourly_rate: s.hourly_rate,
+    date_of_birth: isAdmin ? s.date_of_birth : null,
+    pr_status: isAdmin ? s.pr_status : null,
+    pr_year: isAdmin ? s.pr_year : null,
+    nric_last4: isAdmin ? s.nric_last4 : null,
+    bank_name: isAdmin ? s.bank_name : null,
     pin_active: s.pin_active, is_active: s.is_active,
     has_pin: s.pin ? 1 : 0,
   };
-  if (includeSecure) {
+  if (includeSecure && isAdmin) {
     out.nric_full = db.decryptField(s.nric_full_enc) || null;
     out.bank_account = db.decryptField(s.bank_account_enc) || null;
   }
@@ -33,8 +37,9 @@ function safeStaff(s, includeSecure = false) {
 // GET all staff
 router.get('/', (req, res) => {
   try {
+    const isAdmin = req.session?.user?.role === 'admin';
     const rows = db.all(`SELECT * FROM staff ORDER BY is_active DESC, name`);
-    res.json(rows.map(s => safeStaff(s)));
+    res.json(rows.map(s => safeStaff(s, false, isAdmin)));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -43,7 +48,8 @@ router.get('/:id', (req, res) => {
   try {
     const s = db.get(`SELECT * FROM staff WHERE id = ?`, [req.params.id]);
     if (!s) return res.status(404).json({ error: 'Not found' });
-    res.json(safeStaff(s, true));
+    const isAdminSingle = req.session?.user?.role === 'admin';
+    res.json(safeStaff(s, true, isAdminSingle));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
