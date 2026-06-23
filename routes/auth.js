@@ -10,9 +10,11 @@ router.post('/login', async (req, res) => {
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
   try {
     const user = db.get(`SELECT * FROM users WHERE username=? AND is_active=1`, [username.trim().toLowerCase()]);
+    console.log('[login] username:', username.trim().toLowerCase(), '| user found:', !!user, '| password hash:', user?.password?.slice(0,10));
     if (!user) return res.status(401).json({ error: 'Incorrect username or password' });
 
     const match = await bcrypt.compare(password, user.password);
+    console.log('[login] password match:', match, '| password length:', password.length);
     if (!match) return res.status(401).json({ error: 'Incorrect username or password' });
 
     // Get assigned outlets for managers
