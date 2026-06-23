@@ -304,9 +304,21 @@ async function handleSalesFile(file){
     const r=await fetch('/api/revenue/upload',{method:'POST',body:fd});
     const d=await r.json();
     res.style.display='block';
-    res.style.cssText='display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:500;'+(d.success?'background:rgba(46,107,62,.08);color:var(--success);border:1px solid rgba(46,107,62,.2)':'background:rgba(192,57,43,.08);color:var(--danger);border:1px solid rgba(192,57,43,.2)');
-    res.textContent=d.success?d.message:(d.error||'Upload failed');
-    if(d.success){loadRevenue();loadSummary();}
+    if(d.success){
+      let html=`<div style="margin-top:12px;padding:12px 14px;border-radius:8px;font-size:12.5px;font-weight:500;background:rgba(46,107,62,.08);color:var(--success);border:1px solid rgba(46,107,62,.2)">${d.message}</div>`;
+      if(d.unmatched&&d.unmatched.length){
+        html+=`<div style="margin-top:8px;padding:10px 14px;border-radius:8px;font-size:12px;background:rgba(183,121,31,.08);color:var(--warn,#B7791F);border:1px solid rgba(183,121,31,.2)">
+          ⚠️ These outlet names from the CSV didn't match any outlet in Mise:<br>
+          <strong>${d.unmatched.join(', ')}</strong><br>
+          <span style="font-weight:400">Check your outlet names under Staff → Outlets and make sure they match exactly.</span>
+        </div>`;
+      }
+      res.innerHTML=html;
+      loadRevenue();loadSummary();
+    } else {
+      res.style.cssText='display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:500;background:rgba(192,57,43,.08);color:var(--danger);border:1px solid rgba(192,57,43,.2)';
+      res.textContent=d.error||'Upload failed';
+    }
   }catch(e){res.style.display='block';res.textContent='Network error';res.style.color='var(--danger)';}
 }
 

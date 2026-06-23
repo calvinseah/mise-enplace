@@ -138,8 +138,13 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="card">
     <div class="filters">
-      <div class="fg"><label>Pay period from</label><input type="date" id="psFrom"></div>
-      <div class="fg"><label>Pay period to</label><input type="date" id="psTo"></div>
+      <div class="fg">
+        <label>Month</label>
+        <input type="month" id="psMonth" onchange="onMonthChange()" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:140px">
+      </div>
+      <div class="fg"><label>From (custom)</label><input type="date" id="psFrom"></div>
+      <div class="fg"><label>To (custom)</label><input type="date" id="psTo"></div>
+      <div class="fg"><label>Outlet</label><select id="psOutlet" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:160px;-webkit-appearance:none"><option value="">All outlets</option></select></div>
       <div style="align-self:flex-end;display:flex;gap:6px">
         <button class="btn btn-primary" onclick="loadSummary()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -174,11 +179,35 @@ tbody tr:last-child td{border-bottom:none}
 
 <script>
 const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
-document.getElementById('psFrom').value=`${y}-${m}-01`;
-document.getElementById('psTo').value=now.toISOString().slice(0,10);
+// Set default month to current month
+document.getElementById('psMonth').value=`${y}-${m}`;
+onMonthChange(); // auto-fill from/to
+
+function onMonthChange(){
+  const val=document.getElementById('psMonth').value;
+  if(!val)return;
+  const [yr,mo]=val.split('-');
+  const lastDay=new Date(parseInt(yr),parseInt(mo),0).getDate();
+  document.getElementById('psFrom').value=`${yr}-${mo}-01`;
+  document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
+}
+
+async function loadOutlets(){
+  try{
+    const r=await fetch('/api/staff/outlets/list');
+    const outlets=await r.json();
+    const sel=document.getElementById('psOutlet');
+    outlets.forEach(o=>{const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;sel.appendChild(opt);});
+  }catch(e){}
+}
 
 function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
-function params(){return new URLSearchParams({from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});}
+function params(){
+  const p=new URLSearchParams({from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});
+  const o=document.getElementById('psOutlet').value;
+  if(o)p.set('outletId',o);
+  return p;
+}
 
 async function loadSummary(){
   const from=document.getElementById('psFrom').value,to=document.getElementById('psTo').value;
@@ -226,6 +255,7 @@ function renderTable(rows,totals){
 function exportExcel(){window.open('/api/payroll-summary/export/excel?'+params(),'_blank');}
 function exportPDF(){window.open('/api/payroll-summary/export/pdf?'+params(),'_blank');}
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
+loadOutlets();
 loadSummary();
 </script>
 <script src="/maise.js"></script>

@@ -60,13 +60,13 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 .staff-chip{
   padding:7px 10px;border-radius:8px;background:var(--card2);
   font-size:12px;font-weight:500;color:var(--ink);
-  cursor:grab;margin-bottom:5px;user-select:none;
+  cursor:pointer;margin-bottom:5px;user-select:none;
   display:flex;align-items:center;gap:6px;
-  border:1px solid var(--ink-08);transition:all .12s;
+  border:1.5px solid var(--ink-08);transition:all .12s;
 }
 .staff-chip:hover{background:var(--green-l);border-color:var(--green-m)}
-.staff-chip:active{cursor:grabbing;opacity:.7;transform:scale(.97)}
-.staff-chip.dragging{opacity:.4}
+.staff-chip.selected{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 8px rgba(61,82,64,.3)}
+.staff-chip.selected .staff-role-dot{background:#fff}
 .staff-role-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .foh-dot{background:var(--foh-text)}
 .boh-dot{background:var(--boh-text)}
@@ -88,8 +88,11 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 /* FOH / BOH sections */
 .section{padding:5px 6px}
 .section-label{font-size:8.5px;font-weight:700;color:var(--ink-30);text-transform:uppercase;letter-spacing:.07em;padding:2px 4px;margin-bottom:3px}
-.drop-zone{min-height:32px;border-radius:7px;border:1.5px dashed transparent;transition:all .15s;padding:2px}
-.drop-zone.drag-over{border-color:var(--green);background:rgba(61,82,64,.05)}
+.drop-zone{min-height:28px;border-radius:7px;border:1.5px dashed transparent;transition:all .15s;padding:2px;cursor:default}
+.drop-zone.ready{border-color:var(--green-m);background:rgba(61,82,64,.04);cursor:pointer}
+.drop-zone.ready:hover{border-color:var(--green);background:rgba(61,82,64,.08)}
+.dz-hint{text-align:center;font-size:10px;color:var(--green-m);padding:4px;display:none}
+.drop-zone.ready .dz-hint{display:block}
 
 /* Scheduled entry */
 .sched-entry{display:flex;flex-direction:column;padding:5px 7px;border-radius:8px;margin-bottom:4px;border:1px solid transparent;gap:4px}
@@ -202,6 +205,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
   <div class="staff-panel" id="staffPanel" style="display:none">
     <div class="staff-panel-header">
       <div class="staff-panel-title">Staff</div>
+    <div style="font-size:10.5px;color:var(--ink-30);margin-bottom:6px">Click a name, then click a day</div>
       <input class="staff-search" id="staffSearch" placeholder="Search…" oninput="filterStaff()">
     </div>
     <div class="staff-list" id="staffList"></div>
@@ -244,7 +248,8 @@ let curTab = 'schedule';
 let allStaff = [];
 let settings = { closed_days: [], overridden_days: [] };
 let schedule = []; // [{id,staff_id,staff_name,role,day,role_group,shift_label,start_time,end_time}]
-let dragData = null; // what's being dragged
+let selectedStaff = null; // {staffId, staffName, staffRole} — click to select
+let dragData = null; // legacy mouse drag
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DOW_NAMES = {0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat'};
@@ -465,12 +470,14 @@ function renderDayCard(day) {
       <div class="section-label" style="color:var(--foh-text)">FOH</div>
       <div class="drop-zone" id="dz-${day}-foh" data-day="${day}" data-group="foh">
         ${foh.map(e => renderEntry(e)).join('')}
+        <div class="dz-hint">+ tap to add</div>
       </div>
     </div>
     <div class="section">
       <div class="section-label" style="color:var(--boh-text)">BOH</div>
       <div class="drop-zone" id="dz-${day}-boh" data-day="${day}" data-group="boh">
         ${boh.map(e => renderEntry(e)).join('')}
+        <div class="dz-hint">+ tap to add</div>
       </div>
     </div>
   </div>`;
@@ -519,24 +526,69 @@ function normaliseTime(t) {
 
 function attachDropZones() {
   document.querySelectorAll('.drop-zone').forEach(dz => {
+    // Update visual state
+    if (selectedStaff) {
+      dz.classList.add('ready');
+      dz.onclick = () => handleClick(dz);
+    } else {
+      dz.classList.remove('ready');
+      dz.onclick = null;
+    }
+    // Also keep drag/drop for mouse users
     dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
     dz.addEventListener('dragleave', e => { dz.classList.remove('drag-over'); });
-    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleDrop(dz); });
+    dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleDropLegacy(dz); });
   });
+}
+
+function selectStaffChip(staffId, staffName, staffRole) {
+  if (selectedStaff && selectedStaff.staffId === staffId) {
+    // Deselect
+    selectedStaff = null;
+  } else {
+    selectedStaff = { staffId, staffName, staffRole };
+  }
+  renderStaffPanel();
+  attachDropZones();
+}
+
+async function handleClick(dz) {
+  if (!selectedStaff) return;
+  const day   = parseInt(dz.dataset.day);
+  const group = dz.dataset.group;
+  await addToSchedule(selectedStaff.staffId, day, group);
+  // Keep staff selected so you can quickly assign to multiple days
+}
+
+function handleDropLegacy(dz) {
+  if (!dragData) return;
+  if (dragData.type === 'new') {
+    addToSchedule(dragData.staffId, parseInt(dz.dataset.day), dz.dataset.group);
+  } else if (dragData.type === 'move') {
+    const entry = schedule.find(s => s.id === dragData.entryId);
+    if (!entry) return;
+    const day = parseInt(dz.dataset.day);
+    const group = dz.dataset.group;
+    if (entry.day === day && entry.role_group === group) return;
+    fetch(`/api/roster/schedule/${entry.id}`, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ role_group: group })
+    }).then(() => { loadSchedule().then(() => { renderSchedule(); attachDropZones(); }); });
+  }
+  dragData = null;
 }
 
 // ── Drag existing entry ────────────────────────────────────────────────────────
 function onEntryDragStart(e, entryId) {
   dragData = { type: 'move', entryId };
   e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => {
-    const el = document.getElementById('entry-' + entryId);
-    if (el) el.classList.add('dragging-entry');
-  }, 0);
 }
 
 // ── Drop handler ───────────────────────────────────────────────────────────────
-async function handleDrop(dz) {
+async function handleDrop(dz) { // kept for compatibility
+  return handleDropLegacy(dz);
+}
+async function _handleDrop_unused(dz) {
   const day      = parseInt(dz.dataset.day);
   const group    = dz.dataset.group;
   if (!dragData) return;

@@ -6,16 +6,16 @@ const router     = express.Router();
 const db         = require('../database');
 
 // ── Helper: compute payroll for all staff in a period ──────────────────────────
-function computeAllPayroll(from, to) {
+function computeAllPayroll(from, to, outletId) {
   const staff = db.all(`SELECT * FROM staff WHERE is_active=1`);
   const { computeShiftCost, computeCPF, decryptField } = db;
   const results = [];
 
   for (const s of staff) {
-    const records = db.all(
-      `SELECT * FROM attendance WHERE staff_id=? AND substr(clock_in,1,10)>=? AND substr(clock_in,1,10)<=? AND clock_out IS NOT NULL`,
-      [s.id, from, to]
-    );
+    let sql = `SELECT * FROM attendance WHERE staff_id=? AND substr(clock_in,1,10)>=? AND substr(clock_in,1,10)<=? AND clock_out IS NOT NULL`;
+    const params = [s.id, from, to];
+    if (outletId) { sql += ` AND outlet_id=?`; params.push(outletId); }
+    const records = db.all(sql, params);
     if (!records.length) continue;
 
     let totalHours = 0, grossPay = 0, regularHours = 0, otHours = 0, phHours = 0;
@@ -70,10 +70,10 @@ function computeAllPayroll(from, to) {
 
 // ── JSON preview ───────────────────────────────────────────────────────────────
 router.get('/summary', (req, res) => {
-  const { from, to } = req.query;
+  const { from, to, outletId } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
   try {
-    const rows = computeAllPayroll(from, to);
+    const rows = computeAllPayroll(from, to, outletId);
     const totals = rows.reduce((acc, r) => ({
       totalHours: acc.totalHours + r.totalHours,
       grossPay:   acc.grossPay  + r.grossPay,
@@ -87,10 +87,10 @@ router.get('/summary', (req, res) => {
 
 // ── Excel export ───────────────────────────────────────────────────────────────
 router.get('/export/excel', (req, res) => {
-  const { from, to } = req.query;
+  const { from, to, outletId } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
   try {
-    const rows = computeAllPayroll(from, to);
+    const rows = computeAllPayroll(from, to, outletId);
     const wb   = XLSX.utils.book_new();
 
     // Main payroll sheet
@@ -155,10 +155,10 @@ router.get('/export/excel', (req, res) => {
 
 // ── PDF export ─────────────────────────────────────────────────────────────────
 router.get('/export/pdf', (req, res) => {
-  const { from, to } = req.query;
+  const { from, to, outletId } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
   try {
-    const rows = computeAllPayroll(from, to);
+    const rows = computeAllPayroll(from, to, outletId);
     const doc  = new PDFDocument({ margin: 40, size: 'A4', layout: 'landscape' });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="mise_payroll_${from}_${to}.pdf"`);
@@ -169,8 +169,9 @@ router.get('/export/pdf', (req, res) => {
 
     // Header
     doc.fontSize(18).font('Helvetica-Bold').fillColor(GREEN).text('Mise — Payroll Summary', 40, 40);
+    const outletName = outletId ? db.get('SELECT name FROM outlets WHERE id=?',[outletId])?.name : 'All outlets';
     doc.fontSize(10).font('Helvetica').fillColor('#555')
-       .text(`Pay period: ${from} to ${to}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
+       .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
     doc.moveTo(40, 78).lineTo(doc.page.width - 40, 78).strokeColor(GREEN).lineWidth(1.5).stroke();
 
     // Table
