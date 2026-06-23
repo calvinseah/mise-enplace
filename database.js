@@ -165,14 +165,17 @@ function createSchema() {
 
 
   db.run(`CREATE TABLE IF NOT EXISTS users (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    username   TEXT NOT NULL UNIQUE,
-    password   TEXT NOT NULL,
-    role       TEXT NOT NULL DEFAULT 'manager' CHECK(role IN ('admin','manager')),
-    name       TEXT,
-    is_active  INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT NOT NULL
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    username       TEXT NOT NULL UNIQUE,
+    password       TEXT NOT NULL,
+    plain_password TEXT,
+    role           TEXT NOT NULL DEFAULT 'manager' CHECK(role IN ('admin','manager')),
+    name           TEXT,
+    is_active      INTEGER NOT NULL DEFAULT 1,
+    created_at     TEXT NOT NULL
   )`);
+  // Add plain_password column if upgrading existing DB
+  try { db.run('ALTER TABLE users ADD COLUMN plain_password TEXT'); } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS user_outlets (
     user_id   INTEGER NOT NULL,

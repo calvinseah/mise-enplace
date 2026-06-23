@@ -137,6 +137,29 @@ app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(_
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
 
+
+// Temporary admin password reset route
+// Access: /reset-admin?token=RESET_TOKEN&password=newpassword
+app.get('/reset-admin', async (req, res) => {
+  const { token, password } = req.query;
+  const validToken = process.env.RESET_TOKEN;
+  if (!validToken || token !== validToken) {
+    return res.status(403).send('Invalid token');
+  }
+  if (!password || password.length < 6) {
+    return res.status(400).send('Password must be at least 6 characters');
+  }
+  try {
+    const bcrypt = require('bcryptjs');
+    const db = require('./database');
+    const hashed = await bcrypt.hash(password, 10);
+    db.run(`UPDATE users SET password=? WHERE username='admin'`, [hashed]);
+    res.send('Admin password updated successfully. Remove RESET_TOKEN from Railway variables now.');
+  } catch(e) {
+    res.status(500).send('Error: ' + e.message);
+  }
+});
+
 initDB().then(() => {
   app.listen(PORT, () => {
     const base = process.env.BASE_URL || `http://localhost:${PORT}`;

@@ -51,7 +51,7 @@ router.get('/status', (req, res) => {
 // ── User management (admin only) ──────────────────────────────────────────────
 router.get('/users', (req, res) => {
   try {
-    const users = db.all(`SELECT id, username, role, name, is_active, created_at FROM users ORDER BY role, username`);
+    const users = db.all(`SELECT id, username, plain_password, role, name, is_active, created_at FROM users ORDER BY role, username`);
     const withOutlets = users.map(u => {
       const outlets = db.all(
         `SELECT o.id, o.name FROM user_outlets uo JOIN outlets o ON uo.outlet_id=o.id WHERE uo.user_id=?`,
@@ -73,8 +73,8 @@ router.post('/users', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     db.run(
-      `INSERT INTO users (username, password, role, name, is_active, created_at) VALUES (?,?,?,?,1,?)`,
-      [username.trim().toLowerCase(), hashed, role, name || username, new Date().toISOString()]
+      `INSERT INTO users (username, password, plain_password, role, name, is_active, created_at) VALUES (?,?,?,?,?,1,?)`,
+      [username.trim().toLowerCase(), hashed, password, role, name || username, new Date().toISOString()]
     );
     const newUser = db.get(`SELECT id FROM users WHERE username=?`, [username.trim().toLowerCase()]);
 
@@ -104,7 +104,7 @@ router.put('/users/:id', async (req, res) => {
     if (is_active !== undefined) db.run(`UPDATE users SET is_active=? WHERE id=?`, [is_active ? 1 : 0, req.params.id]);
     if (password) {
       const hashed = await bcrypt.hash(password, 10);
-      db.run(`UPDATE users SET password=? WHERE id=?`, [hashed, req.params.id]);
+      db.run(`UPDATE users SET password=?, plain_password=? WHERE id=?`, [hashed, password, req.params.id]);
     }
 
     if (outlet_ids !== undefined) {
