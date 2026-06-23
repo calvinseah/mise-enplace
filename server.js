@@ -8,7 +8,7 @@ if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.startsWith('change
 const express = require('express');
 const session = require('express-session');
 const path    = require('path');
-const { initDB } = require('./database');
+const { initDB, syncAdminPassword } = require('./database');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -160,7 +160,7 @@ app.get('/reset-admin', async (req, res) => {
   }
 });
 
-initDB().then(() => {
+initDB().then(() => syncAdminPassword()).then(() => {
   app.listen(PORT, () => {
     const base = process.env.BASE_URL || `http://localhost:${PORT}`;
     console.log(`\n🍽  Mise — Restaurant Management`);
