@@ -131,7 +131,7 @@ function createSchema() {
     overridden_days TEXT DEFAULT '[]',
     UNIQUE(outlet_id, year, month)
   )`);
-  try { db.run('ALTER TABLE roster_settings ADD COLUMN overridden_days TEXT DEFAULT '[]''); } catch(e) {}
+  try { db.run("ALTER TABLE roster_settings ADD COLUMN overridden_days TEXT DEFAULT '[]'"); } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS roster_availability (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
