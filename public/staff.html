@@ -172,6 +172,7 @@ tbody tr:last-child td{border-bottom:none}
     <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
     <a href="/staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
     <a href="/payslip" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>Payslip</a>
+    <a href="/applications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Applications</a>
     <a href="/roster"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>Roster</a>
     <a href="/payroll-summary" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
     <a href="/labour-cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
@@ -212,7 +213,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="tab active" onclick="switchTab('staff')">Staff members</div>
       <div class="tab" onclick="switchTab('outlets')">Outlets</div>
       <div class="tab" onclick="switchTab('bulk')">Bulk upload</div>
-      <div class="tab" onclick="switchTab('applications')" id="appTab">Applications <span id="appBadge" style="display:none;background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:600;margin-left:4px"></span></div>
+
     </div>
 
     <!-- Staff tab -->
@@ -237,10 +238,7 @@ tbody tr:last-child td{border-bottom:none}
       </div>
       <div id="outletList"><div class="empty">Loading…</div></div>
     </div>
-
-    <!-- Applications tab -->
-    <div id="tab-applications" class="tab-panel" style="padding:20px">
-      <div id="appList"><div class="empty">Loading…</div></div>
+    </div>
     </div>
 
     <!-- Bulk upload tab -->
@@ -349,11 +347,10 @@ function onPr(){document.getElementById('grpPrYr').style.display=document.getEle
 function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
 
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['staff','outlets','bulk','applications'][i]===t));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',['staff','outlets','bulk'][i]===t));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='outlets')loadOutlets();
-  if(t==='applications')loadApplications();
 }
 
 /* SVG strings for JS-rendered cells */
@@ -599,11 +596,21 @@ async function loadApplications(){
   }catch(e){document.getElementById('appList').innerHTML='<div class="empty">Error loading applications</div>';}
 }
 
+  const payload={role,staff_type:type,
+    hourly_rate:type==='parttime'?parseFloat(document.getElementById('approveHourly').value)||null:null,
+    monthly_salary:type==='fulltime'?parseFloat(document.getElementById('approveSalary').value)||null:null};
+  try{
+    const r=await fetch('/api/applications/'+currentAppId+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.success){document.getElementById('approveDialog').remove();showAlert('Staff member added','ok');loadApplications();loadStaff();}
+    else showAlert(d.error||'Error','err');
+  }catch(e){showAlert('Network error','err');}
+}
+
+
 let currentAppId=null;
 function openApprove(id,name){
   currentAppId=id;
-  // Show a simple inline approve dialog
-  const el=document.getElementById('appList');
   const existingDialog=document.getElementById('approveDialog');
   if(existingDialog)existingDialog.remove();
   const dialog=document.createElement('div');
@@ -625,8 +632,8 @@ function openApprove(id,name){
           <option value="fulltime">Full-time</option>
         </select>
       </div>
-      <div class="fg" id="approveHourlyGrp"><label>Hourly rate (SGD)</label><input type="number" id="approveHourly" placeholder="9.50" step="0.5" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;width:100%;outline:none"></div>
-      <div class="fg" id="approveSalaryGrp" style="display:none"><label>Monthly salary (SGD)</label><input type="number" id="approveSalary" placeholder="2400" step="100" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;width:100%;outline:none"></div>
+      <div class="fg" id="approveHourlyGrp"><label>Hourly rate (SGD)</label><input type="number" id="approveHourly" placeholder="9.50" step="0.5" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
+      <div class="fg" id="approveSalaryGrp" style="display:none"><label>Monthly salary (SGD)</label><input type="number" id="approveSalary" placeholder="2400" step="100" min="0" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:5px;font-size:12.5px;width:100%;outline:none"></div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" style="width:auto;height:32px;padding:0 14px;font-size:12.5px" onclick="document.getElementById('approveDialog').remove()">Cancel</button>
@@ -656,7 +663,6 @@ async function confirmApprove(){
     else showAlert(d.error||'Error','err');
   }catch(e){showAlert('Network error','err');}
 }
-
 async function rejectApp(id){
   const reason=prompt('Reason for rejection (optional):');
   if(reason===null)return; // cancelled

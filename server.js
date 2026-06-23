@@ -129,6 +129,7 @@ app.get('/login',     (req, res) => res.sendFile(path.join(__dirname, 'public', 
 // ── HTML pages (manager) ──────────────────────────────────────────────────────
 app.get('/dashboard',       requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 app.get('/staff',           requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'staff.html')));
+app.get('/applications',    requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'applications.html')));
 app.get('/roster',          requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'roster.html')));
 app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'labour-cost.html')));
 
