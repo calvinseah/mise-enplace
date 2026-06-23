@@ -102,6 +102,7 @@ router.post('/:id/approve', (req, res) => {
 
 // ── MANAGER: Reject ───────────────────────────────────────────────────────────
 router.post('/:id/reject', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin access required' });
   const { reason } = req.body;
   try {
     const app = db.get(`SELECT id FROM applications WHERE id = ? AND status = 'pending'`, [req.params.id]);

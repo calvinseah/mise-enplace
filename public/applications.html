@@ -176,7 +176,7 @@ async function loadApps(status) {
           ${a.bank_account  ? `<span>Account: <strong>${a.bank_account}</strong></span>` : ''}
         </div>
         <div class="app-date">Submitted ${new Date(a.submitted_at).toLocaleString('en-SG')}</div>
-        ${status === 'pending' ? `
+        ${status === 'pending' ? (window._isAdmin ? `
         <div class="approve-section">
           <div class="fg">
             <label>Role</label>
@@ -208,7 +208,7 @@ async function loadApps(status) {
             Approve & add staff
           </button>
           <button class="btn btn-ghost" style="color:var(--danger)" onclick="reject(${a.id})">Reject</button>
-        </div>` : `
+        </div>` : '<div style="padding-top:10px;border-top:1px solid var(--ink-08);font-size:12px;color:var(--ink-30);font-style:italic">Only admins can approve or reject applications.</div>') : `
         <div class="app-actions">
           <span style="font-size:12px;font-weight:500;color:${status==='approved'?'var(--success)':'var(--danger)'}">
             ${status === 'approved' ? '✓ Approved' : '✕ Rejected'}
@@ -274,6 +274,7 @@ async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); l
     const r = await fetch('/api/me');
     if (!r.ok) { location.href = '/login'; return; }
     const u = await r.json();
+    window._isAdmin = u.role === 'admin';
     if (u.role !== 'admin') document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
   } catch(e) {}
 })();
