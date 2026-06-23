@@ -3,6 +3,15 @@ const express = require('express');
 const router  = express.Router();
 const db      = require('../database');
 
+// Check if the requesting user can access this outlet
+function canAccessOutlet(req, outletId) {
+  const user = req.session?.user;
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  if (!outletId) return true; // no outlet filter = allowed for managers (they'll filter via UI)
+  return user.outlets?.includes(parseInt(outletId));
+}
+
 // ── Settings: closed days + shift times per outlet/month ──────────────────────
 router.get('/settings', (req, res) => {
   const { year, month, outletId } = req.query;
@@ -113,6 +122,7 @@ router.delete('/availability', (req, res) => {
 router.get('/schedule', (req, res) => {
   const { year, month, outletId } = req.query;
   if (!year || !month) return res.status(400).json({ error: 'year and month required' });
+  if (outletId && !canAccessOutlet(req, outletId)) return res.status(403).json({ error: 'Access denied' });
   try {
     let sql = `SELECT rs.id, rs.staff_id, rs.outlet_id, rs.year, rs.month, rs.day, rs.role_group, rs.shift_label, rs.start_time, rs.end_time, rs.removed, s.name as staff_name, s.role, s.hourly_rate, s.monthly_salary, s.staff_type
                FROM roster_schedule rs
