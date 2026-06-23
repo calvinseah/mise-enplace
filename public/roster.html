@@ -84,6 +84,7 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 .drop-zone{min-height:28px;border-radius:7px;border:1.5px dashed transparent;padding:2px;transition:all .15s;cursor:default}
 .drop-zone.ready{border-color:var(--green-m);background:rgba(61,82,64,.04);cursor:pointer}
 .drop-zone.ready:hover{border-color:var(--green);background:rgba(61,82,64,.08)}
+.drop-zone.drag-over{border-color:var(--green);background:rgba(61,82,64,.08);border-style:solid}
 .dz-hint{text-align:center;font-size:9.5px;color:var(--green-m);padding:3px;display:none}
 .drop-zone.ready .dz-hint{display:block}
 
@@ -171,6 +172,10 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
     <button class="tb-btn" onclick="openSettings()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
+    </button>
+    <button class="tb-btn" onclick="exportPDF()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PDF
     </button>
     <a href="/dashboard" class="tb-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
@@ -333,7 +338,7 @@ function renderStaffPanel() {
   list.innerHTML = filtered.map(s => {
     const isSel = selectedStaff && selectedStaff.staffId === s.id;
     const roleUpper = (s.role || '').toUpperCase();
-    return '<div class="staff-chip' + (isSel ? ' selected' : '') + '" onclick="selectStaff(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\',\'' + roleUpper + '\')">' +
+    return '<div class="staff-chip' + (isSel ? ' selected' : '') + '" draggable="true" onclick="selectStaff(' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\',\'' + roleUpper + '\')" ondragstart="onChipDrag(event,' + s.id + ',\'' + s.name.replace(/'/g, "\\'") + '\',\'' + roleUpper + '\')">' +
       '<div class="role-dot ' + (roleUpper === 'BOH' ? 'boh-dot' : 'foh-dot') + '"></div>' +
       s.name + (isSel ? ' ✓' : '') +
       '</div>';
@@ -405,8 +410,8 @@ function renderSchedule() {
   }
   const weeks = buildWeeks();
   const howTo = '<div class="how-to">' +
-    '<div class="how-to-step"><div class="step-num">1</div>Click a staff name on the left to select</div>' +
-    '<div class="how-to-step"><div class="step-num">2</div>Click a FOH or BOH section on any day to assign</div>' +
+    '<div class="how-to-step"><div class="step-num">1</div>Click or drag a staff name from the left</div>' +
+    '<div class="how-to-step"><div class="step-num">2</div>Click or drop onto a FOH or BOH section</div>' +
     '<div class="how-to-step"><div class="step-num">3</div>Set start &amp; end times next to each name</div>' +
     '</div>';
   content.innerHTML = howTo + weeks.map(week =>
@@ -474,6 +479,10 @@ function attachDropZones() {
       dz.classList.remove('ready');
       dz.onclick = null;
     }
+    // Always attach drag/drop for mouse users
+    dz.ondragover = e => { e.preventDefault(); dz.classList.add('drag-over'); };
+    dz.ondragleave = () => dz.classList.remove('drag-over');
+    dz.ondrop = e => { e.preventDefault(); dz.classList.remove('drag-over'); handleDrop(dz); };
   });
 }
 
@@ -649,6 +658,101 @@ async function saveSettings() {
     closeSettings();
     render();
   } catch(e) {}
+}
+
+
+
+let dragData = null;
+
+function onChipDrag(e, id, name, role) {
+  dragData = { type: 'chip', staffId: id, staffName: name, staffRole: role };
+  e.dataTransfer.effectAllowed = 'copy';
+}
+
+async function handleDrop(dz) {
+  if (!dragData) return;
+  const day = parseInt(dz.dataset.day);
+  const group = dz.dataset.group;
+  if (dragData.type === 'chip') {
+    await addToSchedule(dragData.staffId, day, group);
+  }
+  dragData = null;
+}
+
+function exportPDF() {
+  if (!curOutlet) { alert('Please select an outlet first.'); return; }
+  const outletName = document.getElementById('outletSelect').options[document.getElementById('outletSelect').selectedIndex]?.text || '';
+  const monthName = MONTHS[curMonth-1] + ' ' + curYear;
+  const weeks = buildWeeks();
+  const DOW_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  // Build table rows
+  let tableRows = '';
+  weeks.forEach(week => {
+    week.forEach(day => {
+      if (!day) return;
+      const closed = isClosed(day);
+      const daySchedule = schedule.filter(s => s.day == day && !s.removed);
+      const foh = daySchedule.filter(s => s.role_group === 'foh');
+      const boh = daySchedule.filter(s => s.role_group === 'boh');
+      const dayLabel = getDayShort(day) + ' ' + day;
+      const overridden = isOverridden(day);
+
+      if (closed) {
+        tableRows += '<tr class="closed-row"><td>' + dayLabel + '</td><td colspan="2" style="color:#999;font-style:italic">Closed</td></tr>';
+        return;
+      }
+
+      const fohNames = foh.map(e => {
+        const t = e.start_time && e.end_time ? ' (' + e.start_time.slice(0,5) + '–' + e.end_time.slice(0,5) + ')' : '';
+        return e.staff_name + t;
+      }).join('<br>') || '—';
+
+      const bohNames = boh.map(e => {
+        const t = e.start_time && e.end_time ? ' (' + e.start_time.slice(0,5) + '–' + e.end_time.slice(0,5) + ')' : '';
+        return e.staff_name + t;
+      }).join('<br>') || '—';
+
+      const rowStyle = overridden ? 'background:#FFFBEB' : '';
+      tableRows += '<tr style="' + rowStyle + '">' +
+        '<td style="font-weight:600;white-space:nowrap">' + dayLabel + (overridden ? ' <span style="font-size:9px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 5px">SPECIAL</span>' : '') + '</td>' +
+        '<td style="color:#1E40AF">' + fohNames + '</td>' +
+        '<td style="color:#92400E">' + bohNames + '</td>' +
+        '</tr>';
+    });
+  });
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Roster — ${outletName} — ${monthName}</title>
+  <style>
+    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;color:#1A2318;font-size:12px}
+    h1{font-size:22px;font-weight:700;margin-bottom:4px}
+    .sub{color:#666;font-size:12px;margin-bottom:24px}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#666;border-bottom:2px solid #3D5240;background:#F0F2EC}
+    td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top}
+    tr.closed-row td{color:#bbb;background:#fafafa}
+    .footer{margin-top:24px;font-size:9px;color:#bbb;text-align:center}
+    @media print{body{padding:16px}@page{margin:1.5cm}}
+  </style></head><body>
+  <h1>${outletName}</h1>
+  <div class="sub">Roster · ${monthName} · Generated ${new Date().toLocaleDateString('en-SG')}</div>
+  <table>
+    <thead><tr><th style="width:90px">Date</th><th>FOH</th><th>BOH</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <div class="footer">Mise Restaurant Management · mise-enplace.up.railway.app</div>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank');
+  if (win) {
+    win.onload = () => {
+      win.print();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    };
+  }
 }
 
 init();
