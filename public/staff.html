@@ -493,6 +493,32 @@ async function addOutlet(){
   document.getElementById('newOutletName').value='';document.getElementById('newOutletAddr').value='';
   showAlert('Outlet added','ok');loadOutlets();
 }
+async function editOutlet(id, name, addr) {
+  const row = document.getElementById('orow-'+id);
+  row.innerHTML = `
+    <input type="text" id="edit-name-${id}" value="${name}" style="flex:1;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;min-width:0" />
+    <input type="text" id="edit-addr-${id}" value="${addr}" style="flex:2;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;min-width:0" />
+    <button class="btn btn-primary btn-sm" onclick="saveOutlet(${id})">Save</button>
+    <button class="btn btn-ghost btn-sm" onclick="loadOutlets()">Cancel</button>
+  `;
+  document.getElementById('edit-name-'+id).focus();
+}
+
+async function saveOutlet(id) {
+  const name = document.getElementById('edit-name-'+id).value.trim();
+  const addr = document.getElementById('edit-addr-'+id).value.trim();
+  if (!name) { showAlert('Outlet name is required', 'err'); return; }
+  try {
+    const r = await fetch('/api/staff/outlets/'+id, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, address: addr })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert('Outlet updated', 'ok'); loadOutlets(); }
+    else showAlert(d.error||'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
+}
+
 async function delOutlet(id){
   if(!confirm('Delete this outlet? Existing attendance records will remain.'))return;
   await fetch(`/api/staff/outlets/${id}`,{method:'DELETE'});loadOutlets();
