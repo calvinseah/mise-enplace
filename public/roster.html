@@ -306,23 +306,35 @@ const DOW_NAMES = {0:'Sun',1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat'};
 // ── INIT ───────────────────────────────────────────────────────────────────────
 async function init() {
   updateMonthLabel();
+
+  // Check auth first
+  try {
+    const authR = await fetch('/api/me');
+    if (!authR.ok) { location.href = '/login'; return; }
+  } catch(e) { location.href = '/login'; return; }
+
   // Load outlets
   try {
     const r = await fetch('/api/staff/outlets/list');
-    const outlets = await r.json();
-    const sel = document.getElementById('outletSelect');
-    outlets.forEach(o => {
-      const opt = document.createElement('option');
-      opt.value = o.id; opt.textContent = o.name;
-      sel.appendChild(opt);
-    });
-    if (outlets.length === 1) { curOutlet = String(outlets[0].id); sel.value = curOutlet; }
+    if (r.ok) {
+      const outlets = await r.json();
+      const sel = document.getElementById('outletSelect');
+      outlets.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.id; opt.textContent = o.name;
+        sel.appendChild(opt);
+      });
+      if (outlets.length === 1) { curOutlet = String(outlets[0].id); sel.value = curOutlet; }
+    }
   } catch(e) {}
 
   // Load staff
   try {
     const r = await fetch('/api/staff');
-    allStaff = (await r.json()).filter(s => s.is_active);
+    if (r.ok) {
+      const data = await r.json();
+      allStaff = data.filter(s => s.is_active === 1 || s.is_active === true);
+    }
   } catch(e) {}
 
   await loadAll();
@@ -597,6 +609,14 @@ function renderOverview() {
 // ── FINAL SCHEDULE ────────────────────────────────────────────────────────────
 function renderFinal() {
   const content = document.getElementById('mainContent');
+  if (!allStaff.length) {
+    content.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--ink-60)">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block;opacity:.3"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div style="font-size:14px;font-weight:500;margin-bottom:6px">No staff found</div>
+      <div style="font-size:12.5px">Add staff members first via the <a href="/staff" style="color:var(--green)">Staff page</a>, then come back to build your roster.</div>
+    </div>`;
+    return;
+  }
   const legend = `<div class="fs-legend">
     <div style="font-size:12px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-right:4px">TAP NAME TO REMOVE · TYPE TIMES NEXT TO NAMES</div>
   </div>
@@ -619,7 +639,7 @@ function renderFinal() {
     const scheduledIds = daySchedule.map(s => s.staff_id);
     const availableStaff = allStaff.filter(s => !scheduledIds.includes(s.id));
     const addOptions = availableStaff.map(s =>
-      `<option value="${s.id}|${s.role === 'BOH' ? 'boh' : 'foh'}">${s.name}</option>`
+      `<option value="${s.id}|${(s.role||'').toUpperCase() === 'BOH' ? 'boh' : 'foh'}">${s.name}</option>`
     ).join('');
 
     const renderEntry = (e) => {
