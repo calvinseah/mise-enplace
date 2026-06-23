@@ -596,18 +596,6 @@ async function loadApplications(){
   }catch(e){document.getElementById('appList').innerHTML='<div class="empty">Error loading applications</div>';}
 }
 
-  const payload={role,staff_type:type,
-    hourly_rate:type==='parttime'?parseFloat(document.getElementById('approveHourly').value)||null:null,
-    monthly_salary:type==='fulltime'?parseFloat(document.getElementById('approveSalary').value)||null:null};
-  try{
-    const r=await fetch('/api/applications/'+currentAppId+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const d=await r.json();
-    if(d.success){document.getElementById('approveDialog').remove();showAlert('Staff member added','ok');loadApplications();loadStaff();}
-    else showAlert(d.error||'Error','err');
-  }catch(e){showAlert('Network error','err');}
-}
-
-
 let currentAppId=null;
 function openApprove(id,name){
   currentAppId=id;
