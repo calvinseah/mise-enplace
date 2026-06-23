@@ -103,7 +103,7 @@ app.get('/api/attendance/my-shifts', attendanceRoutes);
 
 // ── Manager API ───────────────────────────────────────────────────────────────
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
-app.use('/api/applications',   requireAuthAPI, requireAdminAPI, applicationRoutes);
+app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);
