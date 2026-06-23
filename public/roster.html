@@ -452,7 +452,7 @@ function renderEntry(e) {
   const cls = e.role_group === 'boh' ? 'boh-entry' : 'foh-entry';
   const startVal = e.start_time || '';
   const endVal = e.end_time || '';
-  return '<div class="sched-entry ' + cls + '" id="entry-' + e.id + '">' +
+  return '<div class="sched-entry ' + cls + '" id="entry-' + e.id + '" onclick="event.stopPropagation()">' +
     '<div class="entry-top">' +
     '<span class="entry-name">' + e.staff_name + '</span>' +
     '<button class="entry-del" onclick="removeEntry(' + e.id + ')">' +
