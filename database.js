@@ -163,6 +163,25 @@ function createSchema() {
   if (!revCols.includes('pax'))     db.run('ALTER TABLE revenue_entries ADD COLUMN pax INTEGER DEFAULT 0');
   if (!revCols.includes('location'))db.run('ALTER TABLE revenue_entries ADD COLUMN location TEXT');
 
+
+  db.run(`CREATE TABLE IF NOT EXISTS users (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    username   TEXT NOT NULL UNIQUE,
+    password   TEXT NOT NULL,
+    role       TEXT NOT NULL DEFAULT 'manager' CHECK(role IN ('admin','manager')),
+    name       TEXT,
+    is_active  INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS user_outlets (
+    user_id   INTEGER NOT NULL,
+    outlet_id INTEGER NOT NULL,
+    PRIMARY KEY(user_id, outlet_id),
+    FOREIGN KEY(user_id)   REFERENCES users(id),
+    FOREIGN KEY(outlet_id) REFERENCES outlets(id)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS pin_lockouts (
     staff_id     INTEGER NOT NULL PRIMARY KEY,
     attempts     INTEGER DEFAULT 0,
@@ -211,6 +230,19 @@ async function seedData() {
     ['2026-05-31','Vesak Day'],['2026-05-27','Hari Raya Haji'],['2026-08-10','National Day'],
     ['2026-11-07','Deepavali'],['2026-12-25','Christmas Day'],
   ];
+
+  // Seed default admin user
+  const noUsers = get('SELECT COUNT(*) as cnt FROM users');
+  if (!noUsers || noUsers.cnt === 0) {
+    const bcrypt = require('bcryptjs');
+    const adminPass = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin1234', 10);
+    db.run(
+      `INSERT INTO users (username, password, role, name, is_active, created_at)
+       VALUES ('admin', ?, 'admin', 'Administrator', 1, ?)`,
+      [adminPass, new Date().toISOString()]
+    );
+  }
+
   for (const [date, name] of holidays) {
     db.run('INSERT OR IGNORE INTO public_holidays (date, name) VALUES (?, ?)', [date, name]);
   }

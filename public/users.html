@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Mise — Users</title>
+<style>
+:root{--ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;--ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);--ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);--accent-10:rgba(61,82,64,.10);--white:#ffffff;--card-radius:16px;--card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;--danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+.sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo-row{display:flex;align-items:center;gap:9px}
+.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon span{font-family:var(--font-display);font-size:16px;color:#fff;line-height:1;font-style:italic}
+.sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
+.sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
+.sb-nav{padding:8px;flex:1}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
+.sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
+.sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .12s}
+.sb-nav a:hover svg,.sb-nav a.active svg{opacity:1}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s}
+.sb-logout:hover{color:rgba(255,255,255,.6)}
+.sb-logout svg{width:13px;height:13px}
+.main{flex:1;padding:28px 32px;min-width:0;overflow:auto}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title{font-size:22px;font-weight:400;color:var(--ink);font-family:var(--font-display)}
+.page-sub{font-size:12.5px;color:var(--ink-60);margin-top:3px}
+.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn svg{width:13px;height:13px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}
+.btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:var(--ink-04);color:var(--ink)}
+.btn-sm{height:26px;padding:0 10px;font-size:11.5px}
+.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);overflow:hidden;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--ink-08)}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--ink-04);vertical-align:middle}
+tbody tr:hover td{background:var(--surface)}
+tbody tr:last-child td{border-bottom:none}
+.role-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600}
+.role-admin{background:rgba(61,82,64,.1);color:var(--accent)}
+.role-manager{background:rgba(26,35,24,.06);color:var(--ink-60)}
+.outlet-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:5px;font-size:11px;background:#E8EDE3;color:var(--accent);margin:1px}
+.status-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px}
+.actions{display:flex;gap:4px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:14px;width:90%;max-width:480px;box-shadow:0 20px 40px rgba(0,0,0,.15);padding:24px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:400;font-family:var(--font-display);color:var(--ink);margin-bottom:20px}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select{height:36px;padding:0 12px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;transition:border-color .12s}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.fg select{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%231A2318' stroke-opacity='.4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.fg .hint{font-size:11px;color:var(--ink-30);margin-top:2px}
+.outlets-check{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.outlets-check label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink);cursor:pointer;padding:5px 10px;border-radius:8px;border:1px solid var(--ink-08);background:var(--white);transition:all .12s}
+.outlets-check label:hover{background:var(--surface)}
+.outlets-check input[type=checkbox]{accent-color:var(--accent)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--ink-08);margin-top:4px}
+.alert{padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:500;margin-bottom:12px;border:1px solid;display:flex;align-items:center;gap:7px}
+.alert svg{width:14px;height:14px;flex-shrink:0}
+.alert-ok{background:rgba(46,107,62,.08);color:var(--success);border-color:rgba(46,107,62,.2)}
+.alert-err{background:rgba(192,57,43,.08);color:var(--danger);border-color:rgba(192,57,43,.2)}
+.empty{text-align:center;color:var(--ink-30);padding:40px;font-size:12.5px}
+@media(max-width:768px){.sidebar{width:100%;height:auto;position:relative}.sb-nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px 0}.sb-nav a{padding:6px 10px;white-space:nowrap;margin-bottom:0;font-size:12px}.sb-nav a svg{display:none}.sb-footer{display:none}.main{padding:16px}}
+</style>
+<style>
+/* ── Mobile: hamburger drawer ── */
+.mob-topbar{display:none}
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{display:none;position:fixed;inset:0;z-index:400;width:80%;max-width:280px;height:100vh;overflow-y:auto;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.mob-open{display:flex;transform:translateX(0)}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399}
+  .mob-overlay.open{display:block}
+  .mob-topbar{display:flex;align-items:center;gap:12px;background:#1A2318;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));flex-shrink:0}
+  .mob-hamburger{width:36px;height:36px;background:rgba(255,255,255,.08);border:none;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+  .mob-hamburger span{display:block;width:18px;height:1.5px;background:#fff;border-radius:2px}
+  .mob-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1}
+  .mob-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .mob-icon span{font-family:'DM Serif Display',serif;font-size:15px;color:#fff;line-height:1;font-style:italic}
+  .mob-name{font-size:16px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff}
+  .main{padding:16px}
+  .stats{grid-template-columns:1fr 1fr}
+  .col-stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:12px;min-width:520px}
+  thead th,tbody td{padding:8px 10px}
+  .modal{width:96%;max-height:85vh}
+  .page-title{font-size:18px}
+  .card{padding:14px 16px}
+  .filters{flex-direction:column;align-items:stretch}
+  .filters .fg{width:100%}
+  .filters .fg input,.filters .fg select{min-width:0;width:100%}
+  .page-header{flex-direction:column;gap:10px;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-row">
+      <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
+        <div class="sb-icon"><span>M</span></div>
+        <div><div class="sb-name">Mise</div><div class="sb-addr">Every person, in place.</div></div>
+      </a>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
+    <div class="sb-group" id="staffGroup">
+      <div class="sb-group-header" onclick="toggleStaff()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Staff</span>
+        <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sb-sub" id="staffSub">
+        <a href="/staff">All staff</a>
+        <a href="/staff#applications">Applications</a>
+      </div>
+    </div>
+    <a href="/roster"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Roster</a>
+    <a href="/payslip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Payslip</a>
+    <a href="/payroll-summary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
+    <a href="/labour-cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
+    <a href="/users" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
+  </nav>
+  <div class="sb-footer">
+    <button class="sb-logout" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div><div class="page-title">Users</div><div class="page-sub">Manage admin and manager accounts</div></div>
+    <button class="btn btn-primary" onclick="openAdd()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add user
+    </button>
+  </div>
+
+  <div id="alertBox" style="display:none"></div>
+
+  <div class="card">
+    <table>
+      <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Outlets</th><th>Status</th><th></th></tr></thead>
+      <tbody id="usersBody"><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Add/Edit modal -->
+<div class="overlay" id="userOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Add user</div>
+    <input type="hidden" id="userId">
+    <div class="fg"><label>Username</label><input type="text" id="uUsername" placeholder="e.g. john.manager" autocapitalize="none"></div>
+    <div class="fg"><label>Display name</label><input type="text" id="uName" placeholder="e.g. John Tan"></div>
+    <div class="fg"><label>Role</label>
+      <select id="uRole" onchange="onRoleChange()">
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="fg"><label>Password <span id="pwHint" style="font-weight:400;color:var(--ink-30)">(leave blank to keep existing)</span></label>
+      <input type="password" id="uPassword" placeholder="Set a password" autocomplete="new-password">
+    </div>
+    <div class="fg" id="outletsGroup">
+      <label>Assigned outlets</label>
+      <div class="outlets-check" id="outletsCheck"></div>
+      <div class="hint">Managers can only see data for assigned outlets</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let outlets = [];
+let editingId = null;
+
+function onRoleChange() {
+  const isManager = document.getElementById('uRole').value === 'manager';
+  document.getElementById('outletsGroup').style.display = isManager ? '' : 'none';
+}
+
+async function init() {
+  try {
+    const r = await fetch('/api/staff/outlets/list');
+    outlets = await r.json();
+  } catch(e) {}
+  loadUsers();
+}
+
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/auth/users');
+    const users = await r.json();
+    const tb = document.getElementById('usersBody');
+    if (!users.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">No users yet</td></tr>'; return; }
+    tb.innerHTML = users.map(u => {
+      const outletPills = u.outlets?.map(o => `<span class="outlet-pill">${o.name}</span>`).join('') || '—';
+      const roleBadge = u.role === 'admin'
+        ? `<span class="role-badge role-admin">Admin</span>`
+        : `<span class="role-badge role-manager">Manager</span>`;
+      const status = u.is_active
+        ? `<span class="status-dot" style="color:var(--success)"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="8"/></svg> Active</span>`
+        : `<span class="status-dot" style="color:var(--ink-30)"><svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="8"/></svg> Inactive</span>`;
+      return `<tr>
+        <td style="font-weight:500;font-family:monospace;font-size:12px">${u.username}</td>
+        <td>${u.name||'—'}</td>
+        <td>${roleBadge}</td>
+        <td>${u.role==='admin'?'<span style="color:var(--ink-30);font-size:11.5px">All outlets</span>':outletPills}</td>
+        <td>${status}</td>
+        <td><div class="actions">
+          <button class="btn btn-ghost btn-sm" onclick='openEdit(${JSON.stringify(u).replace(/'/g,"&#39;")})'>Edit</button>
+          <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="toggleStatus(${u.id},${u.is_active})">${u.is_active?'Deactivate':'Reactivate'}</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error(e); }
+}
+
+function buildOutletChecks(selectedIds=[]) {
+  const wrap = document.getElementById('outletsCheck');
+  wrap.innerHTML = outlets.map(o => `
+    <label>
+      <input type="checkbox" value="${o.id}" ${selectedIds.includes(o.id)?'checked':''}>
+      ${o.name}
+    </label>`).join('');
+}
+
+function openAdd() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add user';
+  document.getElementById('userId').value = '';
+  document.getElementById('uUsername').value = '';
+  document.getElementById('uName').value = '';
+  document.getElementById('uRole').value = 'manager';
+  document.getElementById('uPassword').value = '';
+  document.getElementById('pwHint').style.display = 'none';
+  buildOutletChecks();
+  onRoleChange();
+  document.getElementById('userOverlay').classList.add('open');
+}
+
+function openEdit(u) {
+  editingId = u.id;
+  document.getElementById('modalTitle').textContent = 'Edit user — ' + u.username;
+  document.getElementById('userId').value = u.id;
+  document.getElementById('uUsername').value = u.username;
+  document.getElementById('uName').value = u.name || '';
+  document.getElementById('uRole').value = u.role;
+  document.getElementById('uPassword').value = '';
+  document.getElementById('pwHint').style.display = '';
+  buildOutletChecks(u.outlets?.map(o=>o.id)||[]);
+  onRoleChange();
+  document.getElementById('userOverlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('userOverlay').classList.remove('open'); }
+
+async function saveUser() {
+  const username = document.getElementById('uUsername').value.trim();
+  const name     = document.getElementById('uName').value.trim();
+  const role     = document.getElementById('uRole').value;
+  const password = document.getElementById('uPassword').value;
+  const outlet_ids = Array.from(document.querySelectorAll('#outletsCheck input:checked')).map(i => parseInt(i.value));
+
+  if (!username) { showAlert('Username is required','err'); return; }
+  if (!editingId && !password) { showAlert('Password is required for new users','err'); return; }
+
+  const payload = { username, name, role, outlet_ids };
+  if (password) payload.password = password;
+
+  try {
+    const url  = editingId ? `/api/auth/users/${editingId}` : '/api/auth/users';
+    const method = editingId ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (d.success) { closeModal(); showAlert(editingId?'User updated':'User created','ok'); loadUsers(); }
+    else showAlert(d.error||'Error','err');
+  } catch(e) { showAlert('Network error','err'); }
+}
+
+async function toggleStatus(id, active) {
+  if (!confirm(`${active?'Deactivate':'Reactivate'} this user?`)) return;
+  try {
+    await fetch(`/api/auth/users/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({is_active:!active}) });
+    showAlert('Updated','ok'); loadUsers();
+  } catch(e) { showAlert('Error','err'); }
+}
+
+function showAlert(m,t) {
+  const el = document.getElementById('alertBox');
+  const ic = t==='err'
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+  el.className='alert alert-'+(t==='err'?'err':'ok');
+  el.innerHTML=ic+m; el.style.display='flex';
+  setTimeout(()=>el.style.display='none',4000);
+}
+async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
+init();
+</script>
+
+<script>
+function openNav(){
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('mobOverlay').classList.add('open');
+  document.querySelector('.mob-close-btn').style.display='flex';
+}
+function closeNav(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mobOverlay').classList.remove('open');
+}
+document.querySelectorAll('.sb-nav a').forEach(a=>a.addEventListener('click',()=>{
+  if(window.innerWidth<=768)closeNav();
+}));
+</script>
+
+
+<script>
+function toggleStaff(){
+  const g=document.getElementById('staffGroup');
+  if(g)g.classList.toggle('open');
+}
+if(location.pathname==='/staff'){
+  const g=document.getElementById('staffGroup');
+  if(g)g.classList.add('open');
+}
+</script>
+</body>
+</html>

@@ -6,134 +6,113 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Manager Login — Mise</title>
+<title>Mise — Sign in</title>
 <style>
-:root{
-  --ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;
-  --ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);
-  --ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);
-  --accent-10:rgba(61,82,64,.10);--accent-20:rgba(61,82,64,.20);
-  --white:#ffffff;--card-radius:16px;
-  --card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);
-  --font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;
-  --danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;
-}
+:root{--bg:#F0F2EC;--green:#3D5240;--green-l:#C8D5B9;--card:#fff;--card2:#E8EDE3;--text:#1A2318;--muted:rgba(26,35,24,.55);--danger:#C0392B;--font:'Inter',sans-serif;--font-d:'DM Serif Display',serif;}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:#F0F2EC;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:32px 28px;width:100%;max-width:360px}
-.wordmark{display:flex;align-items:center;gap:10px;margin-bottom:24px}
-.wordmark-icon{width:34px;height:34px;background:#1A2318;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.wordmark-icon svg{width:18px;height:18px;stroke:#fff}
-.wordmark-text{font-size:18px;font-weight:400;color:var(--ink);font-family:var(--font-display)}
-.wordmark-sub{font-size:12px;color:var(--ink-60);margin-top:1px}
-.divider{height:1px;background:var(--ink-08);margin-bottom:24px}
-.field-label{display:block;font-size:11px;font-weight:500;color:var(--ink-60);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
-.input-wrap{position:relative;margin-bottom:16px}
-input[type=password],input[type=text]{width:100%;height:36px;padding:0 38px 0 10px;border:var(--input-border);border-radius:var(--input-radius);font-size:13px;font-family:var(--font);color:var(--ink);background:var(--white);outline:none;transition:border-color .15s,box-shadow .15s}
-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-10)}
-.eye-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ink-60);padding:4px;display:flex;align-items:center;transition:color .12s}
-.eye-btn:hover{color:var(--ink)}
-.eye-btn svg{width:15px;height:15px}
-.btn{width:100%;height:36px;background:#1A2318;color:var(--white);border:none;border-radius:var(--input-radius);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
-.btn svg{width:14px;height:14px}
-.btn:hover{opacity:.85}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-.error-msg{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--danger);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:7px}
-.error-msg svg{width:13px;height:13px;flex-shrink:0}
-.back{text-align:center;margin-top:16px;font-size:12px;color:var(--ink-60);display:flex;align-items:center;justify-content:center;gap:5px}
-.back svg{width:13px;height:13px;opacity:.5}
-.back a{color:var(--accent);text-decoration:none;font-weight:500}
-.back a:hover{text-decoration:underline}
-</style>
-<style>
-@media (max-width: 768px) {
-  .layout { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: relative; padding: 10px 12px; }
-  .sb-logo { padding: 6px 0 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
-  .sb-nav { display: flex; flex-direction: row; padding: 6px 0 4px; overflow-x: auto; gap: 2px; flex-wrap: nowrap; }
-  .sb-nav a { padding: 6px 10px; white-space: nowrap; margin-bottom: 0; border-radius: 5px; font-size: 12px; }
-  .sb-nav a svg { display: none; }
-  .sb-footer { display: none; }
-  .main { padding: 16px; }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
-  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { font-size: 11.5px; }
-  thead th, tbody td { padding: 8px 10px; }
-  .modal { width: 96%; margin: 8px; }
-  .page-title { font-size: 17px; }
-  .card { padding: 14px 16px; }
-}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--card);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(26,35,24,.09),0 1px 4px rgba(26,35,24,.05)}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.brand-icon{width:40px;height:40px;background:var(--green);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-icon span{font-family:var(--font-d);font-size:22px;color:#fff;line-height:1;font-style:italic}
+.brand-name{font-size:22px;font-weight:400;font-family:var(--font-d);color:var(--text)}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.divider{height:1px;background:rgba(26,35,24,.08);margin-bottom:26px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:11.5px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+.fg input{width:100%;height:48px;background:var(--card2);border:none;border-radius:12px;padding:0 14px;font-size:15px;font-family:var(--font);color:var(--text);outline:none;transition:box-shadow .15s}
+.fg input:focus{box-shadow:0 0 0 3px rgba(61,82,64,.18)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:44px}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;transition:color .12s}
+.eye-btn:hover{color:var(--text)}
+.eye-btn svg{width:17px;height:17px;stroke:currentColor}
+.err{background:rgba(192,57,43,.08);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500;color:var(--danger);margin-bottom:16px;display:none;align-items:center;gap:8px}
+.err svg{width:15px;height:15px;flex-shrink:0;stroke:var(--danger)}
+.btn{width:100%;height:52px;background:var(--green);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:500;font-family:var(--font);cursor:pointer;letter-spacing:-.01em;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{opacity:.88}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:17px;height:17px}
+.back{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.back a{color:var(--green);text-decoration:none;font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="wordmark">
-    <div class="wordmark-icon">
-      <!-- Lucide: beer mug -->
-      <span style="font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;color:#fff;line-height:1">M</span>
-    </div>
-    <div>
-      <div class="wordmark-text">Mise</div>
-      <div class="wordmark-sub">Manager access</div>
-    </div>
+  <div class="brand">
+    <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:12px">
+      <div class="brand-icon"><span>M</span></div>
+      <div>
+        <div class="brand-name">Mise</div>
+        <div class="brand-sub">Manager access</div>
+      </div>
+    </a>
   </div>
   <div class="divider"></div>
 
-  <div class="error-msg" id="err">
-    <!-- Lucide: alert-circle -->
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="err" id="errBox">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <span id="errText"></span>
   </div>
 
-  <label class="field-label" for="pw">Password</label>
-  <div class="input-wrap">
-    <input type="password" id="pw" placeholder="Enter manager password" autofocus onkeydown="if(event.key==='Enter')login()">
-    <button class="eye-btn" id="eyeBtn" onclick="togglePw()" tabindex="-1" title="Show/hide password">
-      <!-- Eye icon — toggled by JS -->
-      <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    </button>
+  <div class="fg">
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter your username" autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('password').focus()">
+  </div>
+  <div class="fg">
+    <label>Password</label>
+    <div class="pw-wrap">
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+      <button class="eye-btn" onclick="togglePw()" tabindex="-1">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
   </div>
 
   <button class="btn" id="loginBtn" onclick="login()">
-    <!-- Lucide: arrow-right -->
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
     Sign in
   </button>
 
-  <div class="back">
-    <!-- Lucide: arrow-left -->
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-    <a href="/">Staff clock-in</a>
-  </div>
+  <div class="back"><a href="/">← Back to home</a></div>
 </div>
 
 <script>
 const eyeOpen=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
 const eyeClosed=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
 function togglePw(){
-  const i=document.getElementById('pw');
-  const showing=i.type==='text';
-  i.type=showing?'password':'text';
-  document.getElementById('eyeBtn').innerHTML=showing?eyeOpen:eyeClosed;
+  const i=document.getElementById('password');
+  const show=i.type==='text';
+  i.type=show?'password':'text';
+  document.getElementById('eyeIcon').outerHTML=(show?eyeOpen:eyeClosed).replace('<svg','<svg id="eyeIcon"');
 }
+
 async function login(){
-  const pw=document.getElementById('pw').value;
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
   const btn=document.getElementById('loginBtn');
-  const errEl=document.getElementById('err');
-  if(!pw){showErr('Please enter a password');return;}
+  const err=document.getElementById('errBox');
+  if(!username||!password){showErr('Please enter your username and password.');return;}
   btn.disabled=true;
-  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Signing in…`;
-  errEl.style.display='none';
+  btn.innerHTML=`<svg style="animation:spin 1s linear infinite;width:17px;height:17px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Signing in…`;
+  err.style.display='none';
   try{
-    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
     const d=await r.json();
-    if(d.success){const p=new URLSearchParams(location.search);location.href=p.get('next')||'/dashboard';}
-    else{showErr(d.error||'Incorrect password');btn.disabled=false;btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg> Sign in`;}
-  }catch(e){showErr('Network error');btn.disabled=false;btn.innerHTML='Sign in';}
+    if(d.success){
+      const p=new URLSearchParams(location.search);
+      location.href=p.get('next')||'/dashboard';
+    } else {
+      showErr(d.error||'Incorrect username or password.');
+      btn.disabled=false;
+      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg> Sign in`;
+    }
+  }catch(e){showErr('Network error. Please try again.');btn.disabled=false;btn.innerHTML='Sign in';}
 }
-function showErr(m){const e=document.getElementById('err');document.getElementById('errText').textContent=m;e.style.display='flex';}
-const s=document.createElement('style');s.textContent='@keyframes spin{to{transform:rotate(360deg)}}';document.head.appendChild(s);
+function showErr(m){document.getElementById('errText').textContent=m;document.getElementById('errBox').style.display='flex';}
+document.getElementById('username').focus();
 </script>
 </body>
 </html>

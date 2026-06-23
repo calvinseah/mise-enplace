@@ -153,6 +153,38 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
 .modal-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--ink-08)}
 .empty{text-align:center;color:var(--ink-60);padding:24px;font-size:12.5px}
 </style>
+<style>
+/* ── Mobile: hamburger drawer ── */
+.mob-topbar{display:none}
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{display:none;position:fixed;inset:0;z-index:400;width:80%;max-width:280px;height:100vh;overflow-y:auto;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.mob-open{display:flex;transform:translateX(0)}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399}
+  .mob-overlay.open{display:block}
+  .mob-topbar{display:flex;align-items:center;gap:12px;background:#1A2318;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));flex-shrink:0}
+  .mob-hamburger{width:36px;height:36px;background:rgba(255,255,255,.08);border:none;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+  .mob-hamburger span{display:block;width:18px;height:1.5px;background:#fff;border-radius:2px}
+  .mob-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1}
+  .mob-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .mob-icon span{font-family:'DM Serif Display',serif;font-size:15px;color:#fff;line-height:1;font-style:italic}
+  .mob-name{font-size:16px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff}
+  .main{padding:16px}
+  .stats{grid-template-columns:1fr 1fr}
+  .col-stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:12px;min-width:520px}
+  thead th,tbody td{padding:8px 10px}
+  .modal{width:96%;max-height:85vh}
+  .page-title{font-size:18px}
+  .card{padding:14px 16px}
+  .filters{flex-direction:column;align-items:stretch}
+  .filters .fg{width:100%}
+  .filters .fg input,.filters .fg select{min-width:0;width:100%}
+  .page-header{flex-direction:column;gap:10px;align-items:flex-start}
+}
+</style>
 </head>
 <body>
 
@@ -777,5 +809,52 @@ async function saveSettings() {
 init();
 </script>
 <script src="/maise.js"></script>
+
+<script>
+// Role-aware nav
+(async function(){
+  try{
+    const r=await fetch('/api/me');
+    if(!r.ok){location.href='/login';return;}
+    const u=await r.json();
+    // Hide admin-only nav items for managers
+    if(u.role!=='admin'){
+      document.querySelectorAll('[data-admin-only]').forEach(el=>el.style.display='none');
+    }
+    // Show username in footer if present
+    const nameEl=document.getElementById('sbUserName');
+    if(nameEl)nameEl.textContent=u.name||u.username;
+    const roleEl=document.getElementById('sbUserRole');
+    if(roleEl)roleEl.textContent=u.role==='admin'?'Admin':'Manager';
+  }catch(e){}
+})();
+</script>
+
+<script>
+function openNav(){
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('mobOverlay').classList.add('open');
+  document.querySelector('.mob-close-btn').style.display='flex';
+}
+function closeNav(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mobOverlay').classList.remove('open');
+}
+document.querySelectorAll('.sb-nav a').forEach(a=>a.addEventListener('click',()=>{
+  if(window.innerWidth<=768)closeNav();
+}));
+</script>
+
+
+<script>
+function toggleStaff(){
+  const g=document.getElementById('staffGroup');
+  if(g)g.classList.toggle('open');
+}
+if(location.pathname==='/staff'){
+  const g=document.getElementById('staffGroup');
+  if(g)g.classList.add('open');
+}
+</script>
 </body>
 </html>

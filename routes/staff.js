@@ -9,7 +9,7 @@ const db      = require('../database');
 const upload  = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const SG_BANKS = [
-  'DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSBC',
+  'PayNow','DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSBC',
   'Maybank','CIMB','RHB','Maribank','Trust Bank','GXS','Others'
 ];
 

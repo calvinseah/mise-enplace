@@ -35,6 +35,20 @@ body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;mi
 .sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
 .sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6;transition:opacity .12s}
 .sb-nav a:hover svg,.sb-nav a.active svg{opacity:1}
+
+.sb-group{margin-bottom:1px}
+.sb-group-header{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);cursor:pointer;font-size:12.5px;font-weight:500;transition:all .12s;user-select:none}
+.sb-group-header:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
+.sb-group-header svg:first-child{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.sb-group-header span{flex:1}
+.sb-chevron{width:13px;height:13px;flex-shrink:0;opacity:.4;transition:transform .2s}
+.sb-group.open .sb-chevron{transform:rotate(180deg)}
+.sb-sub{display:none;padding:2px 0 4px 32px}
+.sb-group.open .sb-sub{display:block}
+.sb-sub a{display:block;padding:5px 9px;border-radius:8px;color:rgba(255,255,255,.35);text-decoration:none;font-size:12px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-sub a:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.05)}
+.sb-sub a.active{color:#fff;background:rgba(255,255,255,.09)}
+
 .sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
 .sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s}
 .sb-logout:hover{color:rgba(255,255,255,.6)}
@@ -110,23 +124,35 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
 .empty{color:var(--ink-30);font-size:12.5px;padding:32px;text-align:center}
 </style>
 <style>
-@media (max-width: 768px) {
-  .layout { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: relative; padding: 10px 12px; }
-  .sb-logo { padding: 6px 0 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
-  .sb-nav { display: flex; flex-direction: row; padding: 6px 0 4px; overflow-x: auto; gap: 2px; flex-wrap: nowrap; }
-  .sb-nav a { padding: 6px 10px; white-space: nowrap; margin-bottom: 0; border-radius: 5px; font-size: 12px; }
-  .sb-nav a svg { display: none; }
-  .sb-footer { display: none; }
-  .main { padding: 16px; }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .form-grid { grid-template-columns: 1fr; }
-  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { font-size: 11.5px; }
-  thead th, tbody td { padding: 8px 10px; }
-  .modal { width: 96%; margin: 8px; }
-  .page-title { font-size: 17px; }
-  .card { padding: 14px 16px; }
+/* ── Mobile: hamburger drawer ── */
+.mob-topbar{display:none}
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{display:none;position:fixed;inset:0;z-index:400;width:80%;max-width:280px;height:100vh;overflow-y:auto;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.mob-open{display:flex;transform:translateX(0)}
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399}
+  .mob-overlay.open{display:block}
+  .mob-topbar{display:flex;align-items:center;gap:12px;background:#1A2318;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));flex-shrink:0}
+  .mob-hamburger{width:36px;height:36px;background:rgba(255,255,255,.08);border:none;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+  .mob-hamburger span{display:block;width:18px;height:1.5px;background:#fff;border-radius:2px}
+  .mob-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1}
+  .mob-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .mob-icon span{font-family:'DM Serif Display',serif;font-size:15px;color:#fff;line-height:1;font-style:italic}
+  .mob-name{font-size:16px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff}
+  .main{padding:16px}
+  .stats{grid-template-columns:1fr 1fr}
+  .col-stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:12px;min-width:520px}
+  thead th,tbody td{padding:8px 10px}
+  .modal{width:96%;max-height:85vh}
+  .page-title{font-size:18px}
+  .card{padding:14px 16px}
+  .filters{flex-direction:column;align-items:stretch}
+  .filters .fg{width:100%}
+  .filters .fg input,.filters .fg select{min-width:0;width:100%}
+  .page-header{flex-direction:column;gap:10px;align-items:flex-start}
 }
 </style>
 </head>
@@ -135,11 +161,13 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
 <aside class="sidebar">
   <div class="sb-logo">
     <div class="sb-logo-row">
+      <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
       <div class="sb-icon">
         <!-- Lucide: beer mug -->
         <span style="font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;color:#fff;line-height:1">M</span>
       </div>
-      <div><div class="sb-name">Mise</div><div class="sb-addr">Restaurant Management</div></div>
+      <div><div class="sb-name">Mise</div><div class="sb-addr">Every person, in place.</div></div>
+      </a>
     </div>
   </div>
   <nav class="sb-nav">
@@ -148,12 +176,18 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
       Dashboard
     </a>
-    <a href="/staff">
-      <!-- Lucide: users -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Staff
-    </a>
-    <a href="/payslip" class="active">
+    <div class="sb-group" id="staffGroup">
+      <div class="sb-group-header" onclick="toggleStaff()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Staff</span>
+        <svg class="sb-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sb-sub" id="staffSub">
+        <a href="/staff">All staff</a>
+        <a href="/staff#applications">Applications</a>
+      </div>
+    </div>
+    <a href="/payslip" data-admin-only="1" class="active">
       <!-- Lucide: file-text -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
       Payslip
@@ -364,5 +398,57 @@ async function logout(){await fetch('/api/auth/logout',{method:'POST'});location
 loadStaff();
 </script>
 <script src="/maise.js"></script>
+
+<script>
+// Role-aware nav
+(async function(){
+  try{
+    const r=await fetch('/api/me');
+    if(!r.ok){location.href='/login';return;}
+    const u=await r.json();
+    // Hide admin-only nav items for managers
+    if(u.role!=='admin'){
+      document.querySelectorAll('[data-admin-only]').forEach(el=>el.style.display='none');
+    }
+    // Show username in footer if present
+    const nameEl=document.getElementById('sbUserName');
+    if(nameEl)nameEl.textContent=u.name||u.username;
+    const roleEl=document.getElementById('sbUserRole');
+    if(roleEl)roleEl.textContent=u.role==='admin'?'Admin':'Manager';
+  }catch(e){}
+})();
+</script>
+
+<script>
+function openNav(){
+  document.getElementById('sidebar').classList.add('mob-open');
+  document.getElementById('mobOverlay').classList.add('open');
+  document.querySelector('.mob-close-btn').style.display='flex';
+}
+function closeNav(){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('mobOverlay').classList.remove('open');
+}
+document.querySelectorAll('.sb-nav a').forEach(a=>a.addEventListener('click',()=>{
+  if(window.innerWidth<=768)closeNav();
+}));
+</script>
+
+
+<script>
+function toggleStaff(){
+  const g=document.getElementById('staffGroup');
+  g.classList.toggle('open');
+}
+// Auto-open if on staff page
+if(location.pathname==='/staff'||location.hash==='#applications'){
+  const g=document.getElementById('staffGroup');
+  if(g)g.classList.add('open');
+  // Mark active sub-link
+  document.querySelectorAll('.sb-sub a').forEach(a=>{
+    if(a.getAttribute('href')===location.pathname+(location.hash||''))a.classList.add('active');
+  });
+}
+</script>
 </body>
 </html>
