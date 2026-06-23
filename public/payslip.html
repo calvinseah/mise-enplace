@@ -295,6 +295,7 @@ function render(d){
       <div class="ps-meta-item"><div class="ps-meta-label">Name</div><div class="ps-meta-val">${d.staffName}${nric}</div></div>
       <div class="ps-meta-item"><div class="ps-meta-label">Role</div><div class="ps-meta-val">${d.role}</div></div>
       <div class="ps-meta-item"><div class="ps-meta-label">Staff type</div><div class="ps-meta-val">${d.staff_type==='fulltime'?'Full-time':'Part-time'}</div></div>
+      ${d.outlets?`<div class="ps-meta-item"><div class="ps-meta-label">Outlet(s)</div><div class="ps-meta-val">${d.outlets}</div></div>`:''}
     </div>
     <div>
       <div class="ps-meta-item"><div class="ps-meta-label">Pay period</div><div class="ps-meta-val">${fd(d.from)} – ${fd(d.to)}</div></div>

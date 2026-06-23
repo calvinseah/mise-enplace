@@ -5,7 +5,7 @@ const router = express.Router();
 const db = require('../database');
 
 const COMPANY_NAME = 'Mise';
-const COMPANY_ADDRESS = 'Restaurant Management Platform';
+const COMPANY_ADDRESS = '';
 const NAVY = '#1B3A5C';
 const WARM = '#C8956C';
 
@@ -43,25 +43,30 @@ function computePayslip({ staffId, from, to }) {
   if (!staff) throw new Error('Staff not found');
 
   const records = db.all(
-    `SELECT a.*, ph.name as holiday_name
+    `SELECT a.*, ph.name as holiday_name, o.name as outlet_name
      FROM attendance a
      LEFT JOIN public_holidays ph ON substr(a.clock_in, 1, 10) = ph.date
+     LEFT JOIN outlets o ON a.outlet_id = o.id
      WHERE a.staff_id = ? AND substr(a.clock_in,1,10) >= ? AND substr(a.clock_in,1,10) <= ?
        AND a.clock_out IS NOT NULL
      ORDER BY a.clock_in`,
     [staffId, from, to]
   );
 
+  // Collect distinct outlets worked
+  const outletSet = new Set(records.map(r => r.outlet_name).filter(Boolean));
+  const outlets = [...outletSet].join(', ') || null;
+
   const { computeShiftCost, computeCPF } = require('../database');
 
   if (staff.staff_type === 'parttime') {
-    return computeParttimePayslip(staff, records, from, to, computeShiftCost, computeCPF);
+    return computeParttimePayslip(staff, records, from, to, computeShiftCost, computeCPF, outlets);
   } else {
-    return computeFulltimePayslip(staff, records, from, to, computeShiftCost, computeCPF);
+    return computeFulltimePayslip(staff, records, from, to, computeShiftCost, computeCPF, outlets);
   }
 }
 
-function computeParttimePayslip(staff, records, from, to, computeShiftCost, computeCPF) {
+function computeParttimePayslip(staff, records, from, to, computeShiftCost, computeCPF, outlets) {
   const regularShifts = [];
   const phShifts = [];
   let totalHours = 0;
@@ -120,7 +125,7 @@ function computeParttimePayslip(staff, records, from, to, computeShiftCost, comp
   };
 }
 
-function computeFulltimePayslip(staff, records, from, to, computeShiftCost, computeCPF) {
+function computeFulltimePayslip(staff, records, from, to, computeShiftCost, computeCPF, outlets) {
   const salary = staff.monthly_salary || 0;
   const isHighEarner = salary > 2600;
   const hourlyEquiv = salary / 26 / 8;
@@ -198,7 +203,6 @@ function generatePDF(data, stream) {
 
   // ── Header ──
   doc.fontSize(18).fillColor(NAVY).font('Helvetica-Bold').text(COMPANY_NAME, 50, 50);
-  doc.fontSize(9).fillColor('#555').font('Helvetica').text(COMPANY_ADDRESS, 50, 72);
   doc.moveTo(50, 90).lineTo(doc.page.width - 50, 90).strokeColor(NAVY).lineWidth(2).stroke();
 
   doc.fontSize(14).fillColor(NAVY).font('Helvetica-Bold').text('PAYSLIP', 50, 100);
