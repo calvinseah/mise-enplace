@@ -88,9 +88,13 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;min-height:10
         <label>Your NRIC / FIN</label>
         <input type="text" id="nricInput" placeholder="S1234567A" maxlength="9" autocomplete="off" autocapitalize="characters" onkeydown="if(event.key==='Enter')search()">
       </div>
-      <div class="row">
+      <div class="fg">
+        <label>Month</label>
+        <input type="month" id="monthPicker" onchange="onMonthPick()" style="width:100%;height:52px;padding:0 16px;background:var(--card2);border:none;border-radius:14px;font-size:16px;font-family:var(--font);color:var(--text);outline:none">
+      </div>
+      <div class="row" style="margin-top:-6px">
         <div class="fg">
-          <label>From</label>
+          <label>Or custom from</label>
           <input type="date" id="fromDate" style="text-transform:none;letter-spacing:normal">
         </div>
         <div class="fg">
@@ -108,6 +112,10 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;min-height:10
 
   <div id="resultsSection">
     <div class="staff-pill" id="staffPill"></div>
+      <button onclick="downloadPDF()" style="width:100%;height:46px;background:var(--card2);border:none;border-radius:14px;font-size:14px;font-weight:500;font-family:var(--font);color:var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;transition:transform .12s" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform=''">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </button>
 
     <div class="card" id="shiftsCard"></div>
 
@@ -119,11 +127,20 @@ body{font-family:var(--font);background:var(--bg);min-height:100vh;min-height:10
 <script>
 const now = new Date();
 const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
-document.getElementById('fromDate').value = `${y}-${m}-01`;
-document.getElementById('toDate').value = now.toISOString().slice(0,10);
+document.getElementById('monthPicker').value = `${y}-${m}`;
+onMonthPick();
 
 function fmtTime(dt){if(!dt)return'—';try{return new Date(dt).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true});}catch{return dt.slice(11,16);}}
 function fmtDate(d){const[yr,mo,day]=d.slice(0,10).split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return{day:parseInt(day),mon:mn[parseInt(mo)-1]};}
+
+function onMonthPick(){
+  const val=document.getElementById('monthPicker').value;
+  if(!val)return;
+  const [yr,mo]=val.split('-');
+  const lastDay=new Date(parseInt(yr),parseInt(mo),0).getDate();
+  document.getElementById('fromDate').value=`${yr}-${mo}-01`;
+  document.getElementById('toDate').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
+}
 
 async function search(){
   const nric = document.getElementById('nricInput').value.trim().toUpperCase();
@@ -142,7 +159,10 @@ async function search(){
   }catch(e){showErr('Network error. Please try again.');btn.disabled=false;btn.innerHTML='View my shifts';}
 }
 
+let lastResult = null;
+
 function renderResults(d){
+  lastResult = d;
   document.getElementById('searchSection').style.display='none';
   document.getElementById('resultsSection').style.display='block';
 
@@ -177,6 +197,62 @@ function renderResults(d){
       <div class="shift-hours">${s.hours.toFixed(2)}<span style="font-size:10px;color:var(--muted);font-weight:400"> hrs</span></div>
     </div>`;
   }).join('');
+}
+
+function downloadPDF(){
+  if(!lastResult)return;
+  const d=lastResult;
+
+  // Build printable HTML
+  const rows=d.shifts.map(s=>{
+    const {day,mon}=fmtDate(s.date);
+    const tin=fmtTime(s.clockIn), tout=fmtTime(s.clockOut);
+    const meta=[s.outlet?s.outlet:null,s.breakMins>0?`${s.breakMins}m break`:null,s.isPublicHoliday?'Public Holiday':null].filter(Boolean).join(' · ');
+    return `<tr>
+      <td>${day} ${mon}</td>
+      <td>${tin} – ${tout}</td>
+      <td>${s.hours.toFixed(2)}</td>
+      <td>${meta||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Shift History — ${d.name}</title>
+  <style>
+    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;color:#1A2318;font-size:13px}
+    h1{font-size:22px;font-weight:400;margin-bottom:4px}
+    .sub{color:#666;font-size:12px;margin-bottom:24px}
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#666;border-bottom:2px solid #3D5240}
+    td{padding:8px 12px;border-bottom:1px solid #eee}
+    tr:last-child td{border-bottom:none}
+    .total{margin-top:20px;padding:14px;background:#F0F2EC;border-radius:8px;display:flex;justify-content:space-between}
+    .total span{font-size:13px;color:#666}
+    .total strong{font-size:16px;color:#3D5240}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <h1>${d.name}</h1>
+  <div class="sub">Shift history · ${d.from} to ${d.to} · ${d.role}</div>
+  <table>
+    <thead><tr><th>Date</th><th>Hours</th><th>Duration</th><th>Notes</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="total">
+    <span>Total hours</span>
+    <strong>${d.totalHours.toFixed(2)} hrs</strong>
+  </div>
+  <div style="margin-top:32px;font-size:10px;color:#999">Generated by Mise · mise-enplace.up.railway.app</div>
+  </body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(win){
+    win.onload=()=>{
+      win.print();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    };
+  }
 }
 
 function showErr(m){document.getElementById('errText').textContent=m;document.getElementById('errMsg').style.display='flex';}
