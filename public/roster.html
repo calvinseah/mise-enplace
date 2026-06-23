@@ -598,8 +598,8 @@ function renderOverview() {
 
     return `<div class="ov-day">
       <div class="day-header"><span class="day-num">${day}</span><span class="day-name">${dowName}</span></div>
-      ${foh.length ? `<div class="ov-group"><div class="ov-group-label">FOH</div>${foh.map(s=>`<span class="ov-name" style="background:var(--foh);color:var(--foh-text)">${s.staff_name}${s.shift_label?' <span style='font-weight:400;opacity:.7'>'+s.shift_label+'</span>':''}</span>`).join('')}</div>` : ''}
-      ${boh.length ? `<div class="ov-group"><div class="ov-group-label">BOH</div>${boh.map(s=>`<span class="ov-name" style="background:var(--boh);color:var(--boh-text)">${s.staff_name}${s.shift_label?' <span style='font-weight:400;opacity:.7'>'+s.shift_label+'</span>':''}</span>`).join('')}</div>` : ''}
+      ${foh.length ? `<div class="ov-group"><div class="ov-group-label">FOH</div>${foh.map(s=>`<span class="ov-name" style="background:var(--foh);color:var(--foh-text)">${s.staff_name}${s.shift_label ? ` <span style="font-weight:400;opacity:.7">${s.shift_label}</span>` : ''}</span>`).join('')}</div>` : ''}
+      ${boh.length ? `<div class="ov-group"><div class="ov-group-label">BOH</div>${boh.map(s=>`<span class="ov-name" style="background:var(--boh);color:var(--boh-text)">${s.staff_name}${s.shift_label ? ` <span style="font-weight:400;opacity:.7">${s.shift_label}</span>` : ''}</span>`).join('')}</div>` : ''}
     </div>`;
   });
 
