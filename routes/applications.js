@@ -8,9 +8,13 @@ const SG_BANKS = ['DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSB
 
 // ── PUBLIC: Submit application ─────────────────────────────────────────────────
 router.post('/submit', (req, res) => {
-  const { name, date_of_birth, nric_full, bank_name, bank_account } = req.body;
+  const { date_of_birth, nric_full, bank_name, bank_account } = req.body;
+  const rawName = req.body.name || '';
 
-  if (!name || !name.trim()) return res.status(400).json({ error: 'Name is required' });
+  // Convert to title case: "AHMAD BIN HASSAN" → "Ahmad Bin Hassan"
+  const name = rawName.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+
+  if (!name) return res.status(400).json({ error: 'Name is required' });
   if (bank_name && !SG_BANKS.includes(bank_name)) return res.status(400).json({ error: 'Invalid bank' });
 
   try {
