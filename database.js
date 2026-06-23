@@ -122,14 +122,16 @@ function createSchema() {
 
   // Roster tables
   db.run(`CREATE TABLE IF NOT EXISTS roster_settings (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    outlet_id   INTEGER,
-    year        INTEGER NOT NULL,
-    month       INTEGER NOT NULL,
-    closed_days TEXT DEFAULT '[]',
-    shift_times TEXT DEFAULT '{"opening":{"start":"10:00","end":"17:00"},"closing":{"start":"17:00","end":"23:00"},"fullshift":{"start":"10:00","end":"23:00"}}',
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    outlet_id       INTEGER,
+    year            INTEGER NOT NULL,
+    month           INTEGER NOT NULL,
+    closed_days     TEXT DEFAULT '[]',
+    shift_times     TEXT DEFAULT '{"opening":{"start":"10:00","end":"17:00"},"closing":{"start":"17:00","end":"23:00"},"fullshift":{"start":"10:00","end":"23:00"}}',
+    overridden_days TEXT DEFAULT '[]',
     UNIQUE(outlet_id, year, month)
   )`);
+  try { db.run('ALTER TABLE roster_settings ADD COLUMN overridden_days TEXT DEFAULT '[]''); } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS roster_availability (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,9 +154,14 @@ function createSchema() {
     day         INTEGER NOT NULL,
     role_group  TEXT NOT NULL DEFAULT 'foh' CHECK(role_group IN ('foh','boh')),
     shift_label TEXT,
+    start_time  TEXT,
+    end_time    TEXT,
     removed     INTEGER DEFAULT 0,
     UNIQUE(staff_id, outlet_id, year, month, day)
   )`);
+  // Add new columns if upgrading existing DB
+  try { db.run('ALTER TABLE roster_schedule ADD COLUMN start_time TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE roster_schedule ADD COLUMN end_time TEXT'); } catch(e) {}
 
 
   // Extend revenue_entries with orders + pax if not already there

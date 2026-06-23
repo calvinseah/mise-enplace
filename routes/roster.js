@@ -16,7 +16,7 @@ router.get('/settings', (req, res) => {
       // Return defaults
       row = {
         outlet_id: outletId || null, year: parseInt(year), month: parseInt(month),
-        closed_days: '[]',
+        closed_days: '[]', overridden_days: '[]',
         shift_times: JSON.stringify({
           opening:   { start: '10:00', end: '17:00' },
           closing:   { start: '17:00', end: '23:00' },
@@ -24,23 +24,25 @@ router.get('/settings', (req, res) => {
         })
       };
     }
-    row.closed_days = JSON.parse(row.closed_days || '[]');
-    row.shift_times = JSON.parse(row.shift_times || '{}');
+    row.closed_days     = JSON.parse(row.closed_days     || '[]');
+    row.overridden_days = JSON.parse(row.overridden_days || '[]');
+    row.shift_times     = JSON.parse(row.shift_times     || '{}');
     res.json(row);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 router.put('/settings', (req, res) => {
-  const { year, month, outletId, closed_days, shift_times } = req.body;
+  const { year, month, outletId, closed_days, shift_times, overridden_days } = req.body;
   if (!year || !month) return res.status(400).json({ error: 'year and month required' });
   try {
     db.run(
-      `INSERT INTO roster_settings (outlet_id, year, month, closed_days, shift_times)
-       VALUES (?,?,?,?,?)
-       ON CONFLICT(outlet_id,year,month) DO UPDATE SET closed_days=excluded.closed_days, shift_times=excluded.shift_times`,
+      `INSERT INTO roster_settings (outlet_id, year, month, closed_days, shift_times, overridden_days)
+       VALUES (?,?,?,?,?,?)
+       ON CONFLICT(outlet_id,year,month) DO UPDATE SET closed_days=excluded.closed_days, shift_times=excluded.shift_times, overridden_days=excluded.overridden_days`,
       [outletId || null, year, month,
        JSON.stringify(closed_days || []),
-       JSON.stringify(shift_times || {})]
+       JSON.stringify(shift_times || {}),
+       JSON.stringify(overridden_days || [])]
     );
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -112,7 +114,7 @@ router.get('/schedule', (req, res) => {
   const { year, month, outletId } = req.query;
   if (!year || !month) return res.status(400).json({ error: 'year and month required' });
   try {
-    let sql = `SELECT rs.*, s.name as staff_name, s.role, s.hourly_rate, s.monthly_salary, s.staff_type
+    let sql = `SELECT rs.id, rs.staff_id, rs.outlet_id, rs.year, rs.month, rs.day, rs.role_group, rs.shift_label, rs.start_time, rs.end_time, rs.removed, s.name as staff_name, s.role, s.hourly_rate, s.monthly_salary, s.staff_type
                FROM roster_schedule rs
                JOIN staff s ON rs.staff_id=s.id
                WHERE rs.year=? AND rs.month=?`;
@@ -123,14 +125,14 @@ router.get('/schedule', (req, res) => {
 });
 
 router.post('/schedule', (req, res) => {
-  const { staffId, outletId, year, month, day, role_group, shift_label } = req.body;
+  const { staffId, outletId, year, month, day, role_group, shift_label, start_time, end_time } = req.body;
   if (!staffId || !year || !month || !day) return res.status(400).json({ error: 'Missing fields' });
   try {
     db.run(
-      `INSERT INTO roster_schedule (staff_id, outlet_id, year, month, day, role_group, shift_label, removed)
-       VALUES (?,?,?,?,?,?,?,0)
-       ON CONFLICT(staff_id,outlet_id,year,month,day) DO UPDATE SET role_group=excluded.role_group, shift_label=excluded.shift_label, removed=0`,
-      [staffId, outletId || null, year, month, day, role_group || 'foh', shift_label || null]
+      `INSERT INTO roster_schedule (staff_id, outlet_id, year, month, day, role_group, shift_label, start_time, end_time, removed)
+       VALUES (?,?,?,?,?,?,?,?,?,0)
+       ON CONFLICT(staff_id,outlet_id,year,month,day) DO UPDATE SET role_group=excluded.role_group, shift_label=excluded.shift_label, start_time=excluded.start_time, end_time=excluded.end_time, removed=0`,
+      [staffId, outletId || null, year, month, day, role_group || 'foh', shift_label || null, start_time || null, end_time || null]
     );
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -144,6 +146,9 @@ router.put('/schedule/:id', (req, res) => {
     if (shift_label !== undefined) { updates.push('shift_label=?'); params.push(shift_label); }
     if (role_group  !== undefined) { updates.push('role_group=?');  params.push(role_group); }
     if (removed     !== undefined) { updates.push('removed=?');     params.push(removed ? 1 : 0); }
+    const { start_time, end_time } = req.body;
+    if (start_time  !== undefined) { updates.push('start_time=?');  params.push(start_time); }
+    if (end_time    !== undefined) { updates.push('end_time=?');    params.push(end_time); }
     if (!updates.length) return res.status(400).json({ error: 'Nothing to update' });
     params.push(req.params.id);
     db.run(`UPDATE roster_schedule SET ${updates.join(',')} WHERE id=?`, params);
@@ -192,22 +197,26 @@ router.get('/col', (req, res) => {
       fullshift: { start: '10:00', end: '23:00' },
     };
 
-    // Parse shift label like "11-C" or "10:30-C" or "11-18" into hours
-    function parseHours(label, shiftTimesObj) {
+    // Parse hours from start_time/end_time (HH:MM) or shift label
+    function parseHours(label, shiftTimesObj, startTime, endTime) {
+      // Prefer explicit start/end times
+      if (startTime && endTime) {
+        const [sh,sm] = startTime.split(':').map(Number);
+        const [eh,em] = endTime.split(':').map(Number);
+        const diff = (eh*60+em) - (sh*60+sm);
+        return diff > 0 ? Math.round(diff / 60 * 100) / 100 : 0;
+      }
       if (!label) return 0;
       label = label.trim();
-      // Format: "START-END" where END can be C (close) or a time
       const parts = label.split('-');
       if (parts.length < 2) return 0;
 
       function toMins(t) {
         t = t.trim().toUpperCase();
         if (t === 'C' || t === 'CLOSE') {
-          // Use closing end time
           const [ch, cm] = (shiftTimesObj.closing?.end || '23:00').split(':').map(Number);
           return ch * 60 + (cm || 0);
         }
-        // e.g. "11", "10.30", "10:30"
         const clean = t.replace('.', ':');
         if (clean.includes(':')) {
           const [h, m] = clean.split(':').map(Number);
@@ -225,7 +234,7 @@ router.get('/col', (req, res) => {
     // Group by staff
     const byStaff = {};
     for (const r of rows) {
-      const hours = parseHours(r.shift_label, shiftTimes);
+      const hours = parseHours(r.shift_label, shiftTimes, r.start_time, r.end_time);
       const rate  = r.staff_type === 'parttime' ? (r.hourly_rate || 0) : (r.monthly_salary || 0) / 26 / 8;
       const cost  = Math.round(hours * rate * 100) / 100;
 
@@ -240,6 +249,8 @@ router.get('/col', (req, res) => {
       byStaff[r.staff_id].totalCost  += cost;
       byStaff[r.staff_id].shifts.push({
         day: r.day, shift_label: r.shift_label,
+        start_time: r.start_time, end_time: r.end_time,
+        section: r.role_group,
         hours, rate: Math.round(rate * 100) / 100, cost
       });
     }
