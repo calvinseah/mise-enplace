@@ -289,14 +289,17 @@ async function seedData() {
     ['TCBB Private Limited',           '201830095R'],
   ];
   entities.forEach(([name, uen]) => {
-    const existing = db.get('SELECT id FROM companies WHERE name=?', [name]);
-    if (!existing) {
+    // Use raw sql.js since wrapper functions aren't available in seedData
+    const stmt = db.prepare('SELECT id FROM companies WHERE name=?');
+    stmt.bind([name]);
+    const exists = stmt.step();
+    stmt.free();
+    if (!exists) {
       db.run('INSERT INTO companies (name, uen) VALUES (?,?)', [name, uen]);
     } else {
-      db.run("UPDATE companies SET uen=? WHERE name=?", [uen, name]);
+      db.run('UPDATE companies SET uen=? WHERE name=?', [uen, name]);
     }
   });
-  console.log('[DB] Companies seeded:', db.all('SELECT name FROM companies').map(c=>c.name).join(', '));
   saveDB();
 
 
