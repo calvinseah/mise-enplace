@@ -276,319 +276,149 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
 
 // ─── PDF GENERATION ───────────────────────────────────────────────────────────
 function generatePDF(data, stream) {
-  const doc = new PDFDocument({ margin: 50, size: 'A4' });
+  const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
   doc.pipe(stream);
 
-  const W = doc.page.width - 100; // usable width
+  const PW = doc.page.width;
+  const PH = doc.page.height;
+  const ML = 45, MR = 45, MT = 0;
+  const CW = PW - ML - MR;
 
-  // ── Header: dark green banner ──
-  const headerName = data.companyName || COMPANY_NAME;
-  const pageW = doc.page.width;
+  // ── Colors ──
+  const INK    = '#1A2318';
+  const GREEN  = '#3D5240';
+  const SAGE   = '#C8D5B9';
+  const SURFACE= '#F0F2EC';
+  const MUTED  = '#888888';
+  const DANGER = '#C0392B';
+  const LINE   = '#E0E5DA';
 
-  // Banner background
-  doc.rect(0, 0, pageW, 90).fill('#1A2318');
+  // ── Header banner ──
+  doc.rect(0, 0, PW, 72).fill(INK);
 
-  // Company name
-  doc.fontSize(20).fillColor('#ffffff').font('Helvetica-Bold').text(headerName, 50, 22);
-
-  // UEN
+  const coName = data.companyName || 'Mise';
+  doc.fontSize(16).fillColor('#ffffff').font('Helvetica-Bold').text(coName, ML, 18, { width: CW * 0.65 });
   if (data.companyUen && data.companyUen !== 'TBC') {
-    doc.fontSize(9).fillColor('rgba(255,255,255,0.5)').font('Helvetica').text(`UEN: ${data.companyUen}`, 50, 47);
+    doc.fontSize(8).fillColor(SAGE).font('Helvetica').text('UEN ' + data.companyUen, ML, 38);
+  }
+  doc.fontSize(9).fillColor(SAGE).font('Helvetica-Bold').text('PAYSLIP', 0, 28, { align: 'right', width: PW - MR });
+
+  // ── Info grid ──
+  let y = 88;
+  const col1 = ML, col2 = ML + CW * 0.35, col3 = ML + CW * 0.65;
+
+  function infoCell(label, value, x, cy, w) {
+    doc.fontSize(7).fillColor(MUTED).font('Helvetica-Bold').text(label, x, cy, { width: w, characterSpacing: 0.3 });
+    doc.fontSize(9).fillColor(INK).font('Helvetica').text(value || '—', x, cy + 9, { width: w });
   }
 
-  // PAYSLIP badge top right
-  doc.fontSize(11).fillColor('#C8D5B9').font('Helvetica-Bold').text('PAYSLIP', 0, 35, { align: 'right', width: pageW - 50 });
+  infoCell('EMPLOYEE', data.staffName, col1, y, CW * 0.33);
+  infoCell('PAY PERIOD', fmtDate(data.from) + ' – ' + fmtDate(data.to), col3, y, CW * 0.35);
+  y += 26;
+  infoCell('ROLE', (data.role||'') + ' · ' + (data.staff_type === 'fulltime' ? 'Full-time' : 'Part-time'), col1, y, CW * 0.33);
+  infoCell('GENERATED', new Date().toLocaleDateString('en-SG', {day:'2-digit',month:'short',year:'numeric'}), col3, y, CW * 0.35);
+  y += 26;
+  if (data.nricLast4) { infoCell('NRIC', '****' + data.nricLast4, col1, y, CW * 0.33); }
+  if (data.outlets)   { infoCell('OUTLET', data.outlets, col2, y, CW * 0.3); }
+  y += 22;
 
-  // ── Staff Info block ──
-  let y = 110;
+  doc.moveTo(ML, y).lineTo(PW - MR, y).strokeColor(LINE).lineWidth(1).stroke();
+  y += 12;
 
-  // Two-column info layout
-  const colL = 50, colR = 320;
-  const infoLeft = [
-    ['EMPLOYEE', data.staffName],
-    ['ROLE', data.role + ' · ' + (data.staff_type === 'fulltime' ? 'Full-time' : 'Part-time')],
-    ...(data.nricLast4 ? [['NRIC', `****${data.nricLast4}`]] : []),
-    ['CITIZENSHIP', (data.prStatus||'').toUpperCase()],
-    ...(data.outlets ? [['OUTLET', data.outlets]] : []),
-  ];
-  const infoRight = [
-    ['PAY PERIOD', `${fmtDate(data.from)} – ${fmtDate(data.to)}`],
-    ['GENERATED', new Date().toLocaleDateString('en-SG', { day:'2-digit', month:'short', year:'numeric' })],
-  ];
-
-  let yL = y, yR = y;
-  for (const [label, val] of infoLeft) {
-    doc.fontSize(7.5).fillColor('#888').font('Helvetica-Bold').text(label, colL, yL);
-    doc.fontSize(10).fillColor('#1A2318').font('Helvetica').text(val, colL, yL + 10);
-    yL += 28;
-  }
-  for (const [label, val] of infoRight) {
-    doc.fontSize(7.5).fillColor('#888').font('Helvetica-Bold').text(label, colR, yR);
-    doc.fontSize(10).fillColor('#1A2318').font('Helvetica').text(val, colR, yR + 10);
-    yR += 28;
+  // ── Section header helper ──
+  function secHeader(label, cy) {
+    doc.fontSize(7.5).fillColor(GREEN).font('Helvetica-Bold').text(label, ML, cy, { characterSpacing: 0.5 });
+    doc.moveTo(ML, cy + 11).lineTo(PW - MR, cy + 11).strokeColor(LINE).lineWidth(0.8).stroke();
+    return cy + 18;
   }
 
-  y = Math.max(yL, yR) + 8;
-  doc.moveTo(50, y).lineTo(pageW - 50, y).strokeColor('#E8EDE3').lineWidth(1).stroke();
-  y += 14;
+  // ── Line row helper ──
+  function lineRow(label, value, cy, opts = {}) {
+    const lColor = opts.net ? GREEN : opts.danger ? DANGER : opts.muted ? MUTED : INK;
+    const vColor = opts.net ? GREEN : opts.danger ? DANGER : opts.muted ? MUTED : INK;
+    const fw = opts.bold || opts.net ? 'Helvetica-Bold' : 'Helvetica';
+    const fs = opts.net ? 10 : 9;
+    if (opts.net) {
+      doc.rect(ML, cy - 3, CW, 18).fill(SURFACE);
+    }
+    doc.fontSize(fs).fillColor(lColor).font(fw).text(label, ML + 4, cy, { width: CW * 0.7 });
+    doc.fontSize(fs).fillColor(vColor).font(fw).text(value, 0, cy, { align: 'right', width: PW - MR });
+    return cy + (opts.net ? 20 : 16);
+  }
 
-  // ── Shifts ──
+  // ── EARNINGS ──
+  y = secHeader('EARNINGS', y);
+
   if (data.staff_type === 'parttime') {
-    y = drawParttimeShifts(doc, data, y, W);
+    const reg = data.regularShifts || [];
+    const ph  = data.phShifts || [];
+    if (reg.length > 0) {
+      const regHrs = reg.reduce((s,r) => s + (r.hours||0), 0);
+      y = lineRow('Regular hours (' + regHrs.toFixed(1) + ' hrs × $' + (data.hourlyRate||0).toFixed(2) + '/hr)',
+                  '$' + reg.reduce((s,r) => s + (r.cost||0), 0).toFixed(2), y);
+    }
+    ph.forEach(s => {
+      y = lineRow('Public holiday – ' + fmtDate(s.date) + ' (' + (s.hours||0).toFixed(1) + ' hrs × 1.5×)',
+                  '+$' + (s.cost||0).toFixed(2), y);
+    });
   } else {
-    y = drawFulltimeSection(doc, data, y, W);
-  }
-
-  // ── CPF Section ──
-  y = drawCPFSection(doc, data, y, W);
-
-  // ── Footer ──
-  const footerY = doc.page.height - 60;
-  doc.moveTo(50, footerY).lineTo(doc.page.width - 50, footerY).strokeColor('#ddd').lineWidth(1).stroke();
-  doc.fontSize(8).fillColor('#999').font('Helvetica-Oblique')
-    .text('This is a computer-generated payslip. This is not a tax document.', 50, footerY + 8, { align: 'center', width: W });
-
-  doc.end();
-}
-
-function drawParttimeShifts(doc, data, y, W) {
-  // Regular shifts
-  if (data.regularShifts.length > 0) {
-    y = sectionHeader(doc, 'Regular Shifts', y);
-    y = tableHeader(doc, ['Date', 'Clock In', 'Clock Out', 'Break', 'Hours', 'Rate/hr', 'Amount'], y, W);
-    for (const s of data.regularShifts) {
-      y = tableRow(doc, [
-        fmtDate(s.date),
-        fmtTime(s.clockIn),
-        fmtTime(s.clockOut),
-        `${s.breakMinutes}m`,
-        s.hours.toFixed(2),
-        `$${s.rate.toFixed(2)}`,
-        `$${s.amount.toFixed(2)}`
-      ], y, W, s.isAmended);
-      if (s.notes) {
-        doc.fontSize(7).fillColor(WARM).font('Helvetica-Oblique').text(`  Note: ${s.notes}`, 55, y); y += 12;
-      }
+    y = lineRow('Base Salary', '$' + (data.salary||0).toFixed(2), y);
+    if ((data.otHours||0) > 0) {
+      y = lineRow('Overtime (' + data.otHours.toFixed(1) + ' hrs @ 1.5×)', '+$' + (data.otPay||0).toFixed(2), y);
+    }
+    if ((data.phShifts||[]).length > 0) {
+      y = lineRow('Public Holiday shifts (' + data.phShifts.length + ')', 'Included', y, { muted: true });
     }
   }
 
-  // Public holiday shifts
-  if (data.phShifts.length > 0) {
-    y += 8;
-    y = sectionHeader(doc, 'Public Holiday Shifts (1.5× Rate)', y, WARM);
-    y = tableHeader(doc, ['Date', 'Holiday', 'Clock In', 'Clock Out', 'Hours', 'Rate/hr', 'Amount'], y, W);
-    for (const s of data.phShifts) {
-      y = tableRow(doc, [
-        fmtDate(s.date),
-        s.holidayName,
-        fmtTime(s.clockIn),
-        fmtTime(s.clockOut),
-        s.hours.toFixed(2),
-        `$${s.rate.toFixed(2)}`,
-        `$${s.amount.toFixed(2)}`
-      ], y, W, s.isAmended);
-    }
-  }
+  doc.moveTo(ML, y).lineTo(PW - MR, y).strokeColor(LINE).lineWidth(0.5).stroke();
+  y += 6;
+  y = lineRow('Gross Pay', '$' + (data.grossPay||0).toFixed(2), y, { bold: true });
+  y += 6;
 
-  // Totals
-  y += 10;
-  totalsBox(doc, [
-    ['Total Hours Worked', `${data.totalHours.toFixed(2)} hrs`],
-    ['Gross Pay', `$${data.grossPay.toFixed(2)}`],
-  ], y, W);
-  y += 50;
-  return y;
-}
+  // ── DEDUCTIONS ──
+  y = secHeader('DEDUCTIONS', y);
 
-function drawFulltimeSection(doc, data, y, W) {
-  y = sectionHeader(doc, 'Attendance Summary', y);
-
-  if (data.isHighEarner) {
-    // Fixed salary
-    doc.fontSize(10).fillColor('#333').font('Helvetica')
-      .text(`Fixed Monthly Salary: `, 50, y)
-      .font('Helvetica-Bold').text(`$${data.salary.toFixed(2)}`, 200, y);
-    y += 18;
-    doc.font('Helvetica').text(`Days Present: ${data.daysPresent}`, 50, y); y += 18;
-
-    if (data.phShifts.length > 0) {
-      y += 6;
-      y = sectionHeader(doc, 'Public Holiday Shifts (Manual — See Notes)', y, WARM);
-      y = tableHeader(doc, ['Date', 'Holiday', 'Hours', 'Notes'], y, W);
-      for (const s of data.phShifts) {
-        y = tableRow(doc, [
-          fmtDate(s.date), s.holidayName || '—', s.hours.toFixed(2), s.notes || 'To be handled by manager'
-        ], y, W, false);
-      }
-    }
-
-    totalsBox(doc, [
-      ['Days Present', String(data.daysPresent)],
-      ['Gross Pay (Fixed)', `$${data.grossPay.toFixed(2)}`],
-    ], y + 10, W);
-    y += 60;
-  } else {
-    // OT applies
-    y = tableHeader(doc, ['Date', 'Clock In', 'Clock Out', 'Hours', 'OT hrs', 'PH?', 'Notes'], y, W);
-    for (const s of data.shifts) {
-      y = tableRow(doc, [
-        fmtDate(s.date),
-        fmtTime(s.clockIn),
-        fmtTime(s.clockOut),
-        s.hours.toFixed(2),
-        s.isPH ? '—' : (computeOTHrs(s.hours) > 0 ? computeOTHrs(s.hours).toFixed(2) : '—'),
-        s.isPH ? '✓' : '—',
-        s.notes || '—'
-      ], y, W, s.isAmended);
-    }
-
-    y += 10;
-    totalsBox(doc, [
-      ['Base Salary', `$${data.salary.toFixed(2)}`],
-      [`OT (${data.otHours.toFixed(2)} hrs @ 1.5×)`, `+$${data.otPay.toFixed(2)}`],
-      ['Gross Pay', `$${data.grossPay.toFixed(2)}`],
-    ], y, W);
-    y += 65;
-  }
-  return y;
-}
-
-function drawCPFSection(doc, data, y, W) {
-  y += 8;
-  y = sectionHeader(doc, 'Deductions', y);
-
-  const rows = [['Gross Pay', `$${data.grossPay.toFixed(2)}`]];
-
+  const empCPF = data.employeeCPF || 0;
   if (data.cpfExempt) {
-    rows.push(['CPF Exempt', '—']);
-  } else if (data.employeeCPF > 0) {
+    y = lineRow('CPF Exempt', '—', y, { muted: true });
+  } else if (empCPF > 0) {
     const cpfRates = data.cpf || {};
     const rate = cpfRates.rates?.employee_rate || '';
-    rows.push([`Employee CPF${rate ? ' (' + rate + '%)' : ''} (–)`, `–$${data.employeeCPF.toFixed(2)}`]);
+    y = lineRow('Employee CPF' + (rate ? ' (' + rate + '%)' : ''), '–$' + empCPF.toFixed(2), y, { danger: true });
   }
-  if (data.shgAmount > 0 && data.shgName) {
-    rows.push([`${data.shgName} (–)`, `–$${data.shgAmount.toFixed(2)}`]);
-  }
-  rows.push(['Net Pay (Take-Home)', `$${(data.netPay || data.grossPay).toFixed(2)}`]);
-
-  // Employer contributions
-  if (data.employerCPF > 0) {
-    const erRate = (data.cpf || {}).rates?.employer_rate || '';
-    rows.push([`Employer CPF${erRate ? ' (' + erRate + '%)' : ''} *`, `$${data.employerCPF.toFixed(2)}`]);
-  }
-  if (data.sdlAmount > 0) {
-    rows.push(['SDL (Skills Development Levy) *', `$${data.sdlAmount.toFixed(2)}`]);
+  if ((data.shgAmount||0) > 0 && data.shgName) {
+    y = lineRow(data.shgName, '–$' + data.shgAmount.toFixed(2), y, { danger: true });
   }
 
-  summaryBox(doc, rows, y, W);
-  y += 20 * rows.length + 15;
+  y += 4;
+  y = lineRow('Net Pay (Take-Home)', '$' + (data.netPay||0).toFixed(2), y, { net: true });
+  y += 8;
 
-  if (data.employerCPF > 0 || data.sdlAmount > 0) {
-    doc.fontSize(7.5).fillColor('#999').font('Helvetica-Oblique')
-      .text('* Employer contributions are for payroll records only and are not deducted from employee pay.', 50, y);
-    y += 16;
+  // ── EMPLOYER CONTRIBUTIONS ──
+  const empCPFer = data.employerCPF || 0;
+  const sdl = data.sdlAmount || 0;
+  if (empCPFer > 0 || sdl > 0) {
+    y = secHeader('EMPLOYER CONTRIBUTIONS (FOR RECORDS)', y);
+    if (empCPFer > 0) {
+      const erRate = (data.cpf||{}).rates?.employer_rate || '';
+      y = lineRow('Employer CPF' + (erRate ? ' (' + erRate + '%)' : ''), '$' + empCPFer.toFixed(2), y, { muted: true });
+    }
+    if (sdl > 0) {
+      y = lineRow('SDL — Skills Development Levy', '$' + sdl.toFixed(2), y, { muted: true });
+    }
+    doc.fontSize(7).fillColor(MUTED).font('Helvetica-Oblique')
+      .text('* Employer contributions are for records only and not deducted from staff pay.', ML, y + 4, { width: CW });
+    y += 18;
   }
-  return y;
-}
 
-// ─── PDF HELPERS ──────────────────────────────────────────────────────────────
+  // ── FOOTER ──
+  const footerY = PH - 30;
+  doc.moveTo(ML, footerY).lineTo(PW - MR, footerY).strokeColor(LINE).lineWidth(0.8).stroke();
+  doc.fontSize(7.5).fillColor(MUTED).font('Helvetica')
+    .text('This is a computer-generated payslip · Not a tax document · Mise Restaurant Management', ML, footerY + 6, { align: 'center', width: CW });
 
-function sectionHeader(doc, text, y, color = NAVY) {
-  doc.fontSize(10).font('Helvetica-Bold').fillColor(color).text(text, 50, y);
-  y += 14;
-  doc.moveTo(50, y).lineTo(550, y).strokeColor(color).lineWidth(0.5).stroke();
-  return y + 4;
-}
-
-const COL_CONFIGS = {
-  7: [70, 65, 65, 40, 45, 55, 55],  // 7 cols
-  4: [100, 120, 80, 245],            // 4 cols
-  3: [120, 80, 245],
-  2: [200, 255],
-};
-
-function getColWidths(n, W) {
-  if (COL_CONFIGS[n]) return COL_CONFIGS[n];
-  const w = Math.floor(W / n);
-  return Array(n).fill(w);
-}
-
-function tableHeader(doc, cols, y, W) {
-  const widths = getColWidths(cols.length, W);
-  let x = 50;
-  doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff');
-  doc.rect(50, y, W, 15).fill(NAVY);
-  for (let i = 0; i < cols.length; i++) {
-    doc.fillColor('#fff').text(cols[i], x + 2, y + 3, { width: widths[i] - 4, ellipsis: true });
-    x += widths[i];
-  }
-  return y + 16;
-}
-
-function tableRow(doc, vals, y, W, amended = false) {
-  const widths = getColWidths(vals.length, W);
-  let x = 50;
-  const bg = amended ? '#FFF8F0' : (y % 32 < 16 ? '#F8F9FB' : '#fff');
-  doc.rect(50, y, W, 14).fill(bg);
-  doc.fontSize(8).font(amended ? 'Helvetica-Oblique' : 'Helvetica').fillColor(amended ? WARM : '#333');
-  for (let i = 0; i < vals.length; i++) {
-    doc.text(String(vals[i] || '—'), x + 2, y + 2, { width: widths[i] - 4, ellipsis: true });
-    x += widths[i];
-  }
-  // bottom border
-  doc.moveTo(50, y + 14).lineTo(50 + W, y + 14).strokeColor('#eee').lineWidth(0.3).stroke();
-  return y + 15;
-}
-
-function totalsBox(doc, rows, y, W) {
-  doc.rect(50, y, W, rows.length * 18 + 8).fill('#EEF2F7');
-  let ty = y + 6;
-  for (const [label, val] of rows) {
-    const isBold = label.startsWith('Gross') || label.startsWith('Net');
-    doc.fontSize(isBold ? 10 : 9)
-       .font(isBold ? 'Helvetica-Bold' : 'Helvetica')
-       .fillColor(isBold ? NAVY : '#333')
-       .text(label, 60, ty)
-       .text(val, 400, ty, { width: 140, align: 'right' });
-    ty += 18;
-  }
-}
-
-function summaryBox(doc, rows, y, W) {
-  let sy = y;
-  for (let i = 0; i < rows.length; i++) {
-    const [label, val] = rows[i];
-    const isNetPay = label.startsWith('Net Pay');
-    const isEmpCPF = label.startsWith('Employee CPF');
-    const bg = isNetPay ? NAVY : (i % 2 === 0 ? '#F8F9FB' : '#fff');
-    const tc = isNetPay ? '#fff' : (isEmpCPF ? '#cc2200' : '#333');
-    doc.rect(50, sy, W, 16).fill(bg);
-    doc.fontSize(isNetPay ? 10 : 9)
-       .font(isNetPay ? 'Helvetica-Bold' : 'Helvetica')
-       .fillColor(tc)
-       .text(label, 60, sy + 3)
-       .text(val, 400, sy + 3, { width: 140, align: 'right' });
-    sy += 17;
-  }
-}
-
-// ─── UTILS ────────────────────────────────────────────────────────────────────
-function fmtDate(d) {
-  if (!d) return '—';
-  const [y, m, day] = d.slice(0, 10).split('-');
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${parseInt(day)} ${months[parseInt(m) - 1]} ${y}`;
-}
-
-function fmtTime(dt) {
-  if (!dt) return '—';
-  try {
-    return new Date(dt).toLocaleTimeString('en-SG', { hour: '2-digit', minute: '2-digit', hour12: true });
-  } catch { return dt.slice(11, 16); }
-}
-
-function computeOTHrs(hours) {
-  return Math.max(0, hours - 8);
+  doc.end();
 }
 
 module.exports = router;
