@@ -275,6 +275,11 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
 }
 
 // ─── PDF GENERATION ───────────────────────────────────────────────────────────
+function fmtMoney(n) {
+  if (n == null) return '—';
+  return '$' + Number(n).toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function fmtDate(d) {
   if (!d) return '—';
   const dt = new Date(d);
@@ -367,13 +372,11 @@ function generatePDF(data, stream) {
     }
     ph.forEach(s => {
       y = lineRow('Public holiday – ' + fmtDate(s.date) + ' (' + (s.hours||0).toFixed(1) + ' hrs × 1.5×)',
-                  '+$' + (s.cost||0).toFixed(2), y);
+                  '+$' + Number(s.cost||0).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2}), y);
     });
   } else {
-    y = lineRow('Base Salary', '$' + (data.salary||0).toFixed(2), y);
-    if ((data.otHours||0) > 0) {
-      y = lineRow('Overtime (' + data.otHours.toFixed(1) + ' hrs @ 1.5×)', '+$' + (data.otPay||0).toFixed(2), y);
-    }
+    y = lineRow('Base Salary', fmtMoney(data.salary), y);
+    y = lineRow('Overtime (' + (data.otHours||0).toFixed(1) + ' hrs @ 1.5×)', (data.otPay||0) > 0 ? '+' + fmtMoney(data.otPay) : '$0.00', y, { muted: (data.otPay||0) === 0 });
     if ((data.phShifts||[]).length > 0) {
       y = lineRow('Public Holiday shifts (' + data.phShifts.length + ')', 'Included', y, { muted: true });
     }
@@ -381,7 +384,7 @@ function generatePDF(data, stream) {
 
   doc.moveTo(ML, y).lineTo(PW - MR, y).strokeColor(LINE).lineWidth(0.5).stroke();
   y += 6;
-  y = lineRow('Gross Pay', '$' + (data.grossPay||0).toFixed(2), y, { bold: true });
+  y = lineRow('Gross Pay', fmtMoney(data.grossPay), y, { bold: true });
   y += 6;
 
   // ── DEDUCTIONS ──
@@ -393,14 +396,14 @@ function generatePDF(data, stream) {
   } else if (empCPF > 0) {
     const cpfRates = data.cpf || {};
     const rate = cpfRates.rates?.employee_rate || '';
-    y = lineRow('Employee CPF' + (rate ? ' (' + rate + '%)' : ''), '–$' + empCPF.toFixed(2), y, { danger: true });
+    y = lineRow('Employee CPF' + (rate ? ' (' + rate + '%)' : ''), ('–' + fmtMoney(empCPF)), y, { danger: true });
   }
   if ((data.shgAmount||0) > 0 && data.shgName) {
-    y = lineRow(data.shgName, '–$' + data.shgAmount.toFixed(2), y, { danger: true });
+    y = lineRow(data.shgName, ('–' + fmtMoney(data.shgAmount)), y, { danger: true });
   }
 
   y += 4;
-  y = lineRow('Net Pay (Take-Home)', '$' + (data.netPay||0).toFixed(2), y, { net: true });
+  y = lineRow('Net Pay (Take-Home)', fmtMoney(data.netPay), y, { net: true });
   y += 8;
 
   // ── EMPLOYER CONTRIBUTIONS ──
@@ -410,10 +413,10 @@ function generatePDF(data, stream) {
     y = secHeader('EMPLOYER CONTRIBUTIONS (FOR RECORDS)', y);
     if (empCPFer > 0) {
       const erRate = (data.cpf||{}).rates?.employer_rate || '';
-      y = lineRow('Employer CPF' + (erRate ? ' (' + erRate + '%)' : ''), '$' + empCPFer.toFixed(2), y, { muted: true });
+      y = lineRow('Employer CPF' + (erRate ? ' (' + erRate + '%)' : ''), fmtMoney(empCPFer), y, { muted: true });
     }
     if (sdl > 0) {
-      y = lineRow('SDL — Skills Development Levy', '$' + sdl.toFixed(2), y, { muted: true });
+      y = lineRow('SDL — Skills Development Levy', fmtMoney(sdl), y, { muted: true });
     }
     doc.fontSize(7).fillColor(MUTED).font('Helvetica-Oblique')
       .text('* Employer contributions are for records only and not deducted from staff pay.', ML, y + 4, { width: CW });
