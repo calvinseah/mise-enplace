@@ -36,6 +36,55 @@ router.get('/download', (req, res) => {
 });
 
 // ─── COMPUTE PAYSLIP DATA ─────────────────────────────────────────────────────
+
+// ── SHG contribution calculator ───────────────────────────────────────────────
+function getSHGName(race) {
+  race = (race || '').toLowerCase();
+  if (race === 'chinese') return 'CDAC';
+  if (race === 'malay') return 'MBMF';
+  if (race === 'indian') return 'SINDA';
+  if (race === 'eurasian') return 'ECF';
+  return null;
+}
+
+function getSHGAmount(race, ow) {
+  race = (race || '').toLowerCase();
+  if (race === 'chinese') {
+    if (ow <= 2000) return 0.50;
+    if (ow <= 3500) return 1.00;
+    if (ow <= 5000) return 1.50;
+    return 2.00;
+  }
+  if (race === 'malay') {
+    if (ow <= 1000) return 1.00;
+    if (ow <= 2000) return 2.00;
+    if (ow <= 3000) return 3.00;
+    if (ow <= 4000) return 4.00;
+    return 5.00;
+  }
+  if (race === 'indian') {
+    if (ow <= 2000) return 0.50;
+    if (ow <= 3500) return 1.00;
+    if (ow <= 5000) return 2.00;
+    return 3.00;
+  }
+  if (race === 'eurasian') {
+    if (ow <= 5000) return 0;
+    return 2.00;
+  }
+  return 0;
+}
+
+function computeExtras(staff, grossPay, cpf) {
+  const cpfExempt = !!staff.cpf_exempt;
+  const sdlAmount = Math.min(11.25, Math.max(2, Math.round(grossPay * 0.0025 * 100) / 100));
+  const shgName   = !cpfExempt ? getSHGName(staff.race) : null;
+  const shgAmount = (!cpfExempt && shgName) ? getSHGAmount(staff.race, grossPay) : 0;
+  const effectiveCPF = cpfExempt ? { employee: 0, employer: 0, total: 0, eligible: false } : (cpf || { employee: 0, employer: 0, total: 0, eligible: false });
+  const netPay = Math.round((grossPay - effectiveCPF.employee - shgAmount) * 100) / 100;
+  return { cpfExempt, sdlAmount, shgName, shgAmount, effectiveCPF, netPay };
+}
+
 function computePayslip({ staffId, from, to }) {
   if (!staffId || !from || !to) throw new Error('staffId, from, and to required');
 
@@ -108,6 +157,7 @@ function computeParttimePayslip(staff, records, from, to, computeShiftCost, comp
     cpf = computeCPF(staff, grossPay, to);
   }
 
+  const extras = computeExtras(staff, grossPay, cpf);
   return {
     staff_type: 'parttime',
     staffId: staff.id,
@@ -120,7 +170,14 @@ function computeParttimePayslip(staff, records, from, to, computeShiftCost, comp
     phShifts,
     totalHours: Math.round(totalHours * 100) / 100,
     grossPay,
-    cpf,
+    cpf: extras.effectiveCPF,
+    employeeCPF: extras.effectiveCPF.employee,
+    employerCPF: extras.effectiveCPF.employer,
+    netPay: extras.netPay,
+    sdlAmount: extras.sdlAmount,
+    shgName: extras.shgName,
+    shgAmount: extras.shgAmount,
+    cpfExempt: extras.cpfExempt,
     hourlyRate: staff.hourly_rate
   };
 }
@@ -170,7 +227,8 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
     grossPay = Math.round((salary + otPay) * 100) / 100;
   }
 
-  const cpf = computeCPF(staff, grossPay, to);
+  const rawCpf = computeCPF(staff, grossPay, to);
+  const extras = computeExtras(staff, grossPay, rawCpf);
 
   return {
     staff_type: 'fulltime',
@@ -189,7 +247,14 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
     otHours: Math.round(otHours * 100) / 100,
     otPay,
     grossPay,
-    cpf,
+    cpf: extras.effectiveCPF,
+    employeeCPF: extras.effectiveCPF.employee,
+    employerCPF: extras.effectiveCPF.employer,
+    netPay: extras.netPay,
+    sdlAmount: extras.sdlAmount,
+    shgName: extras.shgName,
+    shgAmount: extras.shgAmount,
+    cpfExempt: extras.cpfExempt,
     daysPresent: new Set(shifts.map(s => s.date)).size
   };
 }
@@ -361,37 +426,39 @@ function drawFulltimeSection(doc, data, y, W) {
 }
 
 function drawCPFSection(doc, data, y, W) {
-  if (!data.cpf) {
-    // Foreigner — show simple pay summary
-    summaryBox(doc, [
-      ['Gross Pay', `$${data.grossPay.toFixed(2)}`],
-      ['Net Pay (No CPF)', `$${data.grossPay.toFixed(2)}`],
-    ], y, W);
-    return y + 55;
-  }
-
-  const { empCPF, erCPF, netPay, exceedsCeiling } = data.cpf;
-
   y += 8;
-  y = sectionHeader(doc, 'CPF Contributions', y);
+  y = sectionHeader(doc, 'Deductions', y);
 
-  if (exceedsCeiling) {
-    doc.fontSize(8).fillColor(WARM).font('Helvetica-Bold')
-      .text('⚠ Gross pay exceeds CPF Ordinary Wage ceiling ($7,400). CPF calculated on $7,400.', 50, y);
-    y += 14;
+  const rows = [['Gross Pay', `$${data.grossPay.toFixed(2)}`]];
+
+  if (data.cpfExempt) {
+    rows.push(['CPF Exempt', '—']);
+  } else if (data.employeeCPF > 0) {
+    const rate = data.cpf?.rates?.employee_rate || '';
+    rows.push([`Employee CPF${rate ? ' (' + rate + '%)' : ''} (–)`, `–$${data.employeeCPF.toFixed(2)}`]);
+  }
+  if (data.shgAmount > 0 && data.shgName) {
+    rows.push([`${data.shgName} (–)`, `–$${data.shgAmount.toFixed(2)}`]);
+  }
+  rows.push(['Net Pay (Take-Home)', `$${(data.netPay || data.grossPay).toFixed(2)}`]);
+
+  // Employer contributions
+  if (data.employerCPF > 0) {
+    const erRate = data.cpf?.rates?.employer_rate || '';
+    rows.push([`Employer CPF${erRate ? ' (' + erRate + '%)' : ''} *`, `$${data.employerCPF.toFixed(2)}`]);
+  }
+  if (data.sdlAmount > 0) {
+    rows.push(['SDL (Skills Development Levy) *', `$${data.sdlAmount.toFixed(2)}`]);
   }
 
-  summaryBox(doc, [
-    ['Gross Pay', `$${data.grossPay.toFixed(2)}`],
-    ['Employee CPF Deduction (–)', `–$${empCPF.toFixed(2)}`],
-    ['Net Pay (Take-Home)', `$${netPay.toFixed(2)}`],
-    ['Employer CPF Contribution*', `$${erCPF.toFixed(2)}`],
-  ], y, W);
+  summaryBox(doc, rows, y, W);
+  y += 20 * rows.length + 15;
 
-  y += 75;
-  doc.fontSize(7.5).fillColor('#999').font('Helvetica-Oblique')
-    .text('* Employer CPF contribution is for payroll records only and is not deducted from employee pay.', 50, y);
-  y += 16;
+  if (data.employerCPF > 0 || data.sdlAmount > 0) {
+    doc.fontSize(7.5).fillColor('#999').font('Helvetica-Oblique')
+      .text('* Employer contributions are for payroll records only and are not deducted from employee pay.', 50, y);
+    y += 16;
+  }
   return y;
 }
 

@@ -361,26 +361,33 @@ function render(d){
     }
   }
 
-  /* CPF section */
-  const cpf=d.cpf;
-  if(!cpf){
-    html+=`<div class="ps-section"><table class="tot-table">
-      <tr class="gross"><td>Gross pay</td><td>$${d.grossPay.toFixed(2)}</td></tr>
-    </table><div style="margin-top:8px;font-size:11.5px;color:var(--ink-30)">CPF not applicable</div></div>`;
-  } else {
-    html+=`<div class="ps-section"><div class="ps-sec-title">${svgShieldCheck} CPF contributions</div>`;
-    if(cpf.exceedsCeiling)html+=`<div class="warn-box">${svgAlertTri} Gross pay exceeds CPF Ordinary Wage ceiling ($7,400). CPF calculated on $${cpf.cappedGross.toFixed(2)}.</div>`;
-    html+=`<table class="tot-table">
-      <tr class="gross"><td>Gross pay</td><td>$${d.grossPay.toFixed(2)}</td></tr>
-      <tr class="emp-cpf"><td>Employee CPF deduction</td><td>–$${cpf.empCPF.toFixed(2)}</td></tr>
-    </table>
-    <table class="tot-table" style="margin-top:4px">
-      <tr class="net-row"><td>Net pay (take-home)</td><td style="text-align:right">$${cpf.netPay.toFixed(2)}</td></tr>
-    </table>
-    <table class="tot-table" style="margin-top:8px">
-      <tr class="er-cpf"><td>Employer CPF contribution (for records)</td><td>$${cpf.erCPF.toFixed(2)}</td></tr>
-    </table></div>`;
+  /* Deductions & contributions */
+  html+=`<div class="ps-section"><div class="ps-sec-title">${svgShieldCheck} Deductions</div>`;
+  html+=`<table class="tot-table">
+    <tr class="gross"><td>Gross pay</td><td>$${d.grossPay.toFixed(2)}</td></tr>`;
+  if(d.cpfExempt){
+    html+=`<tr><td style="color:var(--ink-60)">CPF Exempt</td><td style="color:var(--ink-60)">—</td></tr>`;
+  } else if(d.employeeCPF>0){
+    const rate=d.cpf?.rates?.employee_rate||d.cpfRates?.employee_rate||'';
+    html+=`<tr class="emp-cpf"><td>Employee CPF${rate?' ('+rate+'%)':''}</td><td>–$${d.employeeCPF.toFixed(2)}</td></tr>`;
   }
+  if(d.shgAmount>0&&d.shgName){
+    html+=`<tr class="emp-cpf"><td>${d.shgName}</td><td>–$${d.shgAmount.toFixed(2)}</td></tr>`;
+  }
+  html+=`<tr class="net-row"><td>Net pay (take-home)</td><td style="text-align:right">$${(d.netPay||d.grossPay).toFixed(2)}</td></tr>
+  </table>`;
+  if(d.employerCPF>0||d.sdlAmount>0){
+    html+=`<table class="tot-table" style="margin-top:8px">`;
+    if(d.employerCPF>0){
+      const erRate=d.cpf?.rates?.employer_rate||d.cpfRates?.employer_rate||'';
+      html+=`<tr class="er-cpf"><td>Employer CPF${erRate?' ('+erRate+'%)':''} (for records)</td><td>$${d.employerCPF.toFixed(2)}</td></tr>`;
+    }
+    if(d.sdlAmount>0){
+      html+=`<tr class="er-cpf"><td>SDL — Skills Development Levy (for records)</td><td>$${d.sdlAmount.toFixed(2)}</td></tr>`;
+    }
+    html+=`</table>`;
+  }
+  html+=`</div>`;
 
   html+=`<div class="ps-footer">This is a computer-generated payslip. This is not a tax document.</div>`;
   document.getElementById('psContent').innerHTML=html;
