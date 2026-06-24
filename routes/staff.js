@@ -154,9 +154,9 @@ router.get('/outlets/list', (req, res) => {
     const user = req.session?.user;
     if (user?.role === 'manager' && user?.outlets?.length) {
       const placeholders = user.outlets.map(() => '?').join(',');
-      res.json(db.all(`SELECT id,name,address,is_active,lat,lng,radius_m FROM outlets WHERE id IN (${placeholders}) ORDER BY name`, user.outlets));
+      res.json(db.all(`SELECT id,name,address,is_active,COALESCE(lat,NULL) as lat,COALESCE(lng,NULL) as lng,COALESCE(radius_m,200) as radius_m FROM outlets WHERE id IN (${placeholders}) ORDER BY name`, user.outlets));
     } else {
-      res.json(db.all(`SELECT id,name,address,is_active,lat,lng,radius_m FROM outlets ORDER BY name`));
+      res.json(db.all(`SELECT id,name,address,is_active,COALESCE(lat,NULL) as lat,COALESCE(lng,NULL) as lng,COALESCE(radius_m,200) as radius_m FROM outlets ORDER BY name`));
     }
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

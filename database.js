@@ -173,6 +173,11 @@ function createSchema() {
   )`);
   // Add new columns if upgrading existing DB
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN start_time TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE outlets ADD COLUMN lat REAL'); } catch(e) {}
+  try { db.run('ALTER TABLE outlets ADD COLUMN lng REAL'); } catch(e) {}
+  try { db.run('ALTER TABLE outlets ADD COLUMN radius_m INTEGER DEFAULT 200'); } catch(e) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN geo_flagged INTEGER DEFAULT 0'); } catch(e) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_flagged INTEGER DEFAULT 0'); } catch(e) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN end_time TEXT'); } catch(e) {}
