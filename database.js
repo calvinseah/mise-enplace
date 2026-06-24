@@ -178,9 +178,15 @@ function createSchema() {
   try { db.run('ALTER TABLE outlets ADD COLUMN radius_m INTEGER DEFAULT 200'); } catch(e) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_flagged INTEGER DEFAULT 0'); } catch(e) {}
   try { db.run("ALTER TABLE applications ADD COLUMN race TEXT"); } catch(e) {}
+  try { db.run("ALTER TABLE staff ADD COLUMN cpf_exempt INTEGER DEFAULT 0"); } catch(e) {}
+  try { db.run("ALTER TABLE staff ADD COLUMN race TEXT"); } catch(e) {}
+  db.run("UPDATE staff SET race='Malay' WHERE race IS NULL OR race=''");
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_flagged INTEGER DEFAULT 0'); } catch(e) {}
   try { db.run("ALTER TABLE applications ADD COLUMN race TEXT"); } catch(e) {}
+  try { db.run("ALTER TABLE staff ADD COLUMN cpf_exempt INTEGER DEFAULT 0"); } catch(e) {}
+  try { db.run("ALTER TABLE staff ADD COLUMN race TEXT"); } catch(e) {}
+  db.run("UPDATE staff SET race='Malay' WHERE race IS NULL OR race=''");
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN end_time TEXT'); } catch(e) {}
 
@@ -261,6 +267,47 @@ async function seedData() {
     ['2026-05-31','Vesak Day'],['2026-05-27','Hari Raya Haji'],['2026-08-10','National Day'],
     ['2026-11-07','Deepavali'],['2026-12-25','Christmas Day'],
   ];
+
+
+  db.run(`CREATE TABLE IF NOT EXISTS companies (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    name    TEXT NOT NULL,
+    uen     TEXT,
+    address TEXT,
+    is_active INTEGER DEFAULT 1
+  )`);
+
+  // Seed TBHG entities
+  const existingCompanies = db.all('SELECT id FROM companies');
+  if (!existingCompanies.length) {
+    const entities = [
+      ['Tipo Private Limited',           '201830614K'],
+      ['Tipo KS Private Limited',        '202241903H'],
+      ['Tipo Wheelock Private Limited',  '202428528R'],
+      ['Ela Private Limited',            '202246414C'],
+      ['The Mad Sailors Private Limited','201610779M'],
+      ['TCOTH Private Limited',          '201631629G'],
+      ['TCBB Private Limited',           '201830095R'],
+    ];
+    entities.forEach(([name, uen]) => {
+      db.run('INSERT INTO companies (name, uen) VALUES (?,?)', [name, uen]);
+    });
+  }
+
+
+  // Update company UENs if seeded with TBC placeholder
+  const uenMap = {
+    'Tipo Private Limited':           '201830614K',
+    'Tipo KS Private Limited':        '202241903H',
+    'Tipo Wheelock Private Limited':  '202428528R',
+    'Ela Private Limited':            '202246414C',
+    'The Mad Sailors Private Limited':'201610779M',
+    'TCOTH Private Limited':          '201631629G',
+    'TCBB Private Limited':           '201830095R',
+  };
+  Object.entries(uenMap).forEach(([name, uen]) => {
+    db.run("UPDATE companies SET uen=? WHERE name=? AND (uen='TBC' OR uen IS NULL)", [uen, name]);
+  });
 
   // Seed default admin user — created here, password synced separately
   const existingAdmin = get(`SELECT id FROM users WHERE username='admin'`);

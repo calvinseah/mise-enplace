@@ -87,7 +87,7 @@ router.get('/summary', (req, res) => {
 
 // ── Excel export ───────────────────────────────────────────────────────────────
 router.get('/export/excel', (req, res) => {
-  const { from, to, outletId } = req.query;
+  const { from, to, outletId, companyId } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
   try {
     const rows = computeAllPayroll(from, to, outletId);
@@ -155,7 +155,7 @@ router.get('/export/excel', (req, res) => {
 
 // ── PDF export ─────────────────────────────────────────────────────────────────
 router.get('/export/pdf', (req, res) => {
-  const { from, to, outletId } = req.query;
+  const { from, to, outletId, companyId } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from and to required' });
   try {
     const rows = computeAllPayroll(from, to, outletId);
@@ -170,8 +170,18 @@ router.get('/export/pdf', (req, res) => {
     // Header
     doc.fontSize(18).font('Helvetica-Bold').fillColor(GREEN).text('Mise — Payroll Summary', 40, 40);
     const outletName = outletId ? db.get('SELECT name FROM outlets WHERE id=?',[outletId])?.name : 'All outlets';
-    doc.fontSize(10).font('Helvetica').fillColor('#555')
-       .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
+    const company = companyId ? db.get('SELECT name,uen FROM companies WHERE id=?',[companyId]) : null;
+    if (company) {
+      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1B3A5C').text(company.name, 40, 50);
+      if (company.uen && company.uen !== 'TBC') {
+        doc.fontSize(9).font('Helvetica').fillColor('#555').text(`UEN: ${company.uen}`, 40, 68);
+      }
+      doc.fontSize(9).font('Helvetica').fillColor('#555')
+         .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 80);
+    } else {
+      doc.fontSize(10).font('Helvetica').fillColor('#555')
+         .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
+    }
     doc.moveTo(40, 78).lineTo(doc.page.width - 40, 78).strokeColor(GREEN).lineWidth(1.5).stroke();
 
     // Table

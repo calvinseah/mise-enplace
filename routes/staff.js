@@ -26,6 +26,8 @@ function safeStaff(s, includeSecure = false, isAdmin = false) {
     bank_name: isAdmin ? s.bank_name : null,
     pin_active: s.pin_active, is_active: s.is_active,
     has_pin: s.pin ? 1 : 0,
+    cpf_exempt: isAdmin ? (s.cpf_exempt || 0) : undefined,
+    race: isAdmin ? s.race : undefined,
   };
   if (includeSecure && isAdmin) {
     out.nric_full = db.decryptField(s.nric_full_enc) || null;
@@ -83,7 +85,8 @@ router.post('/', async (req, res) => {
 // UPDATE staff
 router.put('/:id', async (req, res) => {
   const { name, role, staff_type, monthly_salary, hourly_rate, date_of_birth,
-          pr_status, pr_year, nric_last4, nric_full, bank_name, bank_account } = req.body;
+          pr_status, pr_year, nric_last4, nric_full, bank_name, bank_account,
+          cpf_exempt, race } = req.body;
   try {
     const existing = db.get(`SELECT nric_full_enc, bank_account_enc FROM staff WHERE id = ?`, [req.params.id]);
     if (!existing) return res.status(404).json({ error: 'Not found' });

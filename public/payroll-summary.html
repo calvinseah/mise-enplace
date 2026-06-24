@@ -151,6 +151,8 @@ tbody tr:last-child td{border-bottom:none}
       </div>
       <div class="fg"><label>From (custom)</label><input type="date" id="psFrom"></div>
       <div class="fg"><label>To (custom)</label><input type="date" id="psTo"></div>
+      <div class="fg"><label>Company (for export)</label><select id="psCompany" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:200px;-webkit-appearance:none"><option value="">— Select company —</option></select>
+        <a href="/companies" style="font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap;align-self:flex-end;padding-bottom:6px">Edit UENs ↗</a></div>
       <div class="fg"><label>Outlet</label><select id="psOutlet" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:160px;-webkit-appearance:none"><option value="">All outlets</option></select></div>
       <div style="align-self:flex-end;display:flex;gap:6px">
         <button class="btn btn-primary" onclick="loadSummary()">
@@ -199,6 +201,41 @@ function onMonthChange(){
   document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
 }
 
+
+async function loadCompanies(){
+  try{
+    const r=await fetch('/api/companies');
+    const companies=await r.json();
+    const sel=document.getElementById('psCompany');
+    companies.forEach(c=>{
+      const opt=document.createElement('option');
+      opt.value=c.id;
+      opt.textContent=c.name;
+      opt.dataset.uen=c.uen||'';
+      sel.appendChild(opt);
+    });
+  }catch(e){}
+}
+
+async function exportAllCompanies(e){
+  e.preventDefault();
+  const from=document.getElementById('psFrom').value;
+  const to=document.getElementById('psTo').value;
+  if(!from||!to){showAlert('Please set a pay period first','err');return;}
+  // Export one PDF per company
+  try{
+    const r=await fetch('/api/companies');
+    const companies=await r.json();
+    for(const c of companies){
+      const p=new URLSearchParams({from,to,companyId:c.id});
+      const o=document.getElementById('psOutlet').value;
+      if(o)p.set('outletId',o);
+      window.open('/api/payroll-summary/export/pdf?'+p.toString(),'_blank');
+      await new Promise(res=>setTimeout(res,800)); // stagger to avoid popup blocking
+    }
+  }catch(e){showAlert('Error generating exports','err');}
+}
+
 async function loadOutlets(){
   try{
     const r=await fetch('/api/staff/outlets/list');
@@ -213,6 +250,8 @@ function params(){
   const p=new URLSearchParams({from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});
   const o=document.getElementById('psOutlet').value;
   if(o)p.set('outletId',o);
+  const c=document.getElementById('psCompany').value;
+  if(c)p.set('companyId',c);
   return p;
 }
 
@@ -350,6 +389,7 @@ async function loadStaffDetail(r) {
 
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
 loadOutlets();
+loadCompanies();
 loadSummary();
 </script>
 <script src="/maise.js"></script>

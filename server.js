@@ -79,6 +79,7 @@ const attendanceRoutes    = require('./routes/attendance');
 const staffRoutes         = require('./routes/staff');
 const payslipRoutes       = require('./routes/payslip');
 const applicationRoutes   = require('./routes/applications');
+const companyRoutes        = require('./routes/companies');
 const revenueRoutes       = require('./routes/revenue');
 const payrollSummaryRoutes= require('./routes/payrollSummary');
 const rosterRoutes        = require('./routes/roster');
@@ -104,6 +105,7 @@ app.get('/api/attendance/my-shifts', attendanceRoutes);
 // ── Manager API ───────────────────────────────────────────────────────────────
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
+app.use('/api/companies',       requireAuthAPI, companyRoutes);
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);
