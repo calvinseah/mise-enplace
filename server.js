@@ -139,6 +139,7 @@ app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
 
 
 // Temporary admin password reset route
@@ -267,4 +268,3 @@ initDB().then(() => syncAdminPassword()).then(() => {
     console.log(`   Admin:     admin / ${process.env.ADMIN_PASSWORD || 'admin1234'}\n`);
   });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
-
