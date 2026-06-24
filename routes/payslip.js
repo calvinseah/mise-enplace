@@ -6,13 +6,20 @@ const db = require('../database');
 
 const COMPANY_NAME = 'Mise';
 const COMPANY_ADDRESS = '';
-const NAVY = '#1B3A5C';
-const WARM = '#C8956C';
+const NAVY = '#1A2318';
+ const GREEN = '#3D5240';
+const LIGHT_GREEN = '#C8D5B9';
+const WARM = '#3D5240';
+const DARK = '#1A2318';
 
 // ─── PREVIEW payslip data (JSON) ─────────────────────────────────────────────
 router.get('/preview', (req, res) => {
   try {
     const data = computePayslip(req.query);
+    if (req.query.companyId) {
+      const co = db.get('SELECT name, uen FROM companies WHERE id=?', [req.query.companyId]);
+      if (co) { data.companyName = co.name; data.companyUen = co.uen; }
+    }
     res.json(data);
   } catch (e) {
     res.status(400).json({ error: e.message });
@@ -23,6 +30,10 @@ router.get('/preview', (req, res) => {
 router.get('/download', (req, res) => {
   try {
     const data = computePayslip(req.query);
+    if (req.query.companyId) {
+      const co = db.get('SELECT name, uen FROM companies WHERE id=?', [req.query.companyId]);
+      if (co) { data.companyName = co.name; data.companyUen = co.uen; }
+    }
     const { staffName } = data;
     const safeName = staffName.replace(/[^a-z0-9]/gi, '_');
 
@@ -270,46 +281,56 @@ function generatePDF(data, stream) {
 
   const W = doc.page.width - 100; // usable width
 
-  // ── Header ──
+  // ── Header: dark green banner ──
   const headerName = data.companyName || COMPANY_NAME;
-  doc.fontSize(18).fillColor(NAVY).font('Helvetica-Bold').text(headerName, 50, 50);
-  if (data.companyUen && data.companyUen !== 'TBC') {
-    doc.fontSize(9).fillColor('#666').font('Helvetica').text(`UEN: ${data.companyUen}`, 50, 72);
-  }
-  doc.moveTo(50, 90).lineTo(doc.page.width - 50, 90).strokeColor(NAVY).lineWidth(2).stroke();
-  doc.fontSize(14).fillColor(NAVY).font('Helvetica-Bold').text('PAYSLIP', 50, 100);
+  const pageW = doc.page.width;
 
-  // ── Staff Info ──
-  let y = 125;
+  // Banner background
+  doc.rect(0, 0, pageW, 90).fill('#1A2318');
+
+  // Company name
+  doc.fontSize(20).fillColor('#ffffff').font('Helvetica-Bold').text(headerName, 50, 22);
+
+  // UEN
+  if (data.companyUen && data.companyUen !== 'TBC') {
+    doc.fontSize(9).fillColor('rgba(255,255,255,0.5)').font('Helvetica').text(`UEN: ${data.companyUen}`, 50, 47);
+  }
+
+  // PAYSLIP badge top right
+  doc.fontSize(11).fillColor('#C8D5B9').font('Helvetica-Bold').text('PAYSLIP', 0, 35, { align: 'right', width: pageW - 50 });
+
+  // ── Staff Info block ──
+  let y = 110;
+
+  // Two-column info layout
+  const colL = 50, colR = 320;
   const infoLeft = [
-    ['Name', data.staffName],
-    ['Role', data.role],
-    ...(data.nricLast4 ? [['NRIC (last 4)', `****${data.nricLast4}`]] : []),
-    ['Staff Type', data.staff_type === 'fulltime' ? 'Full-Time' : 'Part-Time'],
-    ['Citizenship', data.prStatus.toUpperCase()],
+    ['EMPLOYEE', data.staffName],
+    ['ROLE', data.role + ' · ' + (data.staff_type === 'fulltime' ? 'Full-time' : 'Part-time')],
+    ...(data.nricLast4 ? [['NRIC', `****${data.nricLast4}`]] : []),
+    ['CITIZENSHIP', (data.prStatus||'').toUpperCase()],
+    ...(data.outlets ? [['OUTLET', data.outlets]] : []),
   ];
   const infoRight = [
-    ['Pay Period', `${fmtDate(data.from)} – ${fmtDate(data.to)}`],
-    ['Generated', fmtDate(new Date().toISOString().slice(0, 10))],
+    ['PAY PERIOD', `${fmtDate(data.from)} – ${fmtDate(data.to)}`],
+    ['GENERATED', new Date().toLocaleDateString('en-SG', { day:'2-digit', month:'short', year:'numeric' })],
   ];
 
-  doc.fontSize(9).font('Helvetica-Bold').fillColor(NAVY);
+  let yL = y, yR = y;
   for (const [label, val] of infoLeft) {
-    doc.font('Helvetica-Bold').fillColor('#333').text(label + ':', 50, y);
-    doc.font('Helvetica').text(val, 160, y);
-    y += 16;
+    doc.fontSize(7.5).fillColor('#888').font('Helvetica-Bold').text(label, colL, yL);
+    doc.fontSize(10).fillColor('#1A2318').font('Helvetica').text(val, colL, yL + 10);
+    yL += 28;
   }
-
-  let yr = 125;
   for (const [label, val] of infoRight) {
-    doc.font('Helvetica-Bold').fillColor('#333').text(label + ':', 340, yr);
-    doc.font('Helvetica').text(val, 450, yr);
-    yr += 16;
+    doc.fontSize(7.5).fillColor('#888').font('Helvetica-Bold').text(label, colR, yR);
+    doc.fontSize(10).fillColor('#1A2318').font('Helvetica').text(val, colR, yR + 10);
+    yR += 28;
   }
 
-  y = Math.max(y, yr) + 10;
-  doc.moveTo(50, y).lineTo(doc.page.width - 50, y).strokeColor('#ddd').lineWidth(1).stroke();
-  y += 12;
+  y = Math.max(yL, yR) + 8;
+  doc.moveTo(50, y).lineTo(pageW - 50, y).strokeColor('#E8EDE3').lineWidth(1).stroke();
+  y += 14;
 
   // ── Shifts ──
   if (data.staff_type === 'parttime') {
