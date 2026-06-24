@@ -28,31 +28,39 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 .main{flex:1;padding:28px 32px;min-width:0}
 .page-title{font-size:22px;font-weight:400;color:var(--ink);font-family:var(--font-display)}
 .page-sub{font-size:12.5px;color:var(--ink-60);margin-top:3px;margin-bottom:24px}
-.card{background:var(--white);border-radius:16px;border:1px solid var(--ink-08);overflow:hidden}
-.company-row{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--ink-08)}
+.card{background:var(--white);border-radius:16px;border:1px solid var(--ink-08);overflow:hidden;margin-bottom:16px}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--ink-08);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:600;color:var(--ink)}
+.company-row{display:flex;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid var(--ink-08)}
 .company-row:last-child{border-bottom:none}
 .company-name{font-size:13.5px;font-weight:600;color:var(--ink);flex:1}
-.company-uen{font-size:12px;color:var(--ink-60);min-width:140px}
-.btn{height:30px;padding:0 14px;border-radius:8px;border:none;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.company-uen{font-size:12px;color:var(--ink-60);font-family:monospace;min-width:120px}
+.btn{height:32px;padding:0 14px;border-radius:8px;border:none;font-size:12px;font-weight:500;font-family:var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn svg{width:13px;height:13px}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}
 .btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:#f5f5f3}
-.edit-row{display:flex;align-items:center;gap:8px;flex:1}
-.edit-input{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;color:var(--ink)}
-.edit-input:focus{border-color:var(--accent)}
-.alert{padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:500;margin-bottom:16px;border:1px solid}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid rgba(192,57,43,.2)}.btn-danger:hover{background:rgba(192,57,43,.05)}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+.fg input{height:36px;padding:0 12px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none}
+.fg input:focus{border-color:var(--accent)}
+.add-form{display:flex;gap:10px;align-items:flex-end;padding:16px 20px;border-bottom:1px solid var(--ink-08)}
+.alert{padding:10px 14px;border-radius:8px;font-size:12.5px;font-weight:500;margin-bottom:16px;border:1px solid;display:none}
 .alert-ok{background:rgba(46,107,62,.08);color:#2E6B3E;border-color:rgba(46,107,62,.2)}
 .alert-err{background:rgba(192,57,43,.08);color:var(--danger);border-color:rgba(192,57,43,.2)}
+.empty{text-align:center;color:var(--ink-60);padding:32px;font-size:13px}
+.edit-inline{display:flex;align-items:center;gap:8px;flex:1}
+.edit-inline input{height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:7px;font-size:13px;font-family:var(--font);outline:none;color:var(--ink)}
+.edit-inline input:focus{border-color:var(--accent)}
 </style>
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-row">
-      <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
-        <div class="sb-icon"><span>M</span></div>
-        <div><div class="sb-name">Mise</div><div class="sb-addr">Every person, in place.</div></div>
-      </a>
-    </div>
+    <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
+      <div class="sb-icon"><span>M</span></div>
+      <div><div class="sb-name">Mise</div><div class="sb-addr">Every person, in place.</div></div>
+    </a>
   </div>
   <nav class="sb-nav">
     <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
@@ -75,9 +83,33 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 
 <main class="main">
   <div class="page-title">Companies</div>
-  <div class="page-sub">Manage TBHG legal entities and UENs for payroll exports</div>
-  <div id="alertBox" style="display:none"></div>
-  <div class="card" id="companiesList"></div>
+  <div class="page-sub">TBHG legal entities for payroll exports</div>
+
+  <div id="alertBox" class="alert"></div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Add company</div>
+    </div>
+    <div class="add-form">
+      <div class="fg" style="flex:2">
+        <label>Company name</label>
+        <input type="text" id="newName" placeholder="e.g. Tipo Private Limited">
+      </div>
+      <div class="fg" style="flex:1">
+        <label>UEN</label>
+        <input type="text" id="newUen" placeholder="e.g. 201830614K" maxlength="12">
+      </div>
+      <button class="btn btn-primary" onclick="addCompany()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
+    </div>
+  </div>
+
+  <div class="card" id="companiesCard">
+    <div class="empty">Loading…</div>
+  </div>
 </main>
 
 <script>
@@ -88,52 +120,87 @@ async function load() {
     const u = await r.json();
     if (u.role !== 'admin') { location.href='/dashboard'; return; }
   } catch(e) { location.href='/login'; return; }
+  loadCompanies();
+}
 
+async function loadCompanies() {
   try {
     const r = await fetch('/api/companies');
     const companies = await r.json();
-    const el = document.getElementById('companiesList');
+    const el = document.getElementById('companiesCard');
+    if (!companies.length) {
+      el.innerHTML = '<div class="empty">No companies yet. Add your first one above.</div>';
+      return;
+    }
     el.innerHTML = companies.map(c => `
       <div class="company-row" id="crow-${c.id}">
         <div class="company-name">${c.name}</div>
-        <div class="company-uen" style="font-family:monospace">${c.uen && c.uen !== 'TBC' ? c.uen : '<span style="color:var(--ink-30)">UEN not set</span>'}</div>
-        <button class="btn btn-ghost" onclick="editCompany(${c.id},'${c.name.replace(/'/g,"\\'")}','${(c.uen||'').replace(/'/g,"\\'")}')">Edit UEN</button>
+        <div class="company-uen">${c.uen || '<span style="color:var(--ink-30)">No UEN</span>'}</div>
+        <button class="btn btn-ghost" style="margin-left:auto" onclick="editRow(${c.id},'${c.name.replace(/'/g,"\\'")}','${(c.uen||'').replace(/'/g,"\\'")}')">Edit</button>
+        <button class="btn btn-danger" onclick="deleteCompany(${c.id},'${c.name.replace(/'/g,"\\'")}')">Delete</button>
       </div>`).join('');
-  } catch(e) {}
+  } catch(e) { showAlert('Error loading companies', 'err'); }
 }
 
-function editCompany(id, name, uen) {
-  const row = document.getElementById('crow-'+id);
+function editRow(id, name, uen) {
+  const row = document.getElementById('crow-' + id);
   row.innerHTML = `
-    <div class="company-name">${name}</div>
-    <div class="edit-row">
-      <input class="edit-input" id="uen-${id}" value="${uen !== 'TBC' ? uen : ''}" placeholder="e.g. 202312345A" style="flex:1">
-      <button class="btn btn-primary" onclick="saveCompany(${id},'${name.replace(/'/g,"\\'")}')">Save</button>
-      <button class="btn btn-ghost" onclick="load()">Cancel</button>
-    </div>`;
-  document.getElementById('uen-'+id).focus();
+    <div class="edit-inline">
+      <input type="text" id="ename-${id}" value="${name}" style="flex:2">
+      <input type="text" id="euen-${id}" value="${uen}" placeholder="UEN" style="flex:1" maxlength="12">
+    </div>
+    <button class="btn btn-primary" style="margin-left:8px" onclick="saveRow(${id})">Save</button>
+    <button class="btn btn-ghost" onclick="loadCompanies()">Cancel</button>`;
+  document.getElementById('ename-' + id).focus();
 }
 
-async function saveCompany(id, name) {
-  const uen = document.getElementById('uen-'+id).value.trim();
-  try {
-    const r = await fetch('/api/companies/'+id, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ name, uen })
-    });
-    const d = await r.json();
-    if (d.success) { showAlert('Saved','ok'); load(); }
-    else showAlert(d.error||'Error','err');
-  } catch(e) { showAlert('Network error','err'); }
+async function saveRow(id) {
+  const name = document.getElementById('ename-' + id).value.trim();
+  const uen  = document.getElementById('euen-' + id).value.trim();
+  if (!name) { showAlert('Name is required', 'err'); return; }
+  const r = await fetch('/api/companies/' + id, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, uen })
+  });
+  const d = await r.json();
+  if (d.success) { showAlert('Saved', 'ok'); loadCompanies(); }
+  else showAlert(d.error || 'Error', 'err');
 }
 
-function showAlert(m,t){
-  const el=document.getElementById('alertBox');
-  el.className='alert alert-'+t;el.textContent=m;el.style.display='block';
-  setTimeout(()=>el.style.display='none',3000);
+async function addCompany() {
+  const name = document.getElementById('newName').value.trim();
+  const uen  = document.getElementById('newUen').value.trim();
+  if (!name) { showAlert('Name is required', 'err'); return; }
+  const r = await fetch('/api/companies', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, uen })
+  });
+  const d = await r.json();
+  if (d.success) {
+    showAlert('Company added', 'ok');
+    document.getElementById('newName').value = '';
+    document.getElementById('newUen').value = '';
+    loadCompanies();
+  } else showAlert(d.error || 'Error', 'err');
 }
 
-async function logout(){ await fetch('/api/auth/logout',{method:'POST'}); location.href='/login'; }
+async function deleteCompany(id, name) {
+  if (!confirm(`Delete ${name}?`)) return;
+  const r = await fetch('/api/companies/' + id, { method: 'DELETE' });
+  const d = await r.json();
+  if (d.success) { showAlert('Deleted', 'ok'); loadCompanies(); }
+  else showAlert(d.error || 'Error', 'err');
+}
+
+function showAlert(m, t) {
+  const el = document.getElementById('alertBox');
+  el.className = 'alert alert-' + t;
+  el.textContent = m;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+async function logout() { await fetch('/api/auth/logout', {method:'POST'}); location.href='/login'; }
 
 load();
 </script>

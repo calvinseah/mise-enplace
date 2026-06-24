@@ -278,44 +278,10 @@ async function seedData() {
   )`);
 
   // Seed TBHG entities
-  // Always ensure all 7 TBHG entities exist with correct UENs
-  const entities = [
-    ['Tipo Private Limited',           '201830614K'],
-    ['Tipo KS Private Limited',        '202241903H'],
-    ['Tipo Wheelock Private Limited',  '202428528R'],
-    ['Ela Private Limited',            '202246414C'],
-    ['The Mad Sailors Private Limited','201610779M'],
-    ['TCOTH Private Limited',          '201631629G'],
-    ['TCBB Private Limited',           '201830095R'],
-  ];
-  entities.forEach(([name, uen]) => {
-    // Use raw sql.js since wrapper functions aren't available in seedData
-    const stmt = db.prepare('SELECT id FROM companies WHERE name=?');
-    stmt.bind([name]);
-    const exists = stmt.step();
-    stmt.free();
-    if (!exists) {
-      db.run('INSERT INTO companies (name, uen) VALUES (?,?)', [name, uen]);
-    } else {
-      db.run('UPDATE companies SET uen=? WHERE name=?', [uen, name]);
-    }
-  });
-  saveDB();
+  // Companies are managed via the /companies admin page
 
 
-  // Update company UENs if seeded with TBC placeholder
-  const uenMap = {
-    'Tipo Private Limited':           '201830614K',
-    'Tipo KS Private Limited':        '202241903H',
-    'Tipo Wheelock Private Limited':  '202428528R',
-    'Ela Private Limited':            '202246414C',
-    'The Mad Sailors Private Limited':'201610779M',
-    'TCOTH Private Limited':          '201631629G',
-    'TCBB Private Limited':           '201830095R',
-  };
-  Object.entries(uenMap).forEach(([name, uen]) => {
-    db.run("UPDATE companies SET uen=? WHERE name=? AND (uen='TBC' OR uen IS NULL)", [uen, name]);
-  });
+
 
   // Seed default admin user — created here, password synced separately
   const existingAdmin = get(`SELECT id FROM users WHERE username='admin'`);
