@@ -283,6 +283,8 @@ function fmtDate(d) {
 
 function generatePDF(data, stream) {
   const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
+  // Register custom fonts
+  try { doc.registerFont('DMSerif', require('path').join(__dirname, '../fonts/DMSerif-Regular.ttf')); } catch(e) {}
   doc.pipe(stream);
 
   const PW = doc.page.width;
@@ -300,14 +302,14 @@ function generatePDF(data, stream) {
   const LINE   = '#E0E5DA';
 
   // ── Header banner ──
-  doc.rect(0, 0, PW, 72).fill(INK);
+  doc.rect(0, 0, PW, 82).fill(INK);
 
   const coName = data.companyName || 'Mise';
-  doc.fontSize(16).fillColor('#ffffff').font('Helvetica-Bold').text(coName, ML, 18, { width: CW * 0.65 });
+  doc.fontSize(17).fillColor('#ffffff').font(doc._fontFamilies?.DMSerif ? 'DMSerif' : 'Helvetica-Bold').text(coName, ML, 20, { width: CW * 0.65 });
   if (data.companyUen && data.companyUen !== 'TBC') {
     doc.fontSize(8).fillColor(SAGE).font('Helvetica').text('UEN ' + data.companyUen, ML, 38);
   }
-  doc.fontSize(9).fillColor(SAGE).font('Helvetica-Bold').text('PAYSLIP', 0, 28, { align: 'right', width: PW - MR });
+  doc.fontSize(9).fillColor(SAGE).font('Helvetica-Bold').text('PAYSLIP', 0, 32, { align: 'right', width: PW - MR });
 
   // ── Info grid ──
   let y = 88;
@@ -333,7 +335,7 @@ function generatePDF(data, stream) {
 
   // ── Section header helper ──
   function secHeader(label, cy) {
-    doc.fontSize(7.5).fillColor(GREEN).font('Helvetica-Bold').text(label, ML, cy, { characterSpacing: 0.5 });
+    doc.fontSize(7).fillColor(GREEN).font('Helvetica-Bold').text(label, ML, cy, { characterSpacing: 0.8 });
     doc.moveTo(ML, cy + 11).lineTo(PW - MR, cy + 11).strokeColor(LINE).lineWidth(0.8).stroke();
     return cy + 18;
   }
@@ -422,7 +424,7 @@ function generatePDF(data, stream) {
   const footerY = PH - 30;
   doc.moveTo(ML, footerY).lineTo(PW - MR, footerY).strokeColor(LINE).lineWidth(0.8).stroke();
   doc.fontSize(7.5).fillColor(MUTED).font('Helvetica')
-    .text('This is a computer-generated payslip · Not a tax document · Mise Restaurant Management', ML, footerY + 6, { align: 'center', width: CW });
+    .text('This is a computer-generated payslip · Not a tax document', ML, footerY + 6, { align: 'center', width: CW });
 
   doc.end();
 }
