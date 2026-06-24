@@ -143,7 +143,7 @@ body { font-family: var(--font); background: var(--bg); min-height: 100vh; min-h
       </div>
       <div class="fg">
         <label>Race</label>
-        <select id="fRace" autocomplete="off">
+        <select id="fRace" autocomplete="off" required>
           <option value="">Select race</option>
           <option value="Chinese">Chinese</option>
           <option value="Malay">Malay</option>
@@ -204,6 +204,7 @@ async function submitForm(){
   const name=document.getElementById('fName').value.trim();
   const dob=document.getElementById('fDob').value;
   const race=document.getElementById('fRace').value||null;
+  if(!race){showErr('Please select your race');return;}
   const nric=document.getElementById('fNric').value.trim().toUpperCase();
   const bank=document.getElementById('fBank').value;
   const bankAcc=document.getElementById('fBankAcc').value.trim();
