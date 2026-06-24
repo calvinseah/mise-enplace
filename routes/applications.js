@@ -8,7 +8,7 @@ const SG_BANKS = ['DBS','POSB','OCBC','UOB','Standard Chartered','Citibank','HSB
 
 // ── PUBLIC: Submit application ─────────────────────────────────────────────────
 router.post('/submit', (req, res) => {
-  const { date_of_birth, nric_full, bank_name, bank_account } = req.body;
+  const { date_of_birth, nric_full, bank_name, bank_account, race } = req.body;
   const rawName = req.body.name || '';
 
   // Convert to title case: "AHMAD BIN HASSAN" → "Ahmad Bin Hassan"
