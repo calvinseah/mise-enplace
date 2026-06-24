@@ -101,12 +101,13 @@ router.put('/:id', async (req, res) => {
     db.run(
       `UPDATE staff SET name=?,role=?,staff_type=?,monthly_salary=?,hourly_rate=?,
        date_of_birth=?,pr_status=?,pr_year=?,nric_last4=?,nric_full_enc=?,
-       bank_name=?,bank_account_enc=? WHERE id=?`,
+       bank_name=?,bank_account_enc=?,cpf_exempt=?,race=? WHERE id=?`,
       [name, role, staff_type,
        staff_type === 'fulltime' ? (monthly_salary || null) : null,
        staff_type === 'parttime' ? (hourly_rate || null) : null,
        date_of_birth || null, pr_status || 'citizen', pr_year || null,
        nric_last4 || null, newNricEnc, bank_name || null, newBankEnc,
+       cpf_exempt ? 1 : 0, race || null,
        req.params.id]
     );
     res.json({ success: true });
