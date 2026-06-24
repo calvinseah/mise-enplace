@@ -276,10 +276,9 @@ async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); l
     const u = await r.json();
     window._isAdmin = u.role === 'admin';
     if (u.role !== 'admin') document.querySelectorAll('[data-admin-only]').forEach(el => el.style.display = 'none');
-  } catch(e) {}
+    loadApps('pending');
+  } catch(e) { loadApps('pending'); }
 })();
-
-loadApps('pending');
 </script>
 </body>
 </html>
