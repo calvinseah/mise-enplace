@@ -145,6 +145,14 @@ function createSchema() {
   )`);
   try { db.run("ALTER TABLE roster_settings ADD COLUMN overridden_days TEXT DEFAULT '[]'"); } catch(e) {}
 
+  db.run(`CREATE TABLE IF NOT EXISTS companies (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    name      TEXT NOT NULL,
+    uen       TEXT,
+    address   TEXT,
+    is_active INTEGER DEFAULT 1
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS roster_availability (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     staff_id    INTEGER NOT NULL,
@@ -269,15 +277,6 @@ async function seedData() {
   ];
 
 
-  db.run(`CREATE TABLE IF NOT EXISTS companies (
-    id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    name    TEXT NOT NULL,
-    uen     TEXT,
-    address TEXT,
-    is_active INTEGER DEFAULT 1
-  )`);
-
-  // Seed TBHG entities
   // Companies are managed via the /companies admin page
 
 
