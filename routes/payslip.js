@@ -275,6 +275,12 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
 }
 
 // ─── PDF GENERATION ───────────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function generatePDF(data, stream) {
   const doc = new PDFDocument({ margin: 0, size: 'A4', autoFirstPage: true });
   doc.pipe(stream);
