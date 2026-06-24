@@ -154,9 +154,9 @@ router.get('/outlets/list', (req, res) => {
     const user = req.session?.user;
     if (user?.role === 'manager' && user?.outlets?.length) {
       const placeholders = user.outlets.map(() => '?').join(',');
-      res.json(db.all(`SELECT * FROM outlets WHERE id IN (${placeholders}) ORDER BY name`, user.outlets));
+      res.json(db.all(`SELECT id,name,address,is_active,lat,lng,radius_m FROM outlets WHERE id IN (${placeholders}) ORDER BY name`, user.outlets));
     } else {
-      res.json(db.all(`SELECT * FROM outlets ORDER BY name`));
+      res.json(db.all(`SELECT id,name,address,is_active,lat,lng,radius_m FROM outlets ORDER BY name`));
     }
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -171,10 +171,11 @@ router.post('/outlets', (req, res) => {
 });
 
 router.put('/outlets/:id', (req, res) => {
-  const { name, address, is_active } = req.body;
+  const { name, address, is_active, lat, lng, radius_m } = req.body;
   try {
-    db.run(`UPDATE outlets SET name=?,address=?,is_active=? WHERE id=?`,
-      [name, address || null, is_active !== undefined ? (is_active ? 1 : 0) : 1, req.params.id]);
+    db.run(`UPDATE outlets SET name=?,address=?,is_active=?,lat=?,lng=?,radius_m=? WHERE id=?`,
+      [name, address || null, is_active !== undefined ? (is_active ? 1 : 0) : 1,
+       lat || null, lng || null, radius_m || 200, req.params.id]);
     res.json({ success: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });

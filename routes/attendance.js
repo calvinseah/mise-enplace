@@ -377,4 +377,23 @@ router.post('/break/end', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Geo-flagged clock-ins ─────────────────────────────────────────────────────
+router.get('/geo-flagged', (req, res) => {
+  try {
+    const db = require('../database');
+    const today = new Date().toISOString().slice(0, 10);
+    const flagged = db.all(
+      `SELECT a.id, a.clock_in, a.geo_distance_m, s.name as staff_name, o.name as outlet_name
+       FROM attendance a
+       JOIN staff s ON a.staff_id = s.id
+       LEFT JOIN outlets o ON a.outlet_id = o.id
+       WHERE a.geo_flagged = 1 AND substr(a.clock_in,1,10) = ?
+       ORDER BY a.clock_in DESC`,
+      [today]
+    );
+    res.json(flagged);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

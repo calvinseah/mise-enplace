@@ -94,6 +94,8 @@ function createSchema() {
     is_amended       INTEGER DEFAULT 0,
     amended_by       TEXT,
     amended_at       TEXT,
+    geo_flagged      INTEGER DEFAULT 0,
+    geo_distance_m   REAL,
     FOREIGN KEY(staff_id)  REFERENCES staff(id),
     FOREIGN KEY(outlet_id) REFERENCES outlets(id)
   )`);
@@ -171,6 +173,8 @@ function createSchema() {
   )`);
   // Add new columns if upgrading existing DB
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN start_time TEXT'); } catch(e) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN geo_flagged INTEGER DEFAULT 0'); } catch(e) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN end_time TEXT'); } catch(e) {}
 
 

@@ -502,25 +502,53 @@ async function addOutlet(){
   document.getElementById('newOutletName').value='';document.getElementById('newOutletAddr').value='';
   showAlert('Outlet added','ok');loadOutlets();
 }
-async function editOutlet(id, name, addr) {
+async function editOutlet(id, name, addr, lat, lng, radius) {
   const row = document.getElementById('orow-'+id);
   row.innerHTML = `
-    <input type="text" id="edit-name-${id}" value="${name}" style="flex:1;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;min-width:0" />
-    <input type="text" id="edit-addr-${id}" value="${addr}" style="flex:2;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;min-width:0" />
-    <button class="btn btn-primary btn-sm" onclick="saveOutlet(${id})">Save</button>
-    <button class="btn btn-ghost btn-sm" onclick="loadOutlets()">Cancel</button>
+    <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+      <div style="display:flex;gap:6px">
+        <input type="text" id="edit-name-${id}" value="${name}" placeholder="Outlet name" style="flex:1;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none" />
+        <input type="text" id="edit-addr-${id}" value="${addr}" placeholder="Address" style="flex:2;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none" />
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="number" id="edit-lat-${id}" value="${lat||''}" placeholder="Latitude (e.g. 1.2836)" step="0.0001" style="flex:1;height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none" />
+        <input type="number" id="edit-lng-${id}" value="${lng||''}" placeholder="Longitude (e.g. 103.8607)" step="0.0001" style="flex:1;height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none" />
+        <select id="edit-radius-${id}" style="height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none">
+          <option value="100" ${(radius||200)==100?'selected':''}>100 m</option>
+          <option value="200" ${(radius||200)==200?'selected':''}>200 m</option>
+          <option value="300" ${(radius||200)==300?'selected':''}>300 m</option>
+          <option value="500" ${(radius||200)==500?'selected':''}>500 m</option>
+        </select>
+        <button onclick="useMyLocation(${id})" style="height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--ink-08);background:var(--card2);font-size:11px;font-family:var(--font);cursor:pointer;white-space:nowrap">📍 Use my location</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-self:flex-start;margin-left:8px">
+      <button class="btn btn-primary btn-sm" onclick="saveOutlet(${id})">Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadOutlets()">Cancel</button>
+    </div>
   `;
   document.getElementById('edit-name-'+id).focus();
+}
+
+function useMyLocation(id) {
+  if(!navigator.geolocation){alert('Geolocation not supported');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    document.getElementById('edit-lat-'+id).value=pos.coords.latitude.toFixed(6);
+    document.getElementById('edit-lng-'+id).value=pos.coords.longitude.toFixed(6);
+  },()=>alert('Could not get location'));
 }
 
 async function saveOutlet(id) {
   const name = document.getElementById('edit-name-'+id).value.trim();
   const addr = document.getElementById('edit-addr-'+id).value.trim();
+  const lat = parseFloat(document.getElementById('edit-lat-'+id).value) || null;
+  const lng = parseFloat(document.getElementById('edit-lng-'+id).value) || null;
+  const radius_m = parseInt(document.getElementById('edit-radius-'+id).value) || 200;
   if (!name) { showAlert('Outlet name is required', 'err'); return; }
   try {
     const r = await fetch('/api/staff/outlets/'+id, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ name, address: addr })
+      body: JSON.stringify({ name, address: addr, lat, lng, radius_m })
     });
     const d = await r.json();
     if (d.success) { showAlert('Outlet updated', 'ok'); loadOutlets(); }
