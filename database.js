@@ -102,6 +102,16 @@ function createSchema() {
   const aCols = all(`PRAGMA table_info(attendance)`).map(r => r.name);
   if (!aCols.includes('outlet_id')) db.run(`ALTER TABLE attendance ADD COLUMN outlet_id INTEGER`);
 
+
+  db.run(`CREATE TABLE IF NOT EXISTS breaks (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    attendance_id INTEGER NOT NULL,
+    break_start   TEXT NOT NULL,
+    break_end     TEXT,
+    duration_mins INTEGER,
+    FOREIGN KEY(attendance_id) REFERENCES attendance(id)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS public_holidays (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL UNIQUE,

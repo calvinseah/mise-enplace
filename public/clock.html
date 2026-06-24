@@ -375,6 +375,31 @@ function showConfirm(){
 
 function selBreak(m,btn){ breakMins=m; document.querySelectorAll('.break-btn').forEach(b=>b.classList.remove('sel')); btn.classList.add('sel'); }
 
+
+async function doBreak(){
+  const btn = document.getElementById('breakBtn');
+  const isOnBreak = btn.textContent.includes('End');
+  btn.disabled=true;
+  try{
+    const r = await fetch('/api/attendance/break/'+(isOnBreak?'end':'start'),{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({staffId})
+    });
+    const d = await r.json();
+    if(d.success){
+      if(isOnBreak){
+        showMsg('Break ended · '+d.duration_mins+' min', false);
+      } else {
+        showMsg('Break started', false);
+      }
+      await showConfirm();
+    } else {
+      showMsg(d.error||'Error', true);
+    }
+  }catch(e){ showMsg('Network error', true); }
+  btn.disabled=false;
+}
+
 async function doAction(){
   const btn=document.getElementById('actionBtn'); btn.disabled=true;
   document.getElementById('errMsg').style.display='none';

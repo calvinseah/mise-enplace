@@ -281,4 +281,100 @@ router.get('/missed-clockout', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Break management ──────────────────────────────────────────────────────────
+const BREAK_LIMIT_MINS = 60;
+
+// GET current break status for a staff member
+router.get('/break-status/:staffId', (req, res) => {
+  try {
+    const db = require('../database');
+    // Get active attendance record
+    const attendance = db.get(
+      `SELECT * FROM attendance WHERE staff_id=? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1`,
+      [req.params.staffId]
+    );
+    if (!attendance) return res.json({ clocked_in: false });
+
+    // Get total break minutes used so far
+    const breaks = db.all(`SELECT * FROM breaks WHERE attendance_id=?`, [attendance.id]);
+    const totalBreakMins = breaks.reduce((sum, b) => sum + (b.duration_mins || 0), 0);
+    const activeBreak = breaks.find(b => !b.break_end);
+
+    res.json({
+      clocked_in: true,
+      attendance_id: attendance.id,
+      on_break: !!activeBreak,
+      active_break_id: activeBreak?.id || null,
+      active_break_start: activeBreak?.break_start || null,
+      total_break_mins: totalBreakMins,
+      break_limit_mins: BREAK_LIMIT_MINS,
+      break_remaining_mins: Math.max(0, BREAK_LIMIT_MINS - totalBreakMins)
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST start break
+router.post('/break/start', (req, res) => {
+  const { staffId } = req.body;
+  if (!staffId) return res.status(400).json({ error: 'staffId required' });
+  try {
+    const db = require('../database');
+    const attendance = db.get(
+      `SELECT * FROM attendance WHERE staff_id=? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1`,
+      [staffId]
+    );
+    if (!attendance) return res.status(400).json({ error: 'Not clocked in' });
+
+    // Check for existing active break
+    const activeBreak = db.get(`SELECT * FROM breaks WHERE attendance_id=? AND break_end IS NULL`, [attendance.id]);
+    if (activeBreak) return res.status(400).json({ error: 'Already on break' });
+
+    // Check if break limit reached
+    const breaks = db.all(`SELECT * FROM breaks WHERE attendance_id=?`, [attendance.id]);
+    const totalBreakMins = breaks.reduce((sum, b) => sum + (b.duration_mins || 0), 0);
+    if (totalBreakMins >= BREAK_LIMIT_MINS) return res.status(400).json({ error: 'Break limit of 60 minutes reached' });
+
+    db.run(`INSERT INTO breaks (attendance_id, break_start) VALUES (?,?)`, [attendance.id, new Date().toISOString()]);
+    res.json({ success: true, message: 'Break started' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST end break
+router.post('/break/end', (req, res) => {
+  const { staffId } = req.body;
+  if (!staffId) return res.status(400).json({ error: 'staffId required' });
+  try {
+    const db = require('../database');
+    const attendance = db.get(
+      `SELECT * FROM attendance WHERE staff_id=? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1`,
+      [staffId]
+    );
+    if (!attendance) return res.status(400).json({ error: 'Not clocked in' });
+
+    const activeBreak = db.get(`SELECT * FROM breaks WHERE attendance_id=? AND break_end IS NULL`, [attendance.id]);
+    if (!activeBreak) return res.status(400).json({ error: 'Not on break' });
+
+    // Calculate duration, cap at remaining allowance
+    const breaks = db.all(`SELECT * FROM breaks WHERE attendance_id=? AND id != ?`, [attendance.id, activeBreak.id]);
+    const usedMins = breaks.reduce((sum, b) => sum + (b.duration_mins || 0), 0);
+    const remaining = BREAK_LIMIT_MINS - usedMins;
+
+    const startTime = new Date(activeBreak.break_start);
+    const endTime = new Date();
+    let durationMins = Math.round((endTime - startTime) / 60000);
+    durationMins = Math.min(durationMins, remaining); // cap at remaining allowance
+
+    const breakEnd = new Date(startTime.getTime() + durationMins * 60000).toISOString();
+    db.run(`UPDATE breaks SET break_end=?, duration_mins=? WHERE id=?`, [breakEnd, durationMins, activeBreak.id]);
+
+    // Update total break_minutes on attendance
+    const newTotal = usedMins + durationMins;
+    db.run(`UPDATE attendance SET break_minutes=? WHERE id=?`, [newTotal, attendance.id]);
+    db.saveDB();
+
+    res.json({ success: true, duration_mins: durationMins, total_break_mins: newTotal });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
