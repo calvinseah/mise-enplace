@@ -217,6 +217,7 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
         <label>Staff member</label>
         <select id="psStaff"><option value="">— Select —</option></select>
       </div>
+      <div class="fg"><label>Company</label><select id="psCompany" style="-webkit-appearance:none"><option value="">— No company —</option></select></div>
       <div class="fg"><label>From</label><input type="date" id="psFrom"></div>
       <div class="fg"><label>To</label><input type="date" id="psTo"></div>
       <div style="display:flex;gap:6px;align-self:flex-end">
@@ -253,12 +254,32 @@ const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'
 document.getElementById('psFrom').value=`${y}-${m}-01`;
 document.getElementById('psTo').value=now.toISOString().slice(0,10);
 
+async function loadCompanies(){
+  try{
+    const r=await fetch('/api/companies');
+    const companies=await r.json();
+    const sel=document.getElementById('psCompany');
+    companies.forEach(c=>{
+      const opt=document.createElement('option');
+      opt.value=c.id;
+      opt.textContent=c.name;
+      opt.dataset.uen=c.uen||'';
+      sel.appendChild(opt);
+    });
+  }catch(e){}
+}
+
 async function loadStaff(){
   const r=await fetch('/api/staff');const s=await r.json();
   const sel=document.getElementById('psStaff');
   s.filter(x=>x.is_active).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=`${x.name} (${x.role})`;sel.appendChild(o);});
 }
-function params(){return new URLSearchParams({staffId:document.getElementById('psStaff').value,from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});}
+function params(){
+  const p=new URLSearchParams({staffId:document.getElementById('psStaff').value,from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});
+  const c=document.getElementById('psCompany').value;
+  if(c)p.set('companyId',c);
+  return p;
+}
 
 async function preview(){
   const sid=document.getElementById('psStaff').value,from=document.getElementById('psFrom').value,to=document.getElementById('psTo').value;
@@ -401,6 +422,7 @@ function showAlert(m){
 }
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
 loadStaff();
+loadCompanies();
 </script>
 <script src="/maise.js"></script>
 

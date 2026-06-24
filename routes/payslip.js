@@ -271,9 +271,12 @@ function generatePDF(data, stream) {
   const W = doc.page.width - 100; // usable width
 
   // ── Header ──
-  doc.fontSize(18).fillColor(NAVY).font('Helvetica-Bold').text(COMPANY_NAME, 50, 50);
+  const headerName = data.companyName || COMPANY_NAME;
+  doc.fontSize(18).fillColor(NAVY).font('Helvetica-Bold').text(headerName, 50, 50);
+  if (data.companyUen && data.companyUen !== 'TBC') {
+    doc.fontSize(9).fillColor('#666').font('Helvetica').text(`UEN: ${data.companyUen}`, 50, 72);
+  }
   doc.moveTo(50, 90).lineTo(doc.page.width - 50, 90).strokeColor(NAVY).lineWidth(2).stroke();
-
   doc.fontSize(14).fillColor(NAVY).font('Helvetica-Bold').text('PAYSLIP', 50, 100);
 
   // ── Staff Info ──

@@ -296,6 +296,8 @@ async function seedData() {
       db.run("UPDATE companies SET uen=? WHERE name=?", [uen, name]);
     }
   });
+  console.log('[DB] Companies seeded:', db.all('SELECT name FROM companies').map(c=>c.name).join(', '));
+  saveDB();
 
 
   // Update company UENs if seeded with TBC placeholder
