@@ -267,3 +267,4 @@ initDB().then(() => syncAdminPassword()).then(() => {
     console.log(`   Admin:     admin / ${process.env.ADMIN_PASSWORD || 'admin1234'}\n`);
   });
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
+
