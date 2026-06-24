@@ -80,8 +80,12 @@ function computeExtras(staff, grossPay, cpf) {
   const sdlAmount = Math.min(11.25, Math.max(2, Math.round(grossPay * 0.0025 * 100) / 100));
   const shgName   = !cpfExempt ? getSHGName(staff.race) : null;
   const shgAmount = (!cpfExempt && shgName) ? getSHGAmount(staff.race, grossPay) : 0;
-  const effectiveCPF = cpfExempt ? { employee: 0, employer: 0, total: 0, eligible: false } : (cpf || { employee: 0, employer: 0, total: 0, eligible: false });
-  const netPay = Math.round((grossPay - effectiveCPF.employee - shgAmount) * 100) / 100;
+  const effectiveCPF = cpfExempt
+    ? { empCPF: 0, erCPF: 0, employee: 0, employer: 0, total: 0, eligible: false }
+    : cpf
+      ? { ...cpf, employee: cpf.empCPF || 0, employer: cpf.erCPF || 0 }
+      : { empCPF: 0, erCPF: 0, employee: 0, employer: 0, total: 0, eligible: false };
+  const netPay = Math.round((grossPay - (effectiveCPF.empCPF || effectiveCPF.employee || 0) - shgAmount) * 100) / 100;
   return { cpfExempt, sdlAmount, shgName, shgAmount, effectiveCPF, netPay };
 }
 
@@ -171,8 +175,8 @@ function computeParttimePayslip(staff, records, from, to, computeShiftCost, comp
     totalHours: Math.round(totalHours * 100) / 100,
     grossPay,
     cpf: extras.effectiveCPF,
-    employeeCPF: extras.effectiveCPF.employee,
-    employerCPF: extras.effectiveCPF.employer,
+    employeeCPF: extras.effectiveCPF.empCPF || extras.effectiveCPF.employee || 0,
+    employerCPF: extras.effectiveCPF.erCPF || extras.effectiveCPF.employer || 0,
     netPay: extras.netPay,
     sdlAmount: extras.sdlAmount,
     shgName: extras.shgName,
@@ -248,8 +252,8 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
     otPay,
     grossPay,
     cpf: extras.effectiveCPF,
-    employeeCPF: extras.effectiveCPF.employee,
-    employerCPF: extras.effectiveCPF.employer,
+    employeeCPF: extras.effectiveCPF.empCPF || extras.effectiveCPF.employee || 0,
+    employerCPF: extras.effectiveCPF.erCPF || extras.effectiveCPF.employer || 0,
     netPay: extras.netPay,
     sdlAmount: extras.sdlAmount,
     shgName: extras.shgName,
@@ -434,7 +438,8 @@ function drawCPFSection(doc, data, y, W) {
   if (data.cpfExempt) {
     rows.push(['CPF Exempt', '—']);
   } else if (data.employeeCPF > 0) {
-    const rate = data.cpf?.rates?.employee_rate || '';
+    const cpfRates = data.cpf || {};
+    const rate = cpfRates.rates?.employee_rate || '';
     rows.push([`Employee CPF${rate ? ' (' + rate + '%)' : ''} (–)`, `–$${data.employeeCPF.toFixed(2)}`]);
   }
   if (data.shgAmount > 0 && data.shgName) {
@@ -444,7 +449,7 @@ function drawCPFSection(doc, data, y, W) {
 
   // Employer contributions
   if (data.employerCPF > 0) {
-    const erRate = data.cpf?.rates?.employer_rate || '';
+    const erRate = (data.cpf || {}).rates?.employer_rate || '';
     rows.push([`Employer CPF${erRate ? ' (' + erRate + '%)' : ''} *`, `$${data.employerCPF.toFixed(2)}`]);
   }
   if (data.sdlAmount > 0) {

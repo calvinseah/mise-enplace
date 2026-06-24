@@ -278,21 +278,24 @@ async function seedData() {
   )`);
 
   // Seed TBHG entities
-  const existingCompanies = db.all('SELECT id FROM companies');
-  if (!existingCompanies.length) {
-    const entities = [
-      ['Tipo Private Limited',           '201830614K'],
-      ['Tipo KS Private Limited',        '202241903H'],
-      ['Tipo Wheelock Private Limited',  '202428528R'],
-      ['Ela Private Limited',            '202246414C'],
-      ['The Mad Sailors Private Limited','201610779M'],
-      ['TCOTH Private Limited',          '201631629G'],
-      ['TCBB Private Limited',           '201830095R'],
-    ];
-    entities.forEach(([name, uen]) => {
+  // Always ensure all 7 TBHG entities exist with correct UENs
+  const entities = [
+    ['Tipo Private Limited',           '201830614K'],
+    ['Tipo KS Private Limited',        '202241903H'],
+    ['Tipo Wheelock Private Limited',  '202428528R'],
+    ['Ela Private Limited',            '202246414C'],
+    ['The Mad Sailors Private Limited','201610779M'],
+    ['TCOTH Private Limited',          '201631629G'],
+    ['TCBB Private Limited',           '201830095R'],
+  ];
+  entities.forEach(([name, uen]) => {
+    const existing = db.get('SELECT id FROM companies WHERE name=?', [name]);
+    if (!existing) {
       db.run('INSERT INTO companies (name, uen) VALUES (?,?)', [name, uen]);
-    });
-  }
+    } else {
+      db.run("UPDATE companies SET uen=? WHERE name=?", [uen, name]);
+    }
+  });
 
 
   // Update company UENs if seeded with TBC placeholder
