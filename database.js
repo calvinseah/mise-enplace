@@ -145,6 +145,44 @@ function createSchema() {
   )`);
   try { db.run("ALTER TABLE roster_settings ADD COLUMN overridden_days TEXT DEFAULT '[]'"); } catch(e) {}
 
+  db.run(`CREATE TABLE IF NOT EXISTS leave_entitlements (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id    INTEGER NOT NULL,
+    year        INTEGER NOT NULL,
+    leave_type  TEXT NOT NULL,
+    total_days  REAL NOT NULL DEFAULT 0,
+    used_days   REAL NOT NULL DEFAULT 0,
+    FOREIGN KEY(staff_id) REFERENCES staff(id),
+    UNIQUE(staff_id, year, leave_type)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS leave_applications (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id      INTEGER NOT NULL,
+    leave_type    TEXT NOT NULL,
+    start_date    TEXT NOT NULL,
+    end_date      TEXT NOT NULL,
+    days          REAL NOT NULL,
+    reason        TEXT,
+    status        TEXT NOT NULL DEFAULT 'pending',
+    reviewed_by   TEXT,
+    reviewed_at   TEXT,
+    reject_reason TEXT,
+    created_at    TEXT NOT NULL,
+    FOREIGN KEY(staff_id) REFERENCES staff(id)
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS audit_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor       TEXT NOT NULL,
+    action      TEXT NOT NULL,
+    entity      TEXT NOT NULL,
+    entity_id   INTEGER,
+    staff_name  TEXT,
+    details     TEXT,
+    created_at  TEXT NOT NULL
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS companies (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     name      TEXT NOT NULL,
@@ -278,45 +316,8 @@ async function seedData() {
 
 
 
-  // ── Leave tables ──────────────────────────────────────────────────────────
-  db.run(`CREATE TABLE IF NOT EXISTS leave_entitlements (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    staff_id    INTEGER NOT NULL,
-    year        INTEGER NOT NULL,
-    leave_type  TEXT NOT NULL,
-    total_days  REAL NOT NULL DEFAULT 0,
-    used_days   REAL NOT NULL DEFAULT 0,
-    FOREIGN KEY(staff_id) REFERENCES staff(id),
-    UNIQUE(staff_id, year, leave_type)
-  )`);
+  // Leave tables are in createSchema()
 
-  db.run(`CREATE TABLE IF NOT EXISTS leave_applications (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    staff_id      INTEGER NOT NULL,
-    leave_type    TEXT NOT NULL,
-    start_date    TEXT NOT NULL,
-    end_date      TEXT NOT NULL,
-    days          REAL NOT NULL,
-    reason        TEXT,
-    status        TEXT NOT NULL DEFAULT 'pending',
-    reviewed_by   TEXT,
-    reviewed_at   TEXT,
-    reject_reason TEXT,
-    created_at    TEXT NOT NULL,
-    FOREIGN KEY(staff_id) REFERENCES staff(id)
-  )`);
-
-
-  db.run(`CREATE TABLE IF NOT EXISTS audit_log (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    actor       TEXT NOT NULL,
-    action      TEXT NOT NULL,
-    entity      TEXT NOT NULL,
-    entity_id   INTEGER,
-    staff_name  TEXT,
-    details     TEXT,
-    created_at  TEXT NOT NULL
-  )`);
 
   // Companies are managed via the /companies admin page
 
