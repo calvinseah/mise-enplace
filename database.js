@@ -198,6 +198,12 @@ function createSchema() {
     FOREIGN KEY(company_id) REFERENCES companies(id)
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS maise_categories (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL UNIQUE,
+    sort_order INTEGER NOT NULL DEFAULT 0
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS maise_kb (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL,

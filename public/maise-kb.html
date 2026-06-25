@@ -89,7 +89,21 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add entry
     </button>
+    <button class="btn" style="background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08)" onclick="toggleCatMgmt()">Manage categories</button>
     <a href="/maise" style="color:var(--accent);font-size:12.5px;text-decoration:none;margin-left:auto">Open MAIse →</a>
+  </div>
+
+
+  <!-- Category management -->
+  <div id="catMgmt" style="background:var(--white);border-radius:12px;border:1px solid var(--ink-08);padding:14px 16px;margin-bottom:16px;display:none">
+    <div style="font-size:12px;font-weight:600;color:var(--ink);margin-bottom:10px">Manage categories</div>
+    <div id="catList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="newCatInput" placeholder="New category name…"
+        style="flex:1;height:32px;padding:0 12px;border:1px solid var(--ink-08);border-radius:8px;font-size:12.5px;font-family:var(--font);outline:none"
+        onkeydown="if(event.key==='Enter')addCategory()">
+      <button class="btn btn-primary" onclick="addCategory()" style="height:32px">Add</button>
+    </div>
   </div>
 
   <div class="kb-grid" id="kbGrid">
@@ -123,6 +137,63 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
 
 <script>
 let categories = [];
+
+
+function toggleCatMgmt() {
+  const el = document.getElementById('catMgmt');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  if (el.style.display === 'block') renderCatList();
+}
+
+function renderCatList() {
+  const list = document.getElementById('catList');
+  list.innerHTML = categories.map(c =>
+    '<div style="display:flex;align-items:center;gap:4px;background:var(--surface);border-radius:20px;padding:3px 10px 3px 12px;font-size:12px;color:var(--ink)">' +
+    c +
+    '<button onclick="deleteCategory(\''+c+'\')" style="background:none;border:none;cursor:pointer;color:var(--ink-30);font-size:14px;padding:0;margin-left:4px;line-height:1">×</button>' +
+    '</div>'
+  ).join('');
+}
+
+async function addCategory() {
+  const name = document.getElementById('newCatInput').value.trim();
+  if (!name) return;
+  const r = await fetch('/api/maise-kb/categories', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name })
+  });
+  const d = await r.json();
+  if (d.success) {
+    document.getElementById('newCatInput').value = '';
+    await refreshCategories();
+    renderCatList();
+    showAlert('Category added', 'ok');
+  } else showAlert(d.error || 'Error', 'err');
+}
+
+async function deleteCategory(name) {
+  if (!confirm('Delete category "' + name + '"? Entries in this category will still exist.')) return;
+  const r = await fetch('/api/maise-kb/categories/' + encodeURIComponent(name), { method: 'DELETE' });
+  const d = await r.json();
+  if (d.success) {
+    await refreshCategories();
+    renderCatList();
+    showAlert('Category deleted', 'ok');
+  } else showAlert(d.error || 'Error', 'err');
+}
+
+async function refreshCategories() {
+  const r = await fetch('/api/maise-kb/categories');
+  categories = await r.json();
+  const catSel = document.getElementById('catFilter');
+  const fCat = document.getElementById('fCategory');
+  catSel.innerHTML = '<option value="">All categories</option>';
+  fCat.innerHTML = '';
+  categories.forEach(c => {
+    catSel.innerHTML += '<option value="'+c+'">'+c+'</option>';
+    fCat.innerHTML += '<option value="'+c+'">'+c+'</option>';
+  });
+}
 
 async function init() {
   const r = await fetch('/api/maise-kb/categories');

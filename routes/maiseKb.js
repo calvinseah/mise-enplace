@@ -3,9 +3,48 @@ const express = require('express');
 const router = express.Router();
 const db = require('../database');
 
-const CATEGORIES = ['Suppliers & Ordering', 'Recipes', 'SOPs', 'Brand Info', 'HR & Policies', 'Other'];
+const DEFAULT_CATEGORIES = ['Suppliers & Ordering', 'Recipes', 'SOPs', 'Brand Info', 'HR & Policies', 'Other'];
 
-router.get('/categories', (req, res) => res.json(CATEGORIES));
+// Seed default categories if none exist
+function ensureCategories() {
+  const existing = db.all('SELECT name FROM maise_categories ORDER BY sort_order, name');
+  if (!existing.length) {
+    DEFAULT_CATEGORIES.forEach((name, i) => {
+      db.run('INSERT OR IGNORE INTO maise_categories (name, sort_order) VALUES (?,?)', [name, i]);
+    });
+  }
+}
+
+router.get('/categories', (req, res) => {
+  try {
+    ensureCategories();
+    const cats = db.all('SELECT id, name FROM maise_categories ORDER BY sort_order, name');
+    res.json(cats.map(c => c.name));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Add category
+router.post('/categories', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  try {
+    const max = db.get('SELECT MAX(sort_order) as m FROM maise_categories')?.m || 0;
+    db.run('INSERT INTO maise_categories (name, sort_order) VALUES (?,?)', [name.trim(), max + 1]);
+    db.saveDB();
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Delete category
+router.delete('/categories/:name', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    db.run('DELETE FROM maise_categories WHERE name=?', [decodeURIComponent(req.params.name)]);
+    db.saveDB();
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 router.get('/', (req, res) => {
   const { category } = req.query;
