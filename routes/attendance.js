@@ -133,8 +133,10 @@ router.post('/clock-out', (req, res) => {
       `UPDATE attendance SET clock_out=?,break_minutes=?,total_hours=?,total_cost=? WHERE id=?`,
       [now.toISOString(), breakMinutes, totalHours, cost, record.id]
     );
-    // Auto-end any open breaks
     db.run(`UPDATE breaks SET break_end=?,duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [now.toISOString(), record.id]);
+    const actorU = req.session?.user?.username || 'system';
+    const sName = db.get('SELECT name FROM staff WHERE id=?', [record.staff_id])?.name || '';
+    writeLog(actorU, 'clock_out', 'attendance', record.id, sName, { time: now.toISOString(), hours: totalHours, cost });
     db.saveDB();
     res.json({ success: true, totalHours, totalCost: cost });
   } catch (e) { res.status(500).json({ error: e.message }); }

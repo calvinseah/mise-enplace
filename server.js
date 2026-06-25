@@ -80,6 +80,8 @@ const staffRoutes         = require('./routes/staff');
 const payslipRoutes       = require('./routes/payslip');
 const applicationRoutes   = require('./routes/applications');
 const companyRoutes        = require('./routes/companies');
+const leaveRoutes          = require('./routes/leave');
+const { router: auditRoutes } = require('./routes/audit');
 const revenueRoutes       = require('./routes/revenue');
 const payrollSummaryRoutes= require('./routes/payrollSummary');
 const rosterRoutes        = require('./routes/roster');
@@ -106,6 +108,10 @@ app.get('/api/attendance/my-shifts', attendanceRoutes);
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);
+app.use('/api/leave/apply',     leaveRoutes);
+app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public
+app.use('/api/leave/balances',  leaveRoutes); // public
+app.use('/api/leave',           requireAuthAPI, leaveRoutes);
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);

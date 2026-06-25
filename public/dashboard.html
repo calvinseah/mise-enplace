@@ -219,6 +219,15 @@ tbody tr:last-child td{border-bottom:none}
     <div id="geoFlaggedList" style="display:flex;flex-direction:column;gap:6px"></div>
   </div>
 
+  <!-- Pending leave requests -->
+  <div id="pendingLeaveBanner" style="display:none;background:#fff;border:1px solid var(--ink-08);border-radius:12px;padding:16px 18px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div style="font-size:13px;font-weight:600;color:var(--ink)">Pending leave requests</div>
+    </div>
+    <div id="pendingLeaveList"></div>
+  </div>
+
   <!-- Missed clock-out alert banner -->
   <div id="missedClockoutBanner" style="display:none;background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);border-radius:12px;padding:14px 18px;margin-bottom:16px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -462,6 +471,49 @@ function showAlert(msg,type){
   setTimeout(()=>el.style.display='none',3500);
 }
 
+
+
+async function loadPendingLeave() {
+  try {
+    const r = await fetch('/api/leave/applications?status=pending');
+    if (!r.ok) return;
+    const apps = await r.json();
+    const banner = document.getElementById('pendingLeaveBanner');
+    const list = document.getElementById('pendingLeaveList');
+    if (!apps.length) { banner.style.display = 'none'; return; }
+    banner.style.display = 'block';
+    list.innerHTML = apps.map(a => {
+      const startFmt = new Date(a.start_date).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'});
+      const endFmt = a.end_date !== a.start_date ? ' – ' + new Date(a.end_date).toLocaleDateString('en-SG',{day:'numeric',month:'short'}) : '';
+      return '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-04)">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:600;color:var(--ink)">' + a.staff_name + '</div>' +
+          '<div style="font-size:12px;color:var(--ink-60)">' + a.leave_type + ' · ' + startFmt + endFmt + ' · ' + a.days + ' day' + (a.days !== 1 ? 's' : '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:6px;flex-shrink:0">' +
+          '<button onclick="reviewLeave(' + a.id + ','approved')" style="height:28px;padding:0 12px;border-radius:7px;background:var(--green);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Approve</button>' +
+          '<button onclick="reviewLeave(' + a.id + ','rejected')" style="height:28px;padding:0 12px;border-radius:7px;background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Reject</button>' +
+        '</div></div>';
+    }).join('');
+  } catch(e) {}
+}
+
+async function reviewLeave(id, status) {
+  let reject_reason = null;
+  if (status === 'rejected') {
+    reject_reason = prompt('Reason for rejection (optional):');
+    if (reject_reason === null) return;
+  }
+  try {
+    const r = await fetch('/api/leave/' + id + '/review', {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ status, reject_reason })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert(status === 'approved' ? 'Leave approved' : 'Leave rejected', 'ok'); loadPendingLeave(); }
+    else showAlert(d.error || 'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
+}
 
 async function checkGeoFlagged() {
   try {

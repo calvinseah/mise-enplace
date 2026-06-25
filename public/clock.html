@@ -377,6 +377,168 @@ function selBreak(m,btn){ breakMins=m; document.querySelectorAll('.break-btn').f
 
 
 
+
+// ── Leave Tab ─────────────────────────────────────────────────────────────────
+let leaveStaffId = null;
+let leaveBalances = [];
+
+function showTab(tab) {
+  document.getElementById('leave-panel').style.display = tab === 'leave' ? 'block' : 'none';
+  if (tab === 'leave') {
+    document.getElementById('leaveYear').textContent = new Date().getFullYear();
+    // Set default dates
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('leaveFrom').value = today;
+    document.getElementById('leaveTo').value = today;
+  }
+}
+
+async function searchLeaveStaff() {
+  const q = document.getElementById('leaveStaffSearch').value.trim();
+  const res = document.getElementById('leaveStaffResults');
+  if (q.length < 2) { res.innerHTML = ''; return; }
+  try {
+    const r = await fetch('/api/staff?search=' + encodeURIComponent(q));
+    const staff = await r.json();
+    const active = staff.filter(s => s.is_active !== 0 && s.staff_type === 'fulltime');
+    if (!active.length) { res.innerHTML = '<div style="font-size:13px;color:var(--ink-60);padding:8px">No full-time staff found</div>'; return; }
+    res.innerHTML = active.slice(0,6).map(s =>
+      '<div onclick="selectLeaveStaff(' + s.id + ','' + s.name.replace(/'/g,"\'") + '','' + (s.role||'') + '')" ' +
+      'style="padding:10px 12px;background:#fff;border-radius:10px;border:1px solid var(--ink-08);margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)">' +
+      s.name + '<span style="font-size:11px;color:var(--ink-60);margin-left:6px">' + (s.role||'') + ' · Full-time</span></div>'
+    ).join('');
+  } catch(e) {}
+}
+
+async function selectLeaveStaff(id, name, role) {
+  leaveStaffId = id;
+  document.getElementById('leaveStaffSearch').value = '';
+  document.getElementById('leaveStaffResults').innerHTML = '';
+  document.getElementById('leave-staff-section').style.display = 'none';
+  document.getElementById('leave-content').style.display = 'block';
+  document.getElementById('leaveAvatarCircle').textContent = name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  document.getElementById('leaveStaffName').textContent = name;
+  document.getElementById('leaveStaffRole').textContent = role + ' · Full-time';
+  await loadLeaveBalances();
+  await loadLeaveHistory();
+}
+
+function clearLeaveStaff() {
+  leaveStaffId = null;
+  document.getElementById('leave-staff-section').style.display = 'block';
+  document.getElementById('leave-content').style.display = 'none';
+}
+
+async function loadLeaveBalances() {
+  try {
+    const r = await fetch('/api/leave/balances?staffId=' + leaveStaffId + '&year=' + new Date().getFullYear());
+    leaveBalances = await r.json();
+    const el = document.getElementById('leaveBalances');
+    el.innerHTML = leaveBalances.map(b => {
+      const pct = b.total_days > 0 ? Math.round((b.remaining / b.total_days) * 100) : 0;
+      const color = pct > 50 ? 'var(--green)' : pct > 20 ? '#B7791F' : '#C0392B';
+      const unit = ['Maternity Leave','Paternity Leave'].includes(b.leave_type) ? 'days' : 'days';
+      const shortName = b.leave_type.replace(' Leave','').replace('Annual','Annual').replace('Medical','Medical').replace('Childcare','Childcare').replace('Maternity','Maternity').replace('Paternity','Paternity').replace('Unpaid','Unpaid');
+      return '<div style="background:#fff;border-radius:12px;border:1px solid var(--ink-08);padding:12px">' +
+        '<div style="font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">' + shortName + '</div>' +
+        '<div style="display:flex;align-items:baseline;gap:4px">' +
+        '<div style="font-size:22px;font-weight:400;font-family:var(--font-d);color:' + color + '">' + b.remaining + '</div>' +
+        '<div style="font-size:11px;color:var(--ink-30)">/ ' + b.total_days + ' ' + unit + '</div></div>' +
+        '<div style="height:4px;background:var(--surface);border-radius:2px;margin-top:8px;overflow:hidden">' +
+        '<div style="height:100%;border-radius:2px;background:' + color + ';width:' + pct + '%"></div></div></div>';
+    }).join('');
+  } catch(e) {}
+}
+
+async function loadLeaveHistory() {
+  try {
+    const r = await fetch('/api/leave/applications?staffId=' + leaveStaffId + '&year=' + new Date().getFullYear());
+    const apps = await r.json();
+    const el = document.getElementById('leaveHistory');
+    if (!apps.length) { el.innerHTML = '<div style="font-size:13px;color:var(--ink-60);text-align:center;padding:16px">No applications yet</div>'; return; }
+    el.innerHTML = apps.map(a => {
+      const statusColor = a.status === 'approved' ? '#2E6B3E' : a.status === 'rejected' ? '#C0392B' : '#B7791F';
+      const statusBg = a.status === 'approved' ? '#F0FDF4' : a.status === 'rejected' ? '#FEF2F2' : '#FFFBEB';
+      const startFmt = new Date(a.start_date).toLocaleDateString('en-SG',{day:'numeric',month:'short'});
+      const endFmt = a.end_date !== a.start_date ? ' – ' + new Date(a.end_date).toLocaleDateString('en-SG',{day:'numeric',month:'short'}) : '';
+      return '<div style="background:#fff;border-radius:12px;border:1px solid var(--ink-08);padding:12px;margin-bottom:8px">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--ink)">' + a.leave_type + '</div>' +
+        '<span style="background:' + statusBg + ';color:' + statusColor + ';border-radius:6px;padding:2px 8px;font-size:10.5px;font-weight:600;border:1px solid ' + statusColor + '33">' + a.status.charAt(0).toUpperCase() + a.status.slice(1) + '</span></div>' +
+        '<div style="font-size:12px;color:var(--ink-60)">' + startFmt + endFmt + ' 2026</div>' +
+        '<div style="font-size:11.5px;color:var(--ink-30)">' + a.days + ' day' + (a.days !== 1 ? 's' : '') + (a.status === 'pending' ? '' : '') + '</div>' +
+        (a.status === 'pending' ? '<button onclick="cancelLeave(' + a.id + ')" style="margin-top:6px;height:26px;padding:0 12px;border-radius:6px;border:1px solid rgba(192,57,43,.2);background:rgba(192,57,43,.06);color:#C0392B;font-size:11px;cursor:pointer;font-family:var(--font)">Cancel</button>' : '') +
+        '</div>';
+    }).join('');
+  } catch(e) {}
+}
+
+function calcDays() {
+  const from = document.getElementById('leaveFrom').value;
+  const to = document.getElementById('leaveTo').value;
+  const badge = document.getElementById('leaveDaysBadge');
+  if (!from || !to || to < from) { badge.style.display = 'none'; return; }
+  let count = 0;
+  const cur = new Date(from);
+  const last = new Date(to);
+  while (cur <= last) {
+    const dow = cur.getDay();
+    if (dow !== 0 && dow !== 6) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  document.getElementById('leaveDaysText').textContent = count + ' working day' + (count !== 1 ? 's' : '');
+  badge.style.display = 'block';
+}
+
+async function submitLeave() {
+  const type = document.getElementById('leaveType').value;
+  const from = document.getElementById('leaveFrom').value;
+  const to = document.getElementById('leaveTo').value;
+  const reason = document.getElementById('leaveReason').value;
+  const msgEl = document.getElementById('leaveFormMsg');
+
+  if (!type) { showLeaveMsg('Please select a leave type', 'err'); return; }
+  if (!from || !to) { showLeaveMsg('Please select dates', 'err'); return; }
+  if (to < from) { showLeaveMsg('End date must be after start date', 'err'); return; }
+
+  try {
+    const r = await fetch('/api/leave/apply', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ staffId: leaveStaffId, leave_type: type, start_date: from, end_date: to, reason })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showLeaveMsg('Application submitted (' + d.days + ' day' + (d.days !== 1 ? 's' : '') + ')', 'ok');
+      document.getElementById('leaveType').value = '';
+      document.getElementById('leaveReason').value = '';
+      document.getElementById('leaveDaysBadge').style.display = 'none';
+      await loadLeaveBalances();
+      await loadLeaveHistory();
+    } else {
+      showLeaveMsg(d.error || 'Error submitting', 'err');
+    }
+  } catch(e) { showLeaveMsg('Network error', 'err'); }
+}
+
+async function cancelLeave(id) {
+  if (!confirm('Cancel this leave application?')) return;
+  try {
+    const r = await fetch('/api/leave/' + id, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) { await loadLeaveBalances(); await loadLeaveHistory(); }
+  } catch(e) {}
+}
+
+function showLeaveMsg(msg, type) {
+  const el = document.getElementById('leaveFormMsg');
+  el.style.display = 'block';
+  el.style.background = type === 'ok' ? '#F0FDF4' : '#FEF2F2';
+  el.style.color = type === 'ok' ? '#2E6B3E' : '#C0392B';
+  el.style.border = '1px solid ' + (type === 'ok' ? 'rgba(46,107,62,.2)' : 'rgba(192,57,43,.2)');
+  el.textContent = msg;
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
 // ── Geofence ──────────────────────────────────────────────────────────────────
 let _outletGeo = {}; // cache of outlet lat/lng/radius
 
@@ -527,5 +689,81 @@ document.addEventListener('click', function(e){
 
 init();
 </script>
+
+<!-- Leave Tab Panel -->
+<div id="leave-panel" style="display:none;padding:16px">
+
+  <!-- Staff search -->
+  <div id="leave-staff-section">
+    <div style="font-size:13px;font-weight:500;color:var(--ink-60);margin-bottom:10px">Search your name to view leave</div>
+    <input type="text" id="leaveStaffSearch" placeholder="Search name…"
+      oninput="searchLeaveStaff()"
+      style="width:100%;height:40px;padding:0 14px;border:1px solid var(--ink-08);border-radius:12px;font-size:14px;font-family:var(--font);outline:none;background:#fff;color:var(--ink);margin-bottom:8px">
+    <div id="leaveStaffResults"></div>
+  </div>
+
+  <!-- Leave content (shown after staff selected) -->
+  <div id="leave-content" style="display:none">
+
+    <!-- Selected staff -->
+    <div style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;border:1px solid var(--ink-08);padding:12px 14px;margin-bottom:14px">
+      <div id="leaveAvatarCircle" style="width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;flex-shrink:0"></div>
+      <div>
+        <div id="leaveStaffName" style="font-size:14px;font-weight:600;color:var(--ink)"></div>
+        <div id="leaveStaffRole" style="font-size:11.5px;color:var(--ink-60)"></div>
+      </div>
+      <button onclick="clearLeaveStaff()" style="margin-left:auto;height:28px;padding:0 12px;border-radius:7px;border:1px solid var(--ink-08);background:var(--surface);font-size:11.5px;color:var(--ink-60);cursor:pointer;font-family:var(--font)">Change</button>
+    </div>
+
+    <!-- Balances -->
+    <div style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Your leave balance — <span id="leaveYear"></span></div>
+    <div id="leaveBalances" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px"></div>
+
+    <!-- Application form -->
+    <div style="background:#fff;border-radius:12px;border:1px solid var(--ink-08);padding:14px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">Apply for leave</div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px">Leave type</label>
+        <select id="leaveType" onchange="calcDays()" style="width:100%;height:38px;padding:0 12px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);color:var(--ink);background:var(--surface);outline:none;-webkit-appearance:none">
+          <option value="">— Select type —</option>
+          <option>Annual Leave</option>
+          <option>Medical Leave</option>
+          <option>Childcare Leave</option>
+          <option>Maternity Leave</option>
+          <option>Paternity Leave</option>
+          <option>Unpaid Leave</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px">From</label>
+          <input type="date" id="leaveFrom" onchange="calcDays()" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:var(--surface);color:var(--ink)">
+        </div>
+        <div>
+          <label style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px">To</label>
+          <input type="date" id="leaveTo" onchange="calcDays()" style="width:100%;height:38px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:var(--surface);color:var(--ink)">
+        </div>
+      </div>
+      <div id="leaveDaysBadge" style="display:none;margin-bottom:10px">
+        <span style="display:inline-flex;align-items:center;gap:5px;background:#F0FDF4;border:1px solid rgba(46,107,62,.2);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:500;color:#2E6B3E">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="leaveDaysText"></span>
+        </span>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px">Reason (optional)</label>
+        <textarea id="leaveReason" placeholder="e.g. Family trip" rows="2" style="width:100%;padding:10px 12px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none;background:var(--surface);color:var(--ink);resize:none"></textarea>
+      </div>
+      <div id="leaveFormMsg" style="display:none;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:500;margin-bottom:10px"></div>
+      <button onclick="submitLeave()" style="width:100%;height:44px;border-radius:12px;background:var(--green);color:#fff;border:none;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer">Submit application</button>
+    </div>
+
+    <!-- Recent applications -->
+    <div style="font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Recent applications</div>
+    <div id="leaveHistory"></div>
+
+  </div>
+</div>
+
 </body>
 </html>

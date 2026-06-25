@@ -184,6 +184,7 @@ tbody tr:last-child td{border-bottom:none}
     <a href="/payroll-summary" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
     <a href="/labour-cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
     <a href="/companies" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Companies</a>
+    <a href="/audit" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Audit Log</a>
     <a href="/users" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
     <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Clock-in page</a>
   </nav>
@@ -394,6 +395,7 @@ async function loadStaff(){
       <td><div class="actions">
         <button class="btn btn-ghost btn-sm" onclick='openEdit(${x.id})' data-admin-only="1">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick='openPayslipHistory(${x.id},"${x.name.replace(/"/g,"&quot;")}")'>Payslips</button>
+        <button class="btn btn-ghost btn-sm" onclick='openLeaveEntitlements(${x.id},"${x.name.replace(/"/g,"&quot;")}")' data-admin-only="1">Leave</button>
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" onclick="togglePinActive(${x.id},${x.pin_active})">${x.pin_active?'Deactivate PIN':'Activate PIN'}</button>`:''}
         <button class="btn btn-ghost btn-sm" onclick="openPin(${x.id},'${x.name}',${x.has_pin})">${x.has_pin?'Reset PIN':'Set PIN'}</button>
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="removePin(${x.id})">Remove PIN</button>`:''}
@@ -714,6 +716,95 @@ function showAlert(m,t){
 
 let _psHistoryStaffId = null;
 
+
+let _leaveEntStaffId = null;
+
+function openLeaveEntitlements(staffId, name) {
+  _leaveEntStaffId = staffId;
+  document.getElementById('leaveEntName').textContent = name;
+  const yrSel = document.getElementById('leaveEntYear');
+  yrSel.innerHTML = '';
+  const yr = new Date().getFullYear();
+  for (let y = yr; y >= yr - 1; y--) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y;
+    yrSel.appendChild(opt);
+  }
+  document.getElementById('leaveEntitlementsOverlay').style.display = 'flex';
+  loadLeaveEntitlements();
+}
+
+function closeLeaveEntitlements() {
+  document.getElementById('leaveEntitlementsOverlay').style.display = 'none';
+}
+
+async function loadLeaveEntitlements() {
+  const year = document.getElementById('leaveEntYear').value;
+  const el = document.getElementById('leaveEntContent');
+  el.innerHTML = '<div style="color:var(--ink-60);font-size:13px">Loading…</div>';
+  try {
+    const r = await fetch('/api/leave/balances?staffId=' + _leaveEntStaffId + '&year=' + year);
+    const balances = await r.json();
+    el.innerHTML = balances.map(b => `
+      <div style="padding:12px 0;border-bottom:1px solid var(--ink-08)">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:8px">${b.leave_type}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Total entitlement</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" value="${b.total_days}" min="0" max="365" step="0.5"
+                style="width:64px;height:30px;border:1px solid var(--ink-08);border-radius:7px;text-align:center;font-size:13px;font-family:var(--font);outline:none"
+                id="ent-${b.leave_type.replace(/ /g,'-')}">
+              <button onclick="saveEntitlement('${b.leave_type}', '${year}')"
+                style="height:30px;padding:0 10px;border-radius:7px;background:var(--accent);color:#fff;border:none;font-size:11.5px;font-weight:500;cursor:pointer;font-family:var(--font)">Save</button>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Days used</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <input type="number" value="${b.used_days}" min="0" max="365" step="0.5"
+                style="width:64px;height:30px;border:1px solid var(--ink-08);border-radius:7px;text-align:center;font-size:13px;font-family:var(--font);outline:none"
+                id="used-${b.leave_type.replace(/ /g,'-')}">
+              <button onclick="saveUsed('${b.leave_type}', '${year}')"
+                style="height:30px;padding:0 10px;border-radius:7px;background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08);font-size:11.5px;font-weight:500;cursor:pointer;font-family:var(--font)">Save</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--ink-30);margin-top:6px">Remaining: ${b.remaining} days</div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--danger)">Error loading</div>'; }
+}
+
+async function saveUsed(leaveType, year) {
+  const key = leaveType.replace(/ /g, '-');
+  const days = parseFloat(document.getElementById('used-' + key).value);
+  if (isNaN(days)) return;
+  try {
+    const r = await fetch('/api/leave/entitlements/' + _leaveEntStaffId, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ leave_type: leaveType, used_days: days, year })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert('Used days updated', 'ok'); loadLeaveEntitlements(); }
+    else showAlert(d.error || 'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
+}
+
+async function saveEntitlement(leaveType, year) {
+  const key = leaveType.replace(/ /g, '-');
+  const days = parseFloat(document.getElementById('ent-' + key).value);
+  if (isNaN(days)) return;
+  try {
+    const r = await fetch('/api/leave/entitlements/' + _leaveEntStaffId, {
+      method: 'PUT', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ leave_type: leaveType, total_days: days, year })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert('Saved', 'ok'); loadLeaveEntitlements(); }
+    else showAlert(d.error || 'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
+}
+
 function openPayslipHistory(staffId, name) {
   _psHistoryStaffId = staffId;
   document.getElementById('psHistoryName').textContent = name;
@@ -841,6 +932,24 @@ async function backupDB() {
       <button onclick="generateHistoryPayslip()" class="btn btn-primary" style="height:32px;padding:0 14px;font-size:12.5px">Generate</button>
     </div>
     <div id="psHistoryContent"><div style="text-align:center;padding:40px;color:var(--ink-60);font-size:13px">Select a month and click Generate to view a payslip.</div></div>
+  </div>
+</div>
+
+
+<!-- Leave entitlements panel -->
+<div id="leaveEntitlementsOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeLeaveEntitlements()">
+  <div onclick="event.stopPropagation()" style="background:#fff;width:420px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div id="leaveEntName" style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)"></div>
+      <button onclick="closeLeaveEntitlements()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:22px;line-height:1">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-60);margin-bottom:16px">Leave entitlements</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+      <label style="font-size:12px;color:var(--ink-60)">Year:</label>
+      <select id="leaveEntYear" onchange="loadLeaveEntitlements()" style="height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none">
+      </select>
+    </div>
+    <div id="leaveEntContent"></div>
   </div>
 </div>
 

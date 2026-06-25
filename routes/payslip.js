@@ -60,31 +60,45 @@ function getSHGName(race) {
 
 function getSHGAmount(race, ow) {
   race = (race || '').toLowerCase();
+  // CDAC rates (Chinese) — CPF Board 2026
   if (race === 'chinese') {
     if (ow <= 2000) return 0.50;
     if (ow <= 3500) return 1.00;
     if (ow <= 5000) return 1.50;
-    return 2.00;
+    if (ow <= 7500) return 2.00;
+    return 3.00;
   }
+  // MBMF rates (Malay/Muslim) — MUIS, effective 1 Jun 2016
   if (race === 'malay') {
-    if (ow < 1000)   return 3.00;
-    if (ow <= 2000)  return 4.50;
-    if (ow <= 3000)  return 6.50;
-    if (ow <= 4000)  return 15.00;
-    if (ow <= 6000)  return 19.50;
-    if (ow <= 8000)  return 22.00;
+    if (ow < 1000)  return 3.00;
+    if (ow <= 2000) return 4.50;
+    if (ow <= 3000) return 6.50;
+    if (ow <= 4000) return 15.00;
+    if (ow <= 6000) return 19.50;
+    if (ow <= 8000) return 22.00;
     if (ow <= 10000) return 24.00;
     return 26.00;
   }
+  // SINDA rates (Indian) — CPF Board 2026
   if (race === 'indian') {
-    if (ow <= 2000) return 0.50;
-    if (ow <= 3500) return 1.00;
-    if (ow <= 5000) return 2.00;
-    return 3.00;
+    if (ow <= 1000) return 1.00;
+    if (ow <= 1500) return 3.00;
+    if (ow <= 2500) return 5.00;
+    if (ow <= 4500) return 7.00;
+    if (ow <= 7500) return 9.00;
+    if (ow <= 10000) return 12.00;
+    if (ow <= 15000) return 18.00;
+    return 30.00;
   }
+  // ECF rates (Eurasian) — CPF Board 2026
   if (race === 'eurasian') {
-    if (ow <= 5000) return 0;
-    return 2.00;
+    if (ow <= 1000) return 2.00;
+    if (ow <= 1500) return 4.00;
+    if (ow <= 2500) return 6.00;
+    if (ow <= 4000) return 9.00;
+    if (ow <= 7000) return 12.00;
+    if (ow <= 10000) return 16.00;
+    return 20.00;
   }
   return 0;
 }
