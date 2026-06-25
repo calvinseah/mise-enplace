@@ -225,8 +225,15 @@ function onMonthChange(){
   if(!val)return;
   const [yr,mo]=val.split('-');
   const lastDay=new Date(parseInt(yr),parseInt(mo),0).getDate();
+  // Always update hidden fields so params() can read them
   document.getElementById('psFrom').value=`${yr}-${mo}-01`;
   document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
+  // Update visible custom fields if shown
+  const cf=document.getElementById('customRangeFields');
+  if(cf&&cf.style.display!=='none'){
+    document.getElementById('psFrom').value=`${yr}-${mo}-01`;
+    document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
+  }
 }
 
 
