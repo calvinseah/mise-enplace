@@ -229,7 +229,7 @@ tbody tr:last-child td{border-bottom:none}
     <div id="tab-staff" class="tab-panel active">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Name</th><th>Type</th><th>Pay</th><th>Status</th><th>PIN</th><th>Citizenship</th><th>Bank</th><th></th></tr></thead>
+          <thead><tr><th>Name</th><th>Type</th><th>Pay</th><th>Status</th><th>Citizenship</th><th>Bank</th><th></th></tr></thead>
           <tbody id="staffBody"><tr><td colspan="8" class="empty">Loading…</td></tr></tbody>
         </table>
       </div>
@@ -344,7 +344,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="pin-err" id="pinErr"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closePin()">Cancel</button>
-      <button class="btn btn-primary" onclick="savePin()">Set PIN</button>
+      
     </div>
   </div>
 </div>
@@ -389,7 +389,7 @@ async function loadStaff(){
       <td>${x.staff_type==='fulltime'?'Full-time':'Part-time'}</td>
       <td style="font-variant-numeric:tabular-nums;font-weight:500">${pay}</td>
       <td>${statusEl}</td>
-      <td>${pinBadge}</td>
+      
       <td>${prBadge}</td>
       <td>${bankEl}</td>
       <td><div class="actions">
@@ -464,13 +464,7 @@ async function togglePinActive(id,current){
   showAlert(`PIN ${action}d`,'ok');loadStaff();
 }
 
-function openPin(sid,name,hasPIN){
-  pinVal='';updateDots();
-  document.getElementById('pinStaffId').value=sid;
-  document.getElementById('pinTitle').textContent=(hasPIN?'Reset PIN — ':'Set PIN — ')+name;
-  document.getElementById('pinErr').style.display='none';
-  document.getElementById('pinOverlay').classList.add('open');
-}
+
 function closePin(){document.getElementById('pinOverlay').classList.remove('open');pinVal='';updateDots();}
 function pk(k){if(k==='del')pinVal=pinVal.slice(0,-1);else if(pinVal.length<4)pinVal+=k;updateDots();}
 function updateDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.toggle('filled',i<pinVal.length);}
