@@ -769,6 +769,16 @@ async function generateHistoryPayslip() {
   }
 }
 
+
+function filterStaffTable(){
+  const q=(document.getElementById('staffSearchInput')?.value||'').toLowerCase().trim();
+  const rows=document.querySelectorAll('#staffTable tbody tr');
+  rows.forEach(row=>{
+    const name=row.querySelector('td')?.textContent?.toLowerCase()||'';
+    row.style.display=(!q||name.includes(q))?'':'none';
+  });
+}
+
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
 onType();onPr();loadStaff();loadApplicationsBadge();
 </script>

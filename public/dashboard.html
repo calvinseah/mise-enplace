@@ -288,7 +288,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="card" style="padding:0">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Staff</th><th>Outlet</th><th>Date</th><th>Clock in</th><th>Clock out</th><th class="col-hide-mobile">Break</th><th>Hours</th><th>PH</th><th>Cost</th><th class="col-hide-mobile">Notes</th><th></th></tr></thead>
+          <thead><tr><th>Staff</th><th>Outlet</th><th>Date</th><th>Clock in</th><th>Clock out</th><th class="col-hide-mobile">Break</th><th>Hours</th><th>PH</th><th>Cost</th><th class="col-hide-mobile">Notes</th><th></th><th></th></tr></thead>
           <tbody id="attendanceBody"><tr><td colspan="11" class="empty">Select a date range and click Search</td></tr></tbody>
         </table>
       </div>
@@ -484,6 +484,33 @@ async function checkGeoFlagged() {
       </div>`;
     }).join('');
   } catch(e) {}
+}
+
+
+async function managerClockOut(recordId, staffName) {
+  const timeStr = prompt(`Clock out ${staffName} at what time? (leave blank for now)\nFormat: HH:MM`);
+  if (timeStr === null) return; // cancelled
+  
+  let clockOutTime = null;
+  if (timeStr.trim()) {
+    const today = new Date().toISOString().slice(0, 10);
+    clockOutTime = new Date(`${today}T${timeStr.trim()}:00+08:00`).toISOString();
+    if (isNaN(new Date(clockOutTime))) {
+      showAlert('Invalid time format. Use HH:MM (e.g. 22:30)', 'err');
+      return;
+    }
+  }
+
+  try {
+    const r = await fetch('/api/attendance/clock-out', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ attendanceId: recordId, breakMinutes: 0, clockOutTime })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert(`${staffName} clocked out`, 'ok'); loadRecords(); }
+    else showAlert(d.error || 'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
 }
 
 async function checkMissedClockouts() {

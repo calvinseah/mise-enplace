@@ -218,8 +218,9 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
         <select id="psStaff"><option value="">— Select —</option></select>
       </div>
       <div class="fg"><label>Company</label><select id="psCompany" style="-webkit-appearance:none"><option value="">— No company —</option></select></div>
-      <div class="fg"><label>From</label><input type="date" id="psFrom"></div>
-      <div class="fg"><label>To</label><input type="date" id="psTo"></div>
+      <div class="fg"><label>Month</label><input type="month" id="psMonth" onchange="onMonthPick()" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;font-family:var(--font);outline:none;min-width:140px"></div>
+      <div class="fg"><label>From (custom)</label><input type="date" id="psFrom"></div>
+      <div class="fg"><label>To (custom)</label><input type="date" id="psTo"></div>
       <div style="display:flex;gap:6px;align-self:flex-end">
         <button class="btn btn-primary" onclick="preview()">
           <!-- Lucide: eye -->
@@ -251,8 +252,8 @@ tbody tr:nth-child(even) td{background:rgba(248,250,252,.7)}
 
 <script>
 const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
-document.getElementById('psFrom').value=`${y}-${m}-01`;
-document.getElementById('psTo').value=now.toISOString().slice(0,10);
+document.getElementById('psMonth').value=`${y}-${m}`;
+onMonthPick();
 
 async function loadCompanies(){
   try{
@@ -267,6 +268,15 @@ async function loadCompanies(){
       sel.appendChild(opt);
     });
   }catch(e){}
+}
+
+function onMonthPick(){
+  const val=document.getElementById('psMonth').value;
+  if(!val)return;
+  const [yr,mo]=val.split('-');
+  const lastDay=new Date(parseInt(yr),parseInt(mo),0).getDate();
+  document.getElementById('psFrom').value=`${yr}-${mo}-01`;
+  document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
 }
 
 async function loadStaff(){

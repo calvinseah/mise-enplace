@@ -59,6 +59,18 @@ body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;mi
 .status-tab{padding:6px 16px;border-radius:20px;border:1px solid var(--ink-08);background:var(--white);font-size:12.5px;font-weight:500;color:var(--ink-60);cursor:pointer;transition:all .12s;font-family:var(--font)}
 .status-tab.active{background:var(--accent);border-color:var(--accent);color:#fff}
 @media(max-width:768px){body{flex-direction:column}.sidebar{width:100%;height:auto;position:relative}.sb-nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px 0}.sb-nav a{padding:6px 10px;white-space:nowrap;margin-bottom:0;font-size:12px}.sb-nav a svg{display:none}.sb-footer{display:none}.main{padding:16px}}
+
+@media(max-width:768px){
+  .approve-section{grid-template-columns:1fr!important}
+  .app-actions{flex-direction:column}
+  .app-actions .btn{width:100%;justify-content:center;height:44px;font-size:14px}
+  .app-card{padding:14px 16px}
+  .app-name{font-size:15px}
+  .status-tabs{overflow-x:auto;flex-wrap:nowrap}
+  .status-tab{white-space:nowrap;height:36px;font-size:13px}
+  .fg input,.fg select{height:40px;font-size:14px}
+}
+
 </style>
 <style>
 /* ── Mobile: hamburger drawer ── */
@@ -98,6 +110,18 @@ body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;mi
   .tabs{overflow-x:auto;flex-wrap:nowrap}
   .tab{white-space:nowrap;padding:7px 12px;font-size:12px}
 }
+
+@media(max-width:768px){
+  .approve-section{grid-template-columns:1fr!important}
+  .app-actions{flex-direction:column}
+  .app-actions .btn{width:100%;justify-content:center;height:44px;font-size:14px}
+  .app-card{padding:14px 16px}
+  .app-name{font-size:15px}
+  .status-tabs{overflow-x:auto;flex-wrap:nowrap}
+  .status-tab{white-space:nowrap;height:36px;font-size:13px}
+  .fg input,.fg select{height:40px;font-size:14px}
+}
+
 </style>
 </head>
 <body>
