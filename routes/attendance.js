@@ -3,6 +3,7 @@ const express = require('express');
 const bcrypt  = require('bcryptjs');
 const router  = express.Router();
 const db      = require('../database');
+const { writeLog } = require('./audit');
 
 // Active staff for clock-in (pin must exist AND be active)
 router.get('/active-staff', (req, res) => {
