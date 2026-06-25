@@ -193,59 +193,43 @@ async function loadApps(status) {
 
     if (!apps.length) { el.innerHTML = '<div class="empty">No ' + status + ' applications</div>'; return; }
 
-    el.innerHTML = apps.map(a => {
-      const name = (a.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      const dob = a.date_of_birth ? `<span>DOB: <strong>${a.date_of_birth}</strong></span>` : '';
-      const nric = a.nric_full ? `<span>NRIC: <strong>${a.nric_full}</strong></span>` : a.nric_last4 ? `<span>NRIC: <strong>****${a.nric_last4}</strong></span>` : '';
-      const bank = a.bank_name ? `<span>Bank: <strong>${a.bank_name}</strong></span>` : '';
-      const acc = a.bank_account ? `<span>Account: <strong>${a.bank_account}</strong></span>` : '<span style="color:var(--ink-30);font-size:11.5px">Account: encrypted</span>';
-      const submitted = a.submitted_at ? new Date(a.submitted_at).toLocaleString('en-SG') : '—';
-      return `<div class="app-card">
-        <div class="app-name">${name}</div>
-        <div class="app-details">${dob}${nric}${bank}${acc}</div>
-        <div class="app-date">Submitted ${submitted}</div>
-        ${status === 'pending' ? (window._isAdmin ? `
-        <div class="approve-section">
-          <div class="fg">
-            <label>Role</label>
-            <select id="role-${a.id}">
-              <option value="">— Select —</option>
-              <option value="FOH">FOH</option>
-              <option value="BOH">BOH</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>Type</label>
-            <select id="type-${a.id}" onchange="toggleRate(${a.id})">
-              <option value="parttime">Part-time</option>
-              <option value="fulltime">Full-time</option>
-            </select>
-          </div>
-          <div class="fg" id="hourly-${a.id}">
-            <label>Hourly rate ($)</label>
-            <input type="number" id="hourlyVal-${a.id}" placeholder="9.50" step="0.5" min="0">
-          </div>
-          <div class="fg" id="salary-${a.id}" style="display:none">
-            <label>Monthly salary ($)</label>
-            <input type="number" id="salaryVal-${a.id}" placeholder="2400" step="100" min="0">
-          </div>
-        </div>
-        <div class="app-actions">
-          <button class="btn btn-primary" onclick="approve(${a.id})">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-            Approve & add staff
-          </button>
-          <button class="btn btn-ghost" style="color:var(--danger)" onclick="reject(${a.id})">Reject</button>
-        </div>` : '<div style="padding-top:10px;border-top:1px solid var(--ink-08);font-size:12px;color:var(--ink-30);font-style:italic">Only admins can approve or reject applications.</div>') : `
-        <div class="app-actions">
-          <span style="font-size:12px;font-weight:500;color:${status==='approved'?'var(--success)':'var(--danger)'}">
-            ${status === 'approved' ? '✓ Approved' : '✕ Rejected'}
-            ${a.reviewed_at ? ' · ' + new Date(a.reviewed_at).toLocaleDateString('en-SG') : ''}
-          </span>
-          ${a.reject_reason ? `<span style="font-size:12px;color:var(--ink-60)">— ${a.reject_reason}</span>` : ''}
-        </div>`}
-      </div>
-    `; }).join('');
+    el.innerHTML = apps.map(function(a) {
+      var name = (a.name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      var dob = a.date_of_birth ? '<span>DOB: <strong>'+a.date_of_birth+'</strong></span>' : '';
+      var nric = a.nric_full ? '<span>NRIC: <strong>'+a.nric_full+'</strong></span>' : (a.nric_last4 ? '<span>NRIC: <strong>****'+a.nric_last4+'</strong></span>' : '');
+      var bank = a.bank_name ? '<span>Bank: <strong>'+a.bank_name+'</strong></span>' : '';
+      var acc = a.bank_account ? '<span>Acct: <strong>'+a.bank_account+'</strong></span>' : '';
+      var submitted = a.submitted_at ? new Date(a.submitted_at).toLocaleString('en-SG') : '-';
+      var actions = '';
+      if (status === 'pending') {
+        if (window._isAdmin) {
+          actions = '<div class="approve-section">' +
+            '<div class="fg"><label>Role</label><select id="role-'+a.id+'"><option value="">- Select -</option><option value="FOH">FOH</option><option value="BOH">BOH</option></select></div>' +
+            '<div class="fg"><label>Type</label><select id="type-'+a.id+'" onchange="toggleRate('+a.id+')"><option value="parttime">Part-time</option><option value="fulltime">Full-time</option></select></div>' +
+            '<div class="fg" id="hourly-'+a.id+'"><label>Hourly rate ($)</label><input type="number" id="hourlyVal-'+a.id+'" placeholder="9.50" step="0.5" min="0"></div>' +
+            '<div class="fg" id="salary-'+a.id+'" style="display:none"><label>Monthly salary ($)</label><input type="number" id="salaryVal-'+a.id+'" placeholder="2400" step="100" min="0"></div>' +
+            '</div>' +
+            '<div class="app-actions">' +
+            '<button class="btn btn-primary" onclick="approve('+a.id+')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Approve &amp; add staff</button>' +
+            '<button class="btn btn-ghost" style="color:var(--danger)" onclick="reject('+a.id+')">Reject</button>' +
+            '</div>';
+        } else {
+          actions = '<div style="padding-top:10px;border-top:1px solid var(--ink-08);font-size:12px;color:var(--ink-30);font-style:italic">Only admins can approve or reject applications.</div>';
+        }
+      } else {
+        var color = status === 'approved' ? 'var(--success)' : 'var(--danger)';
+        var label = status === 'approved' ? '&#10003; Approved' : '&#10005; Rejected';
+        var reviewDate = a.reviewed_at ? ' &middot; ' + new Date(a.reviewed_at).toLocaleDateString('en-SG') : '';
+        var reason = a.reject_reason ? '<span style="font-size:12px;color:var(--ink-60)">&#8212; '+a.reject_reason+'</span>' : '';
+        actions = '<div class="app-actions"><span style="font-size:12px;font-weight:500;color:'+color+'">'+label+reviewDate+'</span>'+reason+'</div>';
+      }
+      return '<div class="app-card">' +
+        '<div class="app-name">'+name+'</div>' +
+        '<div class="app-details">'+dob+nric+bank+acc+'</div>' +
+        '<div class="app-date">Submitted '+submitted+'</div>' +
+        actions +
+        '</div>';
+    }).join('');
   } catch(e) { document.getElementById('appList').innerHTML = '<div class="empty">Error loading applications</div>'; }
 }
 
