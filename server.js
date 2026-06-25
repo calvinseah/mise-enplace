@@ -121,12 +121,8 @@ app.get('/api/staff/public-search', (req, res) => {
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);
-app.use('/api/leave/apply',     leaveRoutes);
 app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public
-app.use('/api/leave/balances',  leaveRoutes); // public
-app.use('/api/leave/balances',  leaveRoutes);
-app.use('/api/leave/apply',     leaveRoutes);
-app.use('/api/leave',           requireAuthAPI, leaveRoutes);
+app.use('/api/leave',           leaveRoutes); // auth handled inside route
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);
