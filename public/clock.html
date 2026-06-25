@@ -378,6 +378,12 @@ function selBreak(m,btn){ breakMins=m; document.querySelectorAll('.break-btn').f
 
 
 
+// Auto-open leave tab if redirected from index
+if (sessionStorage.getItem('openLeave')) {
+  sessionStorage.removeItem('openLeave');
+  window.addEventListener('DOMContentLoaded', () => showTab('leave'));
+}
+
 // ── Leave Tab ─────────────────────────────────────────────────────────────────
 let leaveStaffId = null;
 let leaveBalances = [];
