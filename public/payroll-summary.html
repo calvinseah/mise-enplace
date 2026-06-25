@@ -386,6 +386,32 @@ async function loadStaffDetail(r) {
         </div>
       </div>`;
 
+    // Build outlet summary
+    const outletMap = {};
+    shifts.forEach(s => {
+      const name = s.outlet_name || 'Unknown';
+      if (!outletMap[name]) outletMap[name] = { shifts: 0, hours: 0, cost: 0 };
+      outletMap[name].shifts++;
+      outletMap[name].hours += s.total_hours || 0;
+      outletMap[name].cost += s.total_cost || 0;
+    });
+
+    const outletSummaryHtml = Object.entries(outletMap).length > 0 ? `
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Outlets worked</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">
+        ${Object.entries(outletMap).map(([name, data]) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:8px;padding:10px 12px">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--ink)">${name}</div>
+              <div style="font-size:11px;color:var(--ink-60)">${data.shifts} shift${data.shifts!==1?'s':''}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:13px;font-weight:600;color:var(--accent)">$${data.cost.toFixed(2)}</div>
+              <div style="font-size:11px;color:var(--ink-60)">${data.hours.toFixed(1)} hrs</div>
+            </div>
+          </div>`).join('')}
+      </div>` : '';
+
     const shiftRows = shifts.map(s => {
       const date = s.clock_in ? s.clock_in.slice(0,10) : '—';
       const tin = s.clock_in ? new Date(s.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
@@ -402,21 +428,47 @@ async function loadStaffDetail(r) {
         '</tr>';
     }).join('');
 
-    const tableHtml = shifts.length ? `
-      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Shift breakdown</div>
-      <div style="overflow-x:auto;margin:0 -4px">
-        <table style="width:100%;border-collapse:collapse;font-family:var(--font)">
-          <thead><tr>
-            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid var(--ink-08)">Date</th>
-            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:left;border-bottom:1px solid var(--ink-08)">Time</th>
-            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:right;border-bottom:1px solid var(--ink-08)">Hrs</th>
-            <th style="padding:6px 10px;font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;text-align:right;border-bottom:1px solid var(--ink-08)">Cost</th>
-          </tr></thead>
-          <tbody>${shiftRows}</tbody>
-        </table>
-      </div>` : '<div style="text-align:center;padding:20px;color:var(--ink-60);font-size:13px">No shifts found for this period</div>';
+    // Punch cards
+    const punchCards = shifts.length ? `
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Shift records</div>
+      ${shifts.map(s => {
+        const date = s.clock_in ? new Date(s.clock_in).toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short'}) : '—';
+        const tin  = s.clock_in  ? new Date(s.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+        const tout = s.clock_out ? new Date(s.clock_out).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : 'Active';
+        const hrs  = s.total_hours ? s.total_hours.toFixed(1) : '—';
+        const cost = s.total_cost ? '$'+Number(s.total_cost).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+        const isActive = !s.clock_out;
+        const isPH = s.is_public_holiday;
+        const brk = s.break_minutes ? s.break_minutes + 'm break' : '';
+        const isAmended = s.is_amended;
+        return \`<div style="background:#fff;border:1px solid var(--ink-08);border-radius:12px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden">
+          \${isPH ? '<div style="position:absolute;top:0;right:0;background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:3px 8px;border-radius:0 12px 0 8px">PH</div>' : ''}
+          \${isAmended ? '<div style="position:absolute;top:0;left:0;background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:3px 8px;border-radius:12px 0 8px 0">Edited</div>' : ''}
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:12.5px;font-weight:700;color:var(--ink)">\${date}</div>
+            <div style="font-size:11.5px;font-weight:600;color:var(--accent)">\${cost}</div>
+          </div>
+          <div style="font-size:11px;color:var(--ink-60);margin-bottom:8px">\${s.outlet_name||'—'}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Clock in</div>
+              <div style="font-size:13px;font-weight:600;color:var(--ink)">\${tin}</div>
+            </div>
+            <div style="color:var(--ink-30);font-size:16px">→</div>
+            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Clock out</div>
+              <div style="font-size:13px;font-weight:600;color:\${isActive?'#2E6B3E':' var(--ink)'}">\${tout}</div>
+            </div>
+            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Hours</div>
+              <div style="font-size:13px;font-weight:600;color:var(--ink)">\${hrs}h</div>
+            </div>
+          </div>
+          \${brk ? '<div style="font-size:10.5px;color:var(--ink-30);margin-top:6px;text-align:center">'+brk+'</div>' : ''}
+        </div>\`;
+      }).join('')}` : '<div style="text-align:center;padding:20px;color:var(--ink-60);font-size:13px">No shifts found for this period</div>';
 
-    el.innerHTML = summaryHtml + tableHtml;
+    el.innerHTML = summaryHtml + outletSummaryHtml + punchCards;
   } catch(e) {
     el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink-60)">Error loading shifts</div>';
   }
