@@ -156,6 +156,7 @@ app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+app.get('/leave', (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave.html')));
 app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
 
 
