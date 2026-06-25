@@ -82,6 +82,7 @@ const applicationRoutes   = require('./routes/applications');
 const companyRoutes        = require('./routes/companies');
 const leaveRoutes          = require('./routes/leave');
 const { router: auditRoutes } = require('./routes/audit');
+const maiseKbRoutes = require('./routes/maiseKb');
 const revenueRoutes       = require('./routes/revenue');
 const payrollSummaryRoutes= require('./routes/payrollSummary');
 const rosterRoutes        = require('./routes/roster');
@@ -121,6 +122,7 @@ app.get('/api/staff/public-search', (req, res) => {
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);
+app.use('/api/maise-kb',        requireAuthAPI, maiseKbRoutes);
 app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public
 app.use('/api/leave',           leaveRoutes); // auth handled inside route
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
@@ -156,6 +158,8 @@ app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+app.get('/maise',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-page.html')));
+app.get('/maise-kb',        requireAuth, requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-kb.html')));
 app.get('/leave', (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave.html')));
 app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
 

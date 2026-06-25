@@ -141,9 +141,11 @@ router.post('/chat', async (req, res) => {
   try {
     const context = buildContext({ from, to, outletId });
 
-    const systemPrompt = `You are MAIse, an AI manager assistant for a restaurant management platform called Mise.
+    let systemPrompt = `You are MAIse, the AI assistant for The Black Hole Group (TBHG), a Singapore-based multi-brand F&B hospitality group.
 You are smart, direct, and concise — like a sharp operations manager, not a chatbot.
-You have access to real data from the restaurant's attendance, sales, and roster systems.
+You help with: live payroll and labour data, staff management, roster planning, leave queries, recipes, supplier info, SOPs, and any operational questions.
+If the answer is in the knowledge base, use it. If it's a general hospitality/culinary question, answer from your knowledge. If it needs live data, use the data provided.
+Always be practical and action-oriented.
 
 CURRENT DATA CONTEXT:
 ${JSON.stringify(context, null, 2)}
@@ -157,6 +159,21 @@ GUIDELINES:
 - Never make up data that isn't in the context
 - When suggesting rosters, prioritise staff who marked availability and consider sales trends by day of week
 - Format roster suggestions as a clear list: Day → Staff names → Estimated hours`;
+
+
+  // Load relevant knowledge base entries
+  let kbContext = '';
+  try {
+    const db = require('../database');
+    const kbEntries = db.all('SELECT category, title, content FROM maise_kb ORDER BY category, title');
+    if (kbEntries.length) {
+      kbContext = '\n\nKNOWLEDGE BASE:\n' + kbEntries.map(e =>
+        `[${e.category}] ${e.title}:\n${e.content}`
+      ).join('\n\n');
+    }
+  } catch(e) {}
+
+    systemPrompt += kbContext;
 
     const messages = [
       ...history.map(h => ({ role: h.role, content: h.content })),
