@@ -2,7 +2,7 @@
 (function() {
   const CSS = `
     #maise-btn {
-      position: fixed; bottom: 28px; right: 28px; z-index: 1000;
+      position: fixed; bottom: 28px; right: 16px; z-index: 1000;
       width: 54px; height: 54px; border-radius: 50%;
       background: #3D5240; border: none; cursor: pointer;
       box-shadow: 0 4px 20px rgba(61,82,64,.35);
@@ -17,6 +17,7 @@
     #maise-panel {
       position: fixed; bottom: 92px; right: 28px; z-index: 1000;
       width: 380px; max-height: 600px;
+      max-width: calc(100vw - 20px);
       background: #fff; border-radius: 20px;
       box-shadow: 0 8px 40px rgba(26,35,24,.18), 0 0 0 1px rgba(26,35,24,.06);
       display: none; flex-direction: column; overflow: hidden;
