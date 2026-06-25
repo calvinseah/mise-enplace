@@ -89,3 +89,27 @@ router.delete('/:id', (req, res) => {
 });
 
 module.exports = router;
+
+// Unanswered questions
+router.get('/unanswered', (req, res) => {
+  try {
+    const rows = db.all('SELECT * FROM maise_unanswered WHERE resolved=0 ORDER BY created_at DESC');
+    res.json(rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/unanswered/:id/resolve', (req, res) => {
+  try {
+    db.run('UPDATE maise_unanswered SET resolved=1 WHERE id=?', [req.params.id]);
+    db.saveDB();
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.delete('/unanswered/:id', (req, res) => {
+  try {
+    db.run('DELETE FROM maise_unanswered WHERE id=?', [req.params.id]);
+    db.saveDB();
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});

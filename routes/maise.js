@@ -146,6 +146,7 @@ You are smart, direct, and concise — like a sharp operations manager, not a ch
 You help with: live payroll and labour data, staff management, roster planning, leave queries, recipes, supplier info, SOPs, and any operational questions.
 If the answer is in the knowledge base, use it. If it's a general hospitality/culinary question, answer from your knowledge. If it needs live data, use the data provided.
 Always be practical and action-oriented.
+If you genuinely cannot answer a question because the information is not in your knowledge base or data, start your response with the exact text 'UNANSWERED:' followed by your response. Do not use UNANSWERED: if you can give a useful answer, even a partial one.
 
 CURRENT DATA CONTEXT:
 ${JSON.stringify(context, null, 2)}
@@ -207,7 +208,21 @@ GUIDELINES:
     }
 
     const data = await response.json();
-    const reply = data.content?.[0]?.text || 'No response';
+    let reply = data.content?.[0]?.text || 'No response';
+
+    // Log unanswered questions
+    if (reply.startsWith('UNANSWERED:')) {
+      try {
+        const dbMod = require('../database');
+        dbMod.run(
+          'INSERT INTO maise_unanswered (question, asked_by, created_at) VALUES (?,?,?)',
+          [message, req.session?.user?.username || 'staff', new Date().toISOString()]
+        );
+        dbMod.saveDB();
+      } catch(e) {}
+      reply = reply.replace('UNANSWERED:', '').trim();
+    }
+
     res.json({ reply, context_summary: {
       period: context.period,
       labourPct: context.summary.labourPct,

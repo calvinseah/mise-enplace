@@ -79,8 +79,16 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
   <div class="page-title">MAIse Knowledge Base</div>
   <div class="page-sub">Add information MAIse can reference — recipes, suppliers, SOPs, brand info</div>
 
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <button onclick="showTab('kb')" id="tabKb" class="btn btn-primary" style="height:30px;font-size:12px">Knowledge Base</button>
+    <button onclick="showTab('unanswered')" id="tabUnanswered" class="btn" style="height:30px;font-size:12px;background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08)">
+      Unanswered <span id="unansweredBadge" style="display:none;background:#C0392B;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px"></span>
+    </button>
+  </div>
+
   <div id="alertBox" class="alert"></div>
 
+  <div id="tabKbContent">
   <div class="toolbar">
     <select class="cat-filter" id="catFilter" onchange="loadKB()">
       <option value="">All categories</option>
@@ -109,6 +117,13 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);display:
   <div class="kb-grid" id="kbGrid">
     <div class="empty">Loading…</div>
   </div>
+  </div><!-- end tabKbContent -->
+
+  <!-- Unanswered questions -->
+  <div id="tabUnansweredContent" style="display:none">
+    <div id="unansweredList"><div class="empty">Loading…</div></div>
+  </div>
+
 </main>
 
 <!-- Add/Edit modal -->
@@ -282,6 +297,56 @@ async function logout() { await fetch('/api/auth/logout', {method:'POST'}); loca
 
 fetch('/api/me').then(r => { if (!r.ok) location.href='/login'; }).catch(() => location.href='/login');
 init();
+loadUnanswered();
+
+function showTab(tab) {
+  document.getElementById('tabKbContent').style.display = tab === 'kb' ? '' : 'none';
+  document.getElementById('tabUnansweredContent').style.display = tab === 'unanswered' ? '' : 'none';
+  document.getElementById('tabKb').className = 'btn ' + (tab === 'kb' ? 'btn-primary' : '');
+  document.getElementById('tabKb').style = tab === 'kb' ? 'height:30px;font-size:12px' : 'height:30px;font-size:12px;background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08)';
+  document.getElementById('tabUnanswered').style = tab === 'unanswered' ? 'height:30px;font-size:12px;background:#1A2318;color:#fff;border:none' : 'height:30px;font-size:12px;background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08)';
+}
+
+async function loadUnanswered() {
+  const rows = await fetch('/api/maise-kb/unanswered').then(r=>r.json()).catch(()=>[]);
+  const badge = document.getElementById('unansweredBadge');
+  if (rows.length) { badge.style.display = 'inline'; badge.textContent = rows.length; }
+  else badge.style.display = 'none';
+
+  const list = document.getElementById('unansweredList');
+  if (!rows.length) { list.innerHTML = '<div class="empty">No unanswered questions yet.</div>'; return; }
+
+  list.innerHTML = rows.map(r => {
+    const date = new Date(r.created_at).toLocaleDateString('en-SG', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    return '<div style="background:#fff;border:1px solid var(--ink-08);border-radius:12px;padding:14px 16px;margin-bottom:8px">' +
+      '<div style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px">' + r.question + '</div>' +
+      '<div style="font-size:11px;color:var(--ink-30);margin-bottom:10px">Asked ' + date + (r.asked_by ? ' by ' + r.asked_by : '') + '</div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button class="btn btn-primary" style="height:28px;font-size:11.5px;padding:0 12px" onclick="addToKb('' + r.question.replace(/'/g,"\'") + '')">+ Add to KB</button>' +
+        '<button class="btn-sm" onclick="resolveQ(' + r.id + ')">Mark resolved</button>' +
+        '<button class="btn-sm btn-danger" onclick="deleteQ(' + r.id + ')">Dismiss</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function addToKb(question) {
+  document.getElementById('fTitle').value = question;
+  document.getElementById('fContent').value = '';
+  document.getElementById('fCategory').selectedIndex = 0;
+  openModal();
+  showTab('kb');
+}
+
+async function resolveQ(id) {
+  await fetch('/api/maise-kb/unanswered/'+id+'/resolve', {method:'POST'});
+  loadUnanswered();
+}
+
+async function deleteQ(id) {
+  await fetch('/api/maise-kb/unanswered/'+id, {method:'DELETE'});
+  loadUnanswered();
+}
 </script>
 </body>
 </html>
