@@ -105,7 +105,19 @@ app.post('/api/apply', (req, res, next) => {
 app.get('/api/attendance/my-shifts', attendanceRoutes);
 
 // ── Manager API ───────────────────────────────────────────────────────────────
-app.use('/api/staff/public-search', staffRoutes); // public name search
+// Public staff name search (no auth — only returns name/id/role for leave tab)
+app.get('/api/staff/public-search', (req, res) => {
+  const db = require('./database');
+  const q = req.query.q || '';
+  if (q.length < 2) return res.json([]);
+  try {
+    const results = db.all(
+      `SELECT id, name, role, staff_type FROM staff WHERE is_active=1 AND staff_type='fulltime' AND name LIKE ? LIMIT 8`,
+      ['%' + q + '%']
+    );
+    res.json(results);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);

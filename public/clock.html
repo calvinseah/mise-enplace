@@ -391,7 +391,16 @@ let leaveStaffId = null;
 let leaveBalances = [];
 
 function showTab(tab) {
+  // Hide/show main content vs leave panel
+  const mainSections = ['searchSection','confirmSection','breakStatus','breakBtn','actionBtn'];
+  mainSections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = tab === 'leave' ? 'none' : '';
+  });
   document.getElementById('leave-panel').style.display = tab === 'leave' ? 'block' : 'none';
+  // Update tab button styles
+  const leaveBtn = document.getElementById('tab-leave-btn');
+  if (leaveBtn) leaveBtn.style.fontWeight = tab === 'leave' ? '600' : '400';
   if (tab === 'leave') {
     document.getElementById('leaveYear').textContent = new Date().getFullYear();
     // Set default dates
