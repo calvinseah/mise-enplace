@@ -67,11 +67,14 @@ function getSHGAmount(race, ow) {
     return 2.00;
   }
   if (race === 'malay') {
-    if (ow <= 1000) return 1.00;
-    if (ow <= 2000) return 2.00;
-    if (ow <= 3000) return 3.00;
-    if (ow <= 4000) return 4.00;
-    return 5.00;
+    if (ow < 1000)   return 3.00;
+    if (ow <= 2000)  return 4.50;
+    if (ow <= 3000)  return 6.50;
+    if (ow <= 4000)  return 15.00;
+    if (ow <= 6000)  return 19.50;
+    if (ow <= 8000)  return 22.00;
+    if (ow <= 10000) return 24.00;
+    return 26.00;
   }
   if (race === 'indian') {
     if (ow <= 2000) return 0.50;
