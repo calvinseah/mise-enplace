@@ -6,7 +6,7 @@ const router     = express.Router();
 const db         = require('../database');
 
 // ── Helper: compute payroll for all staff in a period ──────────────────────────
-function computeAllPayroll(from, to, outletId) {
+function computeAllPayroll(from, to, outletId, staffId) {
   const staff = db.all(`SELECT * FROM staff WHERE is_active=1`);
   const { computeShiftCost, computeCPF, decryptField } = db;
   const results = [];
@@ -15,6 +15,7 @@ function computeAllPayroll(from, to, outletId) {
     let sql = `SELECT * FROM attendance WHERE staff_id=? AND substr(clock_in,1,10)>=? AND substr(clock_in,1,10)<=? AND clock_out IS NOT NULL`;
     const params = [s.id, from, to];
     if (outletId) { sql += ` AND outlet_id=?`; params.push(outletId); }
+    if (staffId) { sql += ` AND s.id=?`; params.push(staffId); }
     const records = db.all(sql, params);
     if (!records.length) continue;
 
@@ -264,6 +265,41 @@ router.get('/export/pdf', (req, res) => {
        .text('* Employer CPF is for company records only and is not deducted from staff pay.   This is a computer-generated document. Not a tax document.', 40, fy + 6);
 
     doc.end();
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── Entity assignments ────────────────────────────────────────────────────────
+router.get('/entity-assignments', (req, res) => {
+  const { year, month } = req.query;
+  try {
+    const assignments = db.all(
+      `SELECT sea.staff_id, sea.company_id, s.name as staff_name, c.name as company_name, c.uen
+       FROM staff_entity_assignments sea
+       JOIN staff s ON sea.staff_id=s.id
+       JOIN companies c ON sea.company_id=c.id
+       WHERE sea.year=? AND sea.month=?`,
+      [year, month]
+    );
+    res.json(assignments);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/entity-assignments', (req, res) => {
+  if (!req.session?.user || req.session.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { assignments, year, month } = req.body; // [{staffId, companyId}]
+  try {
+    assignments.forEach(({ staffId, companyId }) => {
+      const existing = db.get('SELECT id FROM staff_entity_assignments WHERE staff_id=? AND year=? AND month=?', [staffId, year, month]);
+      if (existing) {
+        if (companyId) db.run('UPDATE staff_entity_assignments SET company_id=? WHERE id=?', [companyId, existing.id]);
+        else db.run('DELETE FROM staff_entity_assignments WHERE id=?', [existing.id]);
+      } else if (companyId) {
+        db.run('INSERT INTO staff_entity_assignments (staff_id, company_id, year, month) VALUES (?,?,?,?)', [staffId, companyId, year, month]);
+      }
+    });
+    db.saveDB();
+    res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

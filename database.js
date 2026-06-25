@@ -187,6 +187,17 @@ function createSchema() {
     created_at  TEXT NOT NULL
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS staff_entity_assignments (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id  INTEGER NOT NULL,
+    company_id INTEGER NOT NULL,
+    year      INTEGER NOT NULL,
+    month     INTEGER NOT NULL,
+    UNIQUE(staff_id, year, month),
+    FOREIGN KEY(staff_id) REFERENCES staff(id),
+    FOREIGN KEY(company_id) REFERENCES companies(id)
+  )`);
+
   db.run(`CREATE TABLE IF NOT EXISTS companies (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     name      TEXT NOT NULL,

@@ -145,21 +145,35 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 
   <div class="card">
-    <div class="filters">
+    <!-- Row 1: Period -->
+    <div class="filters" style="margin-bottom:10px">
       <div class="fg">
         <label>Month</label>
         <input type="month" id="psMonth" onchange="onMonthChange()" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:140px">
       </div>
-      <div class="fg"><label>From (custom)</label><input type="date" id="psFrom"></div>
-      <div class="fg"><label>To (custom)</label><input type="date" id="psTo"></div>
-      <div class="fg"><label>Company (for export)</label><select id="psCompany" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:200px;-webkit-appearance:none"><option value="">— Select company —</option></select>
-        <a href="/companies" style="font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap;align-self:flex-end;padding-bottom:6px">Edit UENs ↗</a></div>
-      <div class="fg"><label>Outlet</label><select id="psOutlet" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:160px;-webkit-appearance:none"><option value="">All outlets</option></select></div>
-      <div style="align-self:flex-end;display:flex;gap:6px">
+      <div class="fg"><label>From</label><input type="date" id="psFrom"></div>
+      <div class="fg"><label>To</label><input type="date" id="psTo"></div>
+      <div class="fg"><label>Outlet</label><select id="psOutlet" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:140px;-webkit-appearance:none"><option value="">All outlets</option></select></div>
+      <div class="fg"><label>Staff</label><select id="psStaffFilter" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:160px;-webkit-appearance:none"><option value="">All staff</option></select></div>
+      <div style="align-self:flex-end">
         <button class="btn btn-primary" onclick="loadSummary()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           Generate
         </button>
+      </div>
+    </div>
+    <!-- Row 2: Export options -->
+    <div class="filters" style="border-top:1px solid var(--ink-08);padding-top:10px;margin-bottom:0">
+      <div class="fg">
+        <label>Company (for export)</label>
+        <select id="psCompany" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:200px;-webkit-appearance:none"><option value="">— Select company —</option></select>
+      </div>
+      <div style="align-self:flex-end;display:flex;gap:6px">
+        <button class="btn btn-ghost" onclick="openEntityAssign()" title="Assign staff to entities for this month">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Assign entities
+        </button>
+        <a href="/companies" class="btn btn-ghost">Edit UENs ↗</a>
       </div>
     </div>
     <div class="export-row" id="exportRow" style="display:none">
@@ -207,6 +221,9 @@ async function loadCompanies(){
   try{
     const r=await fetch('/api/companies');
     const companies=await r.json();
+    _entityCompanies=companies;
+    const bulkSel=document.getElementById('entityBulkAssign');
+    companies.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name;bulkSel.appendChild(opt);});
     const sel=document.getElementById('psCompany');
     companies.forEach(c=>{
       const opt=document.createElement('option');
@@ -237,6 +254,21 @@ async function exportAllCompanies(e){
   }catch(e){showAlert('Error generating exports','err');}
 }
 
+async function loadStaffDropdown(){
+  try{
+    const r=await fetch('/api/staff');
+    const staff=await r.json();
+    _entityStaff=staff.filter(s=>s.is_active!==0);
+    const sel=document.getElementById('psStaffFilter');
+    staff.filter(s=>s.is_active!==0).sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.id;
+      opt.textContent=s.name;
+      sel.appendChild(opt);
+    });
+  }catch(e){}
+}
+
 async function loadOutlets(){
   try{
     const r=await fetch('/api/staff/outlets/list');
@@ -253,6 +285,8 @@ function params(){
   if(o)p.set('outletId',o);
   const c=document.getElementById('psCompany').value;
   if(c)p.set('companyId',c);
+  const s=document.getElementById('psStaffFilter').value;
+  if(s)p.set('staffId',s);
   return p;
 }
 
@@ -388,9 +422,101 @@ async function loadStaffDetail(r) {
   }
 }
 
+
+// ── Entity assignments ────────────────────────────────────────────────────────
+let _entityCompanies = [];
+let _entityStaff = [];
+let _entityAssignments = {}; // staffId -> companyId
+
+async function openEntityAssign() {
+  const month = document.getElementById('psMonth').value;
+  if (!month) { showAlert('Please select a month first', 'err'); return; }
+  const [yr, mo] = month.split('-');
+
+  document.getElementById('entityPanelTitle').textContent = 'Assign entities — ' + month;
+  document.getElementById('entityOverlay').style.display = 'flex';
+
+  // Load companies into bulk selector
+  const bulkSel = document.getElementById('entityBulkAssign');
+  if (bulkSel.options.length <= 1 && _entityCompanies.length) {
+    _entityCompanies.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      bulkSel.appendChild(opt);
+    });
+  }
+
+  // Load existing assignments for this month
+  try {
+    const r = await fetch('/api/payroll-summary/entity-assignments?year=' + yr + '&month=' + mo);
+    const existing = await r.json();
+    _entityAssignments = {};
+    existing.forEach(a => { _entityAssignments[a.staff_id] = a.company_id; });
+  } catch(e) {}
+
+  renderEntityList(yr, mo);
+}
+
+function renderEntityList(yr, mo) {
+  const el = document.getElementById('entityStaffList');
+  const outletId = document.getElementById('psOutlet').value;
+  const staff = outletId
+    ? _entityStaff.filter(s => String(s.outlet_id) === String(outletId))
+    : _entityStaff;
+
+  el.innerHTML = staff.map(s => {
+    const assigned = _entityAssignments[s.id] || '';
+    const opts = _entityCompanies.map(c =>
+      `<option value="${c.id}" ${String(assigned)===String(c.id)?'selected':''}>${c.name}</option>`
+    ).join('');
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-08)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
+        <div style="font-size:11px;color:var(--ink-60)">${s.role||''} · ${s.staff_type==='fulltime'?'Full-time':'Part-time'}</div>
+      </div>
+      <select data-staff-id="${s.id}" onchange="_entityAssignments[${s.id}]=this.value"
+        style="width:190px;height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;-webkit-appearance:none">
+        <option value="">— Unassigned —</option>
+        ${opts}
+      </select>
+    </div>`;
+  }).join('');
+}
+
+function bulkAssignEntity() {
+  const companyId = document.getElementById('entityBulkAssign').value;
+  if (!companyId) return;
+  document.querySelectorAll('[data-staff-id]').forEach(sel => {
+    sel.value = companyId;
+    _entityAssignments[sel.dataset.staffId] = companyId;
+  });
+}
+
+async function saveEntityAssignments() {
+  const month = document.getElementById('psMonth').value;
+  const [yr, mo] = month.split('-');
+  const assignments = Object.entries(_entityAssignments).map(([staffId, companyId]) => ({
+    staffId: parseInt(staffId), companyId: companyId ? parseInt(companyId) : null
+  }));
+  try {
+    const r = await fetch('/api/payroll-summary/entity-assignments', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ assignments, year: parseInt(yr), month: parseInt(mo) })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert('Entity assignments saved', 'ok'); closeEntityAssign(); }
+    else showAlert(d.error || 'Error', 'err');
+  } catch(e) { showAlert('Network error', 'err'); }
+}
+
+function closeEntityAssign() {
+  document.getElementById('entityOverlay').style.display = 'none';
+}
+
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
 loadOutlets();
 loadCompanies();
+loadStaffDropdown();
 loadSummary();
 </script>
 <script src="/maise.js"></script>
@@ -447,6 +573,34 @@ async function backupDB() {
       <button onclick="closeStaffDetail()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:20px;line-height:1">×</button>
     </div>
     <div id="staffDetailContent"><div style="text-align:center;padding:40px;color:var(--ink-60)">Loading…</div></div>
+  </div>
+</div>
+
+
+<!-- Entity Assignment Panel -->
+<div id="entityOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeEntityAssign()">
+  <div onclick="event.stopPropagation()" style="background:#fff;width:480px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)" id="entityPanelTitle">Assign entities</div>
+      <button onclick="closeEntityAssign()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:22px;line-height:1">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-60);margin-bottom:20px">Assign each staff member to a legal entity for this pay period. Used for CPF submissions and payslip headers.</div>
+
+    <!-- Quick assign all -->
+    <div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      <div style="font-size:12.5px;font-weight:500;color:var(--ink);flex:1">Assign all to:</div>
+      <select id="entityBulkAssign" style="flex:1;height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none">
+        <option value="">— Select —</option>
+      </select>
+      <button onclick="bulkAssignEntity()" style="height:30px;padding:0 12px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Apply all</button>
+    </div>
+
+    <div id="entityStaffList" style="margin-bottom:16px"></div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--ink-08)">
+      <button onclick="closeEntityAssign()" style="height:32px;padding:0 16px;border-radius:8px;border:1px solid var(--ink-08);background:transparent;color:var(--ink-60);font-size:13px;font-family:var(--font);cursor:pointer">Cancel</button>
+      <button onclick="saveEntityAssignments()" style="height:32px;padding:0 16px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer">Save assignments</button>
+    </div>
   </div>
 </div>
 
