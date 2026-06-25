@@ -418,11 +418,13 @@ async function searchLeaveStaff() {
     const r = await fetch('/api/staff/public-search?q=' + encodeURIComponent(q));
     const active = await r.json();
     if (!active.length) { res.innerHTML = '<div style="font-size:13px;color:var(--ink-60);padding:8px">No full-time staff found</div>'; return; }
-    res.innerHTML = active.slice(0,6).map(s =>
-      '<div onclick="selectLeaveStaff(' + s.id + ','' + s.name.replace(/'/g,"\'") + '','' + (s.role||'') + '')" ' +
-      'style="padding:10px 12px;background:#fff;border-radius:10px;border:1px solid var(--ink-08);margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)">' +
-      s.name + '<span style="font-size:11px;color:var(--ink-60);margin-left:6px">' + (s.role||'') + ' · Full-time</span></div>'
-    ).join('');
+    res.innerHTML = active.slice(0,6).map(s => {
+      const safeName = s.name.replace(/'/g, "\'");
+      const safeRole = (s.role||'').replace(/'/g, "\'");
+      return '<div onclick="selectLeaveStaff(' + s.id + ',\'' + safeName + '\',\'' + safeRole + '\')" ' +
+        'style="padding:10px 12px;background:#fff;border-radius:10px;border:1px solid var(--ink-08);margin-bottom:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)">' +
+        s.name + '<span style="font-size:11px;color:var(--ink-60);margin-left:6px">' + (s.role||'') + ' · Full-time</span></div>';
+    }).join('');
   } catch(e) {}
 }
 
