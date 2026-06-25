@@ -161,14 +161,24 @@ GUIDELINES:
 - Format roster suggestions as a clear list: Day → Staff names → Estimated hours`;
 
 
-  // Load relevant knowledge base entries
+  // Load outlets and knowledge base
   let kbContext = '';
   try {
     const db = require('../database');
+
+    // Outlets
+    const outlets = db.all('SELECT name, address FROM outlets WHERE is_active=1 ORDER BY name');
+    if (outlets.length) {
+      kbContext += '\n\nOUTLETS:\n' + outlets.map(o =>
+        o.name + (o.address ? ' — ' + o.address : '')
+      ).join('\n');
+    }
+
+    // Knowledge base entries
     const kbEntries = db.all('SELECT category, title, content FROM maise_kb ORDER BY category, title');
     if (kbEntries.length) {
-      kbContext = '\n\nKNOWLEDGE BASE:\n' + kbEntries.map(e =>
-        `[${e.category}] ${e.title}:\n${e.content}`
+      kbContext += '\n\nKNOWLEDGE BASE:\n' + kbEntries.map(e =>
+        '[' + e.category + '] ' + e.title + ':\n' + e.content
       ).join('\n\n');
     }
   } catch(e) {}

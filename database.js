@@ -204,6 +204,13 @@ function createSchema() {
     sort_order INTEGER NOT NULL DEFAULT 0
   )`);
 
+
+  db.run("CREATE TABLE IF NOT EXISTS recipes (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, category TEXT NOT NULL, outlet_id INTEGER, description TEXT, icon TEXT DEFAULT '🍽', base_servings INTEGER NOT NULL DEFAULT 4, allergens TEXT DEFAULT '[]', notes TEXT, is_shared INTEGER NOT NULL DEFAULT 1, created_by TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)");
+
+  db.run("CREATE TABLE IF NOT EXISTS recipe_ingredients (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, name TEXT NOT NULL, amount REAL NOT NULL, unit TEXT, cost_per_unit REAL DEFAULT 0, FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
+
+  db.run("CREATE TABLE IF NOT EXISTS recipe_steps (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, title TEXT NOT NULL, content TEXT NOT NULL, timer_seconds INTEGER, FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
+
   db.run(`CREATE TABLE IF NOT EXISTS maise_kb (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL,
