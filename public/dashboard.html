@@ -118,33 +118,98 @@ tbody tr:last-child td{border-bottom:none}
 .empty{text-align:center;color:var(--ink-30);padding:40px;font-size:12.5px}
 </style>
 <style>
-/* ── Mobile: hamburger drawer ── */
+/* ── Mobile ── */
 .mob-topbar{display:none}
+.mob-home{display:none}
+
+/* Mobile shift cards (hidden on desktop) */
+#mobileShiftCards{display:none}
+.shift-card{background:var(--white);border-radius:12px;border:1px solid var(--ink-08);padding:14px;margin-bottom:10px}
+.shift-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.shift-card-name{font-size:14px;font-weight:600;color:var(--ink)}
+.shift-card-outlet{font-size:11.5px;color:var(--ink-60);margin-bottom:6px}
+.shift-card-times{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-60);margin-bottom:8px}
+.shift-card-time{font-weight:500;color:var(--ink)}
+.shift-card-stats{display:flex;gap:10px;flex-wrap:wrap}
+.shift-stat{background:var(--surface);border-radius:6px;padding:4px 10px;font-size:11.5px;font-weight:500;color:var(--ink)}
+.shift-card-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.shift-card-actions .btn{height:34px;font-size:12px;flex:1;justify-content:center}
+.active-pill{background:#F0FDF4;color:#2E6B3E;border:1px solid rgba(46,107,62,.2);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600}
+.ph-pill{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600}
+
+/* Mobile home screen styles */
+.mob-hero{background:#2A3B2D;padding:14px 16px 18px;position:relative;overflow:hidden}
+.mob-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04)}
+.mob-outlet-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:2px}
+.mob-outlet-tabs::-webkit-scrollbar{display:none}
+.mob-outlet-tab{flex-shrink:0;height:27px;padding:0 13px;border-radius:20px;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.55);font-size:11.5px;font-weight:500;font-family:var(--font);cursor:pointer;white-space:nowrap}
+.mob-outlet-tab.active{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.45);color:#fff;font-weight:600}
+.mob-hero-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.mob-hero-val{font-size:32px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff;line-height:1;margin-bottom:3px}
+.mob-hero-sub{font-size:11.5px;color:rgba(255,255,255,.4);margin-bottom:12px}
+.mob-hero-chips{display:flex;gap:6px;flex-wrap:wrap}
+.mob-chip{background:rgba(255,255,255,.1);border-radius:20px;padding:4px 11px;font-size:11.5px;font-weight:500;color:#fff;display:flex;align-items:center;gap:5px}
+.mob-chip-dot{width:6px;height:6px;border-radius:50%}
+
+.mob-body{padding:12px 14px;overflow-y:auto}
+.mob-sec{display:flex;justify-content:space-between;align-items:center;margin:12px 0 8px}
+.mob-sec-title{font-size:13px;font-weight:600;color:var(--ink)}
+.mob-sec-link{font-size:12px;color:var(--accent);font-weight:500;text-decoration:none;cursor:pointer}
+
+.mob-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.mob-stat{background:var(--white);border-radius:14px;padding:13px;border:1px solid var(--ink-08)}
+.mob-stat-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.mob-stat-num{font-size:22px;font-weight:400;font-family:'DM Serif Display',serif;color:var(--ink);line-height:1}
+.mob-stat-lbl{font-size:11px;color:var(--ink-60);margin-top:3px}
+.mob-stat-note{font-size:10.5px;font-weight:600;margin-top:3px}
+
+.mob-alert{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.mob-alert-ico{width:30px;height:30px;border-radius:8px;background:rgba(183,121,31,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mob-alert-body{flex:1;min-width:0}
+.mob-alert-title{font-size:12.5px;font-weight:600;color:#B7791F}
+.mob-alert-detail{font-size:11px;color:rgba(183,121,31,.65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mob-fix-btn{height:26px;padding:0 11px;border-radius:7px;background:#B7791F;color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);flex-shrink:0}
+
+.mob-app-row{background:var(--white);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;border:1px solid var(--ink-08)}
+.mob-app-av{width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--ink-08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+.mob-app-info{flex:1;min-width:0}
+.mob-app-name{font-size:13px;font-weight:600;color:var(--ink)}
+.mob-app-detail{font-size:11px;color:var(--ink-60);margin-top:1px}
+.mob-app-btns{display:flex;gap:5px}
+.mob-ok{height:27px;padding:0 11px;border-radius:7px;background:var(--accent);color:#fff;border:none;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--font)}
+.mob-no{height:27px;padding:0 9px;border-radius:7px;background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--font)}
+
+.mob-onshift{background:var(--white);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;border:1px solid var(--ink-08)}
+.mob-onshift-av{width:34px;height:34px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;flex-shrink:0}
+.mob-onshift-info{flex:1}
+.mob-onshift-name{font-size:13px;font-weight:600;color:var(--ink)}
+.mob-onshift-detail{font-size:11px;color:var(--ink-60);margin-top:1px}
+.mob-onshift-time{text-align:right;font-size:12px;font-weight:600;color:var(--accent)}
+.mob-onshift-hrs{font-size:11px;color:var(--ink-30)}
+
+/* Bottom nav */
+.mob-bottom-nav{background:var(--white);border-top:1px solid var(--ink-08);display:none;padding:10px 0 max(20px,env(safe-area-inset-bottom))}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;font-family:var(--font)}
+.mob-nav-btn svg{width:21px;height:21px;stroke:var(--ink-30);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mob-nav-btn.active svg{stroke:var(--accent)}
+.mob-nav-lbl{font-size:10px;font-weight:500;color:var(--ink-30)}
+.mob-nav-btn.active .mob-nav-lbl{color:var(--accent);font-weight:600}
+
 @media(max-width:768px){
   body{flex-direction:column}
-  .sidebar{display:none;position:fixed;inset:0;z-index:400;width:80%;max-width:280px;height:100vh;overflow-y:auto;transform:translateX(-100%);transition:transform .25s ease}
-  .sidebar.mob-open{display:flex;transform:translateX(0)}
+  /* Hide desktop chrome */
+  .sidebar{display:none!important}
+  .main{display:none!important}
   .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399}
-  .mob-overlay.open{display:block}
-  .mob-topbar{display:flex;align-items:center;gap:12px;background:#1A2318;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));flex-shrink:0}
-  .mob-hamburger{width:36px;height:36px;background:rgba(255,255,255,.08);border:none;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
-  .mob-hamburger span{display:block;width:18px;height:1.5px;background:#fff;border-radius:2px}
-  .mob-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1}
-  .mob-icon{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
-  .mob-icon span{font-family:'DM Serif Display',serif;font-size:15px;color:#fff;line-height:1;font-style:italic}
-  .mob-name{font-size:16px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff}
-  .main{padding:16px}
-  .stats{grid-template-columns:1fr 1fr}
-  .form-grid{grid-template-columns:1fr}
-  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{font-size:12px;min-width:520px}
-  thead th,tbody td{padding:8px 10px}
-  .modal{width:96%;max-height:85vh}
-  .page-title{font-size:18px}
-  .card{padding:14px 16px}
-  .filters{flex-direction:column;align-items:stretch}
-  .filters .fg{width:100%}
-  .filters .fg input,.filters .fg select{min-width:0;width:100%}
+
+  /* Show mobile home */
+  .mob-home{display:flex;flex-direction:column;min-height:100vh}
+  .mob-bottom-nav{display:flex}
+
+  /* Modal */
+  .modal{width:96%;max-height:88vh;border-radius:16px;padding:20px 16px}
+  .modal-footer{flex-direction:column}
+  .modal-footer .btn{width:100%;justify-content:center;height:42px}
 }
 </style>
 </head>
@@ -408,6 +473,47 @@ function renderRecords(rows){
   }).join('');
   tb.innerHTML+=`<tr class="sum-row"><td colspan="6">Total — ${rows.length} shifts</td><td>${th.toFixed(2)} hrs</td><td>${ph?ph+' PH':''}</td><td>$${tc.toFixed(2)}</td><td colspan="2"></td></tr>`;
   updateStats(rows,th,tc,ph);
+  renderMobileCards(rows);
+}
+
+function renderMobileCards(rows) {
+  const el = document.getElementById('mobileShiftCards');
+  if (!el) return;
+  if (!rows.length) {
+    el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink-60);font-size:13px">No shifts found</div>';
+    return;
+  }
+  el.innerHTML = rows.map(r => {
+    const ci = r.clock_in ? fmtTime(r.clock_in) : '—';
+    const co = r.clock_out ? fmtTime(r.clock_out) : null;
+    const isActive = !r.clock_out;
+    const date = r.clock_in ? new Date(r.clock_in).toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short'}) : '—';
+    const cost = r.total_cost ? '$' + Number(r.total_cost).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+    const hrs = r.total_hours ? r.total_hours.toFixed(2) + ' hrs' : '—';
+
+    return `<div class="shift-card">
+      <div class="shift-card-top">
+        <div class="shift-card-name">${r.staff_name||'—'}</div>
+        ${isActive ? '<span class="active-pill">● Active</span>' : ''}
+        ${r.is_public_holiday ? '<span class="ph-pill">PH</span>' : ''}
+      </div>
+      <div class="shift-card-outlet">${r.outlet_name||'—'} · ${date}</div>
+      <div class="shift-card-times">
+        <span>In: <span class="shift-card-time">${ci}</span></span>
+        <span style="color:var(--ink-30)">→</span>
+        <span>Out: <span class="shift-card-time">${co || '—'}</span></span>
+        ${r.break_minutes ? '<span>Break: <span class="shift-card-time">' + r.break_minutes + 'm</span></span>' : ''}
+      </div>
+      <div class="shift-card-stats">
+        <span class="shift-stat">${hrs}</span>
+        <span class="shift-stat">${cost}</span>
+      </div>
+      <div class="shift-card-actions">
+        ${isActive ? `<button class="btn btn-ghost" onclick="managerClockOut(${r.id},'${(r.staff_name||'').replace(/'/g,"\'")}')">Clock out</button>` : ''}
+        ${r.clock_out ? `<button class="btn btn-ghost" onclick='openAmend(${JSON.stringify(r).replace(/'/g,"&#39;")})'>Edit</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 }
 function updateStats(rows,h,c,ph){
   document.getElementById('statHours').textContent=h.toFixed(1);
@@ -676,5 +782,279 @@ async function backupDB() {
   } catch(e) { alert('Error: ' + e.message); }
 }
 </script>
+
+<!-- ── Mobile Home Screen ─────────────────────────────────────────────────── -->
+<div class="mob-home" id="mobHome">
+
+  <!-- Top bar -->
+  <div style="background:#2A3B2D;padding:max(14px,env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:2px" id="mobGreeting">Good morning 👋</div>
+      <div style="font-size:16px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff">Dashboard</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer" onclick="window.location='/applications'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div id="mobNotifDot" style="display:none;position:absolute;top:6px;right:6px;width:7px;height:7px;background:#EF4444;border-radius:50%;border:1.5px solid #2A3B2D"></div>
+      </button>
+      <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.25);font-size:13px;font-weight:600;color:#fff;display:flex;align-items:center;justify-content:center" id="mobAvatar">M</div>
+    </div>
+  </div>
+
+  <!-- Hero card with outlet tabs -->
+  <div class="mob-hero">
+    <div class="mob-outlet-tabs" id="mobOutletTabs">
+      <button class="mob-outlet-tab active" data-outlet="">All outlets</button>
+    </div>
+    <div class="mob-hero-label">Today's Labour Cost</div>
+    <div class="mob-hero-val" id="mobHeroCost">—</div>
+    <div class="mob-hero-sub" id="mobHeroDate"></div>
+    <div class="mob-hero-chips">
+      <div class="mob-chip"><div class="mob-chip-dot" style="background:#4ADE80"></div><span id="mobChipStaff">— on shift</span></div>
+      <div class="mob-chip"><div class="mob-chip-dot" style="background:#FCD34D"></div><span id="mobChipActive">— active</span></div>
+      <div class="mob-chip"><div class="mob-chip-dot" style="background:#F87171"></div><span id="mobChipAlerts">— alerts</span></div>
+    </div>
+  </div>
+
+  <!-- Scrollable body -->
+  <div class="mob-body" style="flex:1;overflow-y:auto">
+
+    <!-- Stats -->
+    <div class="mob-sec" style="margin-top:4px"><div class="mob-sec-title">Overview</div></div>
+    <div class="mob-stats">
+      <div class="mob-stat">
+        <div class="mob-stat-ico" style="background:#F0FDF4"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E6B3E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="mob-stat-num" id="mobStatHours">—</div>
+        <div class="mob-stat-lbl">Hours today</div>
+      </div>
+      <div class="mob-stat">
+        <div class="mob-stat-ico" style="background:#EFF6FF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D4ED8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="mob-stat-num" id="mobStatShifts">—</div>
+        <div class="mob-stat-lbl">Shifts today</div>
+      </div>
+      <div class="mob-stat">
+        <div class="mob-stat-ico" style="background:#FFFBEB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B7791F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+        <div class="mob-stat-num" id="mobStatApps">—</div>
+        <div class="mob-stat-lbl">Pending applications</div>
+        <div class="mob-stat-note" id="mobStatAppsNote" style="color:#B7791F;font-size:10.5px;font-weight:600;margin-top:3px"></div>
+      </div>
+      <div class="mob-stat">
+        <div class="mob-stat-ico" style="background:#FEF2F2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+        <div class="mob-stat-num" id="mobStatLeave">—</div>
+        <div class="mob-stat-lbl">Leave pending</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="mobAlertSection" style="display:none">
+      <div class="mob-sec"><div class="mob-sec-title">⚠ Alerts</div></div>
+      <div id="mobAlertList"></div>
+    </div>
+
+    <!-- Pending applications -->
+    <div id="mobAppsSection" style="display:none">
+      <div class="mob-sec">
+        <div class="mob-sec-title">New applications</div>
+        <span class="mob-sec-link" onclick="window.location='/applications'">View all</span>
+      </div>
+      <div id="mobAppsList"></div>
+    </div>
+
+    <!-- Staff on shift -->
+    <div class="mob-sec">
+      <div class="mob-sec-title">Currently on shift</div>
+      <span class="mob-sec-link" onclick="window.location='/dashboard'">View all</span>
+    </div>
+    <div id="mobOnShiftList"><div style="text-align:center;padding:16px;color:var(--ink-60);font-size:13px">No active shifts</div></div>
+
+    <div style="height:16px"></div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="mob-bottom-nav">
+    <button class="mob-nav-btn active" onclick="window.location='/dashboard'">
+      <svg viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>
+      <span class="mob-nav-lbl">Dashboard</span>
+    </button>
+    <button class="mob-nav-btn" onclick="window.location='/staff'">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="mob-nav-lbl">Staff</span>
+    </button>
+    <button class="mob-nav-btn" onclick="window.location='/roster'">
+      <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="mob-nav-lbl">Roster</span>
+    </button>
+    <button class="mob-nav-btn" onclick="window.location='/payroll-summary'">
+      <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span class="mob-nav-lbl">Payroll</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ── Mobile home screen logic ──────────────────────────────────────────────────
+if (window.innerWidth <= 768) {
+  const today = new Date();
+  const hr = today.getHours();
+  document.getElementById('mobGreeting').textContent =
+    hr < 12 ? 'Good morning 👋' : hr < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+
+  const dateStr = today.toLocaleDateString('en-SG', {weekday:'short', day:'numeric', month:'short', year:'numeric'});
+  document.getElementById('mobHeroDate').textContent = dateStr;
+
+  let allOutlets = [];
+  let allRecords = [];
+  let allApps = [];
+  let allLeave = [];
+  let selectedOutlet = '';
+
+  async function mobInit() {
+    try {
+      const me = await fetch('/api/me').then(r=>r.json());
+      const initials = (me.name||'M').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      document.getElementById('mobAvatar').textContent = initials;
+    } catch(e){}
+
+    // Load outlets for tabs
+    try {
+      const outlets = await fetch('/api/staff/outlets/list').then(r=>r.json());
+      allOutlets = outlets;
+      const tabs = document.getElementById('mobOutletTabs');
+      outlets.forEach(o => {
+        const btn = document.createElement('button');
+        btn.className = 'mob-outlet-tab';
+        btn.textContent = o.name;
+        btn.dataset.outlet = o.id;
+        btn.onclick = () => selectMobOutlet(o.id, btn);
+        tabs.appendChild(btn);
+      });
+    } catch(e){}
+
+    // Load today's records
+    const from = today.toISOString().slice(0,10);
+    try {
+      const r = await fetch('/api/attendance/records?from=' + from + '&to=' + from);
+      if (r.ok) allRecords = await r.json();
+    } catch(e){}
+
+    // Load pending applications
+    try {
+      const r = await fetch('/api/applications?status=pending');
+      if (r.ok) allApps = await r.json();
+    } catch(e){}
+
+    // Load pending leave
+    try {
+      const r = await fetch('/api/leave/applications?status=pending');
+      if (r.ok) allLeave = await r.json();
+    } catch(e){}
+
+    renderMobHome();
+  }
+
+  function selectMobOutlet(outletId, btn) {
+    selectedOutlet = outletId;
+    document.querySelectorAll('.mob-outlet-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderMobHome();
+  }
+
+  function renderMobHome() {
+    const records = selectedOutlet
+      ? allRecords.filter(r => String(r.outlet_id) === String(selectedOutlet))
+      : allRecords;
+
+    const totalCost = records.reduce((s,r) => s + (r.total_cost||0), 0);
+    const totalHrs = records.reduce((s,r) => s + (r.total_hours||0), 0);
+    const active = records.filter(r => !r.clock_out);
+    const missed = records.filter(r => {
+      if (r.clock_out) return false;
+      const ci = new Date(r.clock_in);
+      return (Date.now() - ci) > 16 * 3600000;
+    });
+    const geoFlagged = records.filter(r => r.geo_flagged);
+    const alerts = [...missed, ...geoFlagged];
+
+    document.getElementById('mobHeroCost').textContent = '$' + totalCost.toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById('mobChipStaff').textContent = records.length + ' shift' + (records.length !== 1 ? 's' : '');
+    document.getElementById('mobChipActive').textContent = active.length + ' active';
+    document.getElementById('mobChipAlerts').textContent = alerts.length + ' alert' + (alerts.length !== 1 ? 's' : '');
+    if (alerts.length) document.getElementById('mobNotifDot').style.display = 'block';
+
+    document.getElementById('mobStatHours').textContent = totalHrs.toFixed(1);
+    document.getElementById('mobStatShifts').textContent = records.length;
+    document.getElementById('mobStatApps').textContent = allApps.length;
+    document.getElementById('mobStatAppsNote').textContent = allApps.length > 0 ? 'Needs review' : '';
+    document.getElementById('mobStatLeave').textContent = allLeave.length;
+
+    // Alerts
+    const alertSec = document.getElementById('mobAlertSection');
+    const alertList = document.getElementById('mobAlertList');
+    if (alerts.length) {
+      alertSec.style.display = 'block';
+      alertList.innerHTML = alerts.slice(0,3).map(r => {
+        const isMissed = !r.clock_out;
+        const title = isMissed ? 'Missed clock-out' : 'Flagged clock-in';
+        const detail = (r.staff_name||'') + ' · ' + (r.outlet_name||'');
+        return '<div class="mob-alert">' +
+          '<div class="mob-alert-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B7791F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
+          '<div class="mob-alert-body"><div class="mob-alert-title">' + title + '</div><div class="mob-alert-detail">' + detail + '</div></div>' +
+          '<button class="mob-fix-btn" onclick="managerClockOut(' + r.id + ','' + (r.staff_name||'').replace(/'/g,"\'") + '')">Fix</button></div>';
+      }).join('');
+    } else { alertSec.style.display = 'none'; }
+
+    // Applications
+    const appsSec = document.getElementById('mobAppsSection');
+    const appsList = document.getElementById('mobAppsList');
+    if (allApps.length) {
+      appsSec.style.display = 'block';
+      appsList.innerHTML = allApps.slice(0,3).map(a => {
+        const initials = a.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+        const ago = Math.round((Date.now() - new Date(a.submitted_at)) / 3600000);
+        return '<div class="mob-app-row">' +
+          '<div class="mob-app-av">' + initials + '</div>' +
+          '<div class="mob-app-info"><div class="mob-app-name">' + a.name + '</div>' +
+          '<div class="mob-app-detail">Submitted ' + ago + 'h ago</div></div>' +
+          '<div class="mob-app-btns">' +
+          '<button class="mob-ok" onclick="reviewApp(' + a.id + ','approved')">✓</button>' +
+          '<button class="mob-no" onclick="reviewApp(' + a.id + ','rejected')">✕</button>' +
+          '</div></div>';
+      }).join('');
+    } else { appsSec.style.display = 'none'; }
+
+    // Active shifts
+    const onShift = active.slice(0,5);
+    const onList = document.getElementById('mobOnShiftList');
+    if (onShift.length) {
+      onList.innerHTML = onShift.map(r => {
+        const initials = (r.staff_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2);
+        const since = r.clock_in ? new Date(r.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
+        const hrs = r.clock_in ? ((Date.now() - new Date(r.clock_in)) / 3600000).toFixed(1) : '—';
+        return '<div class="mob-onshift">' +
+          '<div class="mob-onshift-av">' + initials + '</div>' +
+          '<div class="mob-onshift-info"><div class="mob-onshift-name">' + (r.staff_name||'—') + '</div>' +
+          '<div class="mob-onshift-detail">' + (r.outlet_name||'—') + ' · ' + (r.role||'') + '</div></div>' +
+          '<div style="text-align:right"><div class="mob-onshift-time">Since ' + since + '</div>' +
+          '<div class="mob-onshift-hrs">' + hrs + ' hrs</div></div></div>';
+      }).join('');
+    } else {
+      onList.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-60);font-size:13px">No active shifts</div>';
+    }
+  }
+
+  async function reviewApp(id, status) {
+    try {
+      const r = await fetch('/api/applications/' + id + '/review', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ status })
+      });
+      if (r.ok) { allApps = allApps.filter(a => a.id !== id); renderMobHome(); }
+    } catch(e){}
+  }
+
+  mobInit();
+}
+</script>
+
 </body>
 </html>
