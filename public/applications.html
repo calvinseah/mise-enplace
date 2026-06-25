@@ -187,8 +187,10 @@ async function loadApps(status) {
     // Update badge
     if (status === 'pending') {
       const badge = document.getElementById('appBadge');
-      if (apps.length > 0) { badge.textContent = apps.length; badge.style.display = 'inline'; }
-      else badge.style.display = 'none';
+      if (badge) {
+        if (apps.length > 0) { badge.textContent = apps.length; badge.style.display = 'inline'; }
+        else badge.style.display = 'none';
+      }
     }
 
     if (!apps.length) { el.innerHTML = '<div class="empty">No ' + status + ' applications</div>'; return; }
@@ -230,7 +232,7 @@ async function loadApps(status) {
         actions +
         '</div>';
     }).join('');
-  } catch(e) { console.error("RENDER ERROR:", e.message, e.stack); document.getElementById('appList').innerHTML = '<div class="empty">Error: ' + e.message + '</div>'; }
+  } catch(e) { document.getElementById('appList').innerHTML = '<div class="empty">Error loading applications</div>'; }
 }
 
 function toggleRate(id) {
