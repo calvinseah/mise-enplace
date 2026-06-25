@@ -230,7 +230,7 @@ async function loadApps(status) {
         actions +
         '</div>';
     }).join('');
-  } catch(e) { document.getElementById('appList').innerHTML = '<div class="empty">Error loading applications</div>'; }
+  } catch(e) { console.error("RENDER ERROR:", e.message, e.stack); document.getElementById('appList').innerHTML = '<div class="empty">Error: ' + e.message + '</div>'; }
 }
 
 function toggleRate(id) {
