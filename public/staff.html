@@ -396,6 +396,7 @@ async function loadStaff(){
         <button class="btn btn-ghost btn-sm" onclick='openEdit(${x.id})' data-admin-only="1">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick='openPayslipHistory(${x.id},"${x.name.replace(/"/g,"&quot;")}")'>Payslips</button>
         <button class="btn btn-ghost btn-sm" onclick='openLeaveEntitlements(${x.id},"${x.name.replace(/"/g,"&quot;")}")' data-admin-only="1">Leave</button>
+        ${x.staff_type==='fulltime'?`<button class="btn btn-ghost btn-sm" onclick='openOIL(${x.id},"${x.name.replace(/"/g,"&quot;")}")' data-admin-only="1">OIL</button>`:''}
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" onclick="togglePinActive(${x.id},${x.pin_active})">${x.pin_active?'Deactivate PIN':'Activate PIN'}</button>`:''}
         <button class="btn btn-ghost btn-sm" onclick="openPin(${x.id},'${x.name}',${x.has_pin})">${x.has_pin?'Reset PIN':'Set PIN'}</button>
         ${x.has_pin?`<button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="removePin(${x.id})">Remove PIN</button>`:''}
@@ -805,6 +806,87 @@ async function saveEntitlement(leaveType, year) {
   } catch(e) { showAlert('Network error', 'err'); }
 }
 
+
+let _oilStaffId = null;
+let _oilDays = 0;
+
+function openOIL(staffId, name) {
+  _oilStaffId = staffId;
+  _oilDays = 0;
+  document.getElementById('oilStaffName').textContent = name;
+  // Default to current month
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = String(now.getMonth() + 1).padStart(2, '0');
+  const lastDay = new Date(yr, now.getMonth() + 1, 0).getDate();
+  document.getElementById('oilFrom').value = yr + '-' + mo + '-01';
+  document.getElementById('oilTo').value = yr + '-' + mo + '-' + String(lastDay).padStart(2, '0');
+  document.getElementById('oilResult').style.display = 'none';
+  document.getElementById('oilOverlay').style.display = 'flex';
+}
+
+function closeOIL() {
+  document.getElementById('oilOverlay').style.display = 'none';
+}
+
+async function calcOIL() {
+  const from = document.getElementById('oilFrom').value;
+  const to = document.getElementById('oilTo').value;
+  if (!from || !to) return;
+  try {
+    const r = await fetch('/api/attendance/calculate-oil', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ staffId: _oilStaffId, from, to })
+    });
+    const d = await r.json();
+    if (d.error) { showAlert(d.error, 'err'); return; }
+
+    _oilDays = d.oilDays;
+
+    // Week breakdown table
+    const weeksHtml = d.weekBreakdown.map(w =>
+      '<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--ink-04);font-size:12px">' +
+      '<span style="color:var(--ink-60)">Week of ' + w.week + '</span>' +
+      '<span><strong>' + w.hours.toFixed(1) + ' hrs</strong>' +
+      (w.overtime > 0 ? ' <span style="color:var(--accent);font-size:11px">(+' + w.overtime.toFixed(1) + ' OT)</span>' : '') +
+      '</span></div>'
+    ).join('');
+    document.getElementById('oilWeeks').innerHTML = weeksHtml || '<div style="color:var(--ink-60);font-size:13px">No shifts found in this period</div>';
+
+    // Summary
+    document.getElementById('oilSummary').innerHTML =
+      '<div style="font-size:13px;color:var(--ink);margin-bottom:4px">' + d.message + '</div>' +
+      '<div style="font-size:11.5px;color:var(--ink-60)">' + d.totalOilHours.toFixed(1) + ' hours over 44/week threshold</div>';
+
+    // Show apply button only if OIL days > 0
+    document.getElementById('oilApplySection').style.display = d.oilDays > 0 ? 'block' : 'none';
+    document.getElementById('applyOILBtn').textContent = 'Add ' + d.oilDays + ' OIL day' + (d.oilDays !== 1 ? 's' : '') + ' to entitlement';
+    document.getElementById('oilMsg').style.display = 'none';
+    document.getElementById('oilResult').style.display = 'block';
+  } catch(e) { showAlert('Error calculating OIL', 'err'); }
+}
+
+async function applyOIL() {
+  if (_oilDays <= 0) return;
+  try {
+    const r = await fetch('/api/attendance/apply-oil', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ staffId: _oilStaffId, oilDays: _oilDays, year: new Date().getFullYear() })
+    });
+    const d = await r.json();
+    const msg = document.getElementById('oilMsg');
+    msg.style.display = 'block';
+    if (d.success) {
+      msg.style.background = '#F0FDF4'; msg.style.color = '#2E6B3E'; msg.style.border = '1px solid rgba(46,107,62,.2)';
+      msg.textContent = d.message;
+      document.getElementById('oilApplySection').style.display = 'none';
+    } else {
+      msg.style.background = '#FEF2F2'; msg.style.color = '#C0392B'; msg.style.border = '1px solid rgba(192,57,43,.2)';
+      msg.textContent = d.error || 'Error';
+    }
+  } catch(e) { showAlert('Network error', 'err'); }
+}
+
 function openPayslipHistory(staffId, name) {
   _psHistoryStaffId = staffId;
   document.getElementById('psHistoryName').textContent = name;
@@ -950,6 +1032,46 @@ async function backupDB() {
       </select>
     </div>
     <div id="leaveEntContent"></div>
+  </div>
+</div>
+
+
+<!-- OIL Calculator Panel -->
+<div id="oilOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeOIL()">
+  <div onclick="event.stopPropagation()" style="background:#fff;width:440px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div id="oilStaffName" style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)"></div>
+      <button onclick="closeOIL()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:22px;line-height:1">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--ink-60);margin-bottom:20px">Off in Lieu calculator — hours over 44/week ÷ 10 = OIL days</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <div style="flex:1">
+        <label style="font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">From</label>
+        <input type="date" id="oilFrom" style="width:100%;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none">
+      </div>
+      <div style="flex:1">
+        <label style="font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px">To</label>
+        <input type="date" id="oilTo" style="width:100%;height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:13px;font-family:var(--font);outline:none">
+      </div>
+      <button onclick="calcOIL()" style="align-self:flex-end;height:32px;padding:0 14px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Calculate</button>
+    </div>
+
+    <div id="oilResult" style="display:none">
+      <!-- Week breakdown -->
+      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Week breakdown</div>
+      <div id="oilWeeks" style="margin-bottom:16px"></div>
+
+      <!-- Summary -->
+      <div id="oilSummary" style="background:var(--surface);border-radius:12px;padding:14px;margin-bottom:16px"></div>
+
+      <!-- Apply button -->
+      <div id="oilApplySection" style="display:none">
+        <div style="font-size:12px;color:var(--ink-60);margin-bottom:8px">Add calculated OIL days to this staff member's leave entitlement?</div>
+        <button onclick="applyOIL()" style="width:100%;height:40px;border-radius:10px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)" id="applyOILBtn">Add OIL days to entitlement</button>
+      </div>
+      <div id="oilMsg" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;font-size:12.5px;font-weight:500"></div>
+    </div>
   </div>
 </div>
 

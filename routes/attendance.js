@@ -411,4 +411,91 @@ router.get('/geo-flagged', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── Off in Lieu calculation ───────────────────────────────────────────────────
+// Full-timers: hours over 44/week ÷ 10 = OIL days earned
+router.post('/calculate-oil', (req, res) => {
+  if (!req.session?.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'manager'))
+    return res.status(403).json({ error: 'Unauthorised' });
+
+  const { staffId, from, to } = req.body;
+  if (!staffId || !from || !to) return res.status(400).json({ error: 'Missing params' });
+
+  try {
+    const staff = db.get('SELECT * FROM staff WHERE id=? AND staff_type=?', [staffId, 'fulltime']);
+    if (!staff) return res.status(400).json({ error: 'Staff not found or not full-time' });
+
+    // Get all attendance records in range
+    const records = db.all(
+      `SELECT clock_in, clock_out, total_hours FROM attendance
+       WHERE staff_id=? AND clock_in>=? AND clock_in<=? AND clock_out IS NOT NULL`,
+      [staffId, from + 'T00:00:00Z', to + 'T23:59:59Z']
+    );
+
+    // Group by ISO week
+    const weeks = {};
+    records.forEach(r => {
+      const d = new Date(r.clock_in);
+      // Get Monday of the week
+      const mon = new Date(d);
+      mon.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+      const weekKey = mon.toISOString().slice(0, 10);
+      if (!weeks[weekKey]) weeks[weekKey] = 0;
+      weeks[weekKey] += r.total_hours || 0;
+    });
+
+    // Calculate OIL
+    let totalOilHours = 0;
+    const weekBreakdown = Object.entries(weeks).map(([week, hours]) => {
+      const overtime = Math.max(0, hours - 44);
+      totalOilHours += overtime;
+      return { week, hours: Math.round(hours * 100) / 100, overtime: Math.round(overtime * 100) / 100 };
+    });
+
+    const oilDays = Math.floor(totalOilHours / 10);
+
+    res.json({
+      staffId,
+      staffName: staff.name,
+      from, to,
+      weekBreakdown,
+      totalOilHours: Math.round(totalOilHours * 100) / 100,
+      oilDays,
+      message: `${totalOilHours.toFixed(1)} hours over 44/wk = ${oilDays} OIL day${oilDays !== 1 ? 's' : ''}`
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Apply OIL days to entitlement ─────────────────────────────────────────────
+router.post('/apply-oil', (req, res) => {
+  if (!req.session?.user || (req.session.user.role !== 'admin' && req.session.user.role !== 'manager'))
+    return res.status(403).json({ error: 'Unauthorised' });
+
+  const { staffId, oilDays, year } = req.body;
+  if (!staffId || !oilDays || oilDays <= 0) return res.status(400).json({ error: 'Invalid params' });
+
+  try {
+    const yr = year || new Date().getFullYear();
+    // Ensure OIL entitlement exists
+    const existing = db.get(
+      'SELECT * FROM leave_entitlements WHERE staff_id=? AND year=? AND leave_type=?',
+      [staffId, yr, 'Off in Lieu']
+    );
+    if (existing) {
+      db.run('UPDATE leave_entitlements SET total_days=total_days+? WHERE staff_id=? AND year=? AND leave_type=?',
+        [oilDays, staffId, yr, 'Off in Lieu']);
+    } else {
+      db.run('INSERT INTO leave_entitlements (staff_id, year, leave_type, total_days, used_days) VALUES (?,?,?,?,0)',
+        [staffId, yr, 'Off in Lieu', oilDays]);
+    }
+
+    const { writeLog } = require('./audit');
+    const sName = db.get('SELECT name FROM staff WHERE id=?', [staffId])?.name || '';
+    writeLog(req.session.user.username, 'add_oil', 'leave_entitlement', staffId, sName, { oilDays, year: yr });
+    db.saveDB();
+
+    res.json({ success: true, message: `${oilDays} OIL day${oilDays !== 1 ? 's' : ''} added to ${sName}` });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

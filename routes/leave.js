@@ -4,7 +4,7 @@ const router  = express.Router();
 const db      = require('../database');
 const { writeLog } = require('./audit');
 
-const LEAVE_TYPES = ['Annual Leave', 'Medical Leave', 'Childcare Leave', 'Maternity Leave', 'Paternity Leave', 'Unpaid Leave'];
+const LEAVE_TYPES = ['Annual Leave', 'Medical Leave', 'Childcare Leave', 'Maternity Leave', 'Paternity Leave', 'Off in Lieu', 'Unpaid Leave'];
 
 // Singapore statutory defaults by leave type
 const STATUTORY_DEFAULTS = {
