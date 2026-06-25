@@ -80,6 +80,18 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
       <input type="text" id="staffSearch" class="search-input" placeholder="Type your name…" oninput="searchStaff()" autocomplete="off">
       <div id="searchResults"></div>
     </div>
+
+    <!-- NRIC verification -->
+    <div id="nricVerifySection" style="display:none" class="search-box">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:4px">Verify your identity</div>
+      <div style="font-size:12.5px;color:var(--ink-60);margin-bottom:12px">Enter your NRIC/FIN number to continue</div>
+      <input type="text" id="nricInput" class="search-input" placeholder="e.g. S1234567A" maxlength="9"
+        style="text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px"
+        onkeydown="if(event.key==='Enter')verifyNRIC()">
+      <div id="nricError" style="display:none;font-size:12px;color:#C0392B;margin-bottom:8px"></div>
+      <button onclick="verifyNRIC()" style="width:100%;height:40px;border-radius:10px;background:var(--green);color:#fff;border:none;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer">Verify</button>
+      <button onclick="document.getElementById('nricVerifySection').style.display='none';document.getElementById('staffSearch').value=''" style="width:100%;height:36px;border-radius:10px;background:none;color:var(--ink-60);border:1px solid var(--ink-08);font-size:13px;font-family:var(--font);cursor:pointer;margin-top:8px">Back</button>
+    </div>
   </div>
 
   <!-- Leave content (after staff selected) -->
@@ -169,15 +181,50 @@ async function searchStaff() {
   } catch(e) {}
 }
 
+let _pendingStaff = null;
+
 async function selectStaff(id, name, role) {
-  staffId = id;
-  document.getElementById('searchSection').style.display = 'none';
-  document.getElementById('leaveContent').style.display = 'block';
-  document.getElementById('staffAvatar').textContent = name.split(' ').map(w=>w[0]).slice(0,2).join('');
-  document.getElementById('staffNameEl').textContent = name;
-  document.getElementById('staffRoleEl').textContent = role + ' · Full-time';
-  await loadBalances();
-  await loadHistory();
+  _pendingStaff = { id, name, role };
+  // Show NRIC verification
+  document.getElementById('nricVerifySection').style.display = 'block';
+  document.getElementById('searchResults').innerHTML = '';
+  document.getElementById('staffSearch').value = name;
+  document.getElementById('nricInput').value = '';
+  document.getElementById('nricInput').focus();
+  document.getElementById('nricError').style.display = 'none';
+}
+
+async function verifyNRIC() {
+  const nric = document.getElementById('nricInput').value.trim().toUpperCase();
+  if (!nric || nric.length < 4) {
+    document.getElementById('nricError').textContent = 'Please enter your NRIC/FIN number';
+    document.getElementById('nricError').style.display = 'block';
+    return;
+  }
+  try {
+    const r = await fetch('/api/leave/verify-nric', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ staffId: _pendingStaff.id, nric })
+    });
+    const d = await r.json();
+    if (d.success) {
+      staffId = _pendingStaff.id;
+      document.getElementById('nricVerifySection').style.display = 'none';
+      document.getElementById('searchSection').style.display = 'none';
+      document.getElementById('leaveContent').style.display = 'block';
+      document.getElementById('staffAvatar').textContent = _pendingStaff.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+      document.getElementById('staffNameEl').textContent = _pendingStaff.name;
+      document.getElementById('staffRoleEl').textContent = _pendingStaff.role + ' · Full-time';
+      await loadBalances();
+      await loadHistory();
+    } else {
+      document.getElementById('nricError').textContent = 'NRIC does not match. Please try again.';
+      document.getElementById('nricError').style.display = 'block';
+    }
+  } catch(e) {
+    document.getElementById('nricError').textContent = 'Network error. Please try again.';
+    document.getElementById('nricError').style.display = 'block';
+  }
 }
 
 function reset() {

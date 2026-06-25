@@ -156,7 +156,6 @@ app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
-app.get('/leave', (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave.html')));
 app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
 
 
@@ -187,27 +186,92 @@ app.get('/reset-admin', async (req, res) => {
 app.get('/api/backup', (req, res) => {
   const { token } = req.query;
   const validToken = process.env.BACKUP_TOKEN;
-  if (!validToken || token !== validToken) {
-    return res.status(403).send('Invalid token');
-  }
+  if (!validToken || token !== validToken) return res.status(403).send('Invalid token');
   try {
-    const fs = require('fs');
-    const dbPath = process.env.DB_PATH || './attendance.db';
-    if (!fs.existsSync(dbPath)) {
-      return res.status(404).send('Database file not found');
-    }
-    // Save latest DB state to disk first
     const db = require('./database');
-    db.saveDB();
+    const data = db.exportDB();
+    if (!data) return res.status(500).send('Export failed');
     const date = new Date().toISOString().slice(0,10);
     res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Disposition', `attachment; filename="mise-backup-${date}.db"`);
-    fs.createReadStream(dbPath).pipe(res);
-  } catch(e) {
-    res.status(500).send('Backup error: ' + e.message);
-  }
+    res.send(Buffer.from(data));
+  } catch(e) { res.status(500).send('Backup error: ' + e.message); }
 });
 
+// List auto-backups (admin only)
+app.get('/api/backups/list', requireAuthAPI, requireAdminAPI, (req, res) => {
+  const fs = require('fs'), path = require('path');
+  const backupDir = '/app/data/backups';
+  try {
+    if (!fs.existsSync(backupDir)) return res.json([]);
+    const files = fs.readdirSync(backupDir)
+      .filter(f => f.endsWith('.db'))
+      .sort().reverse()
+      .map(f => ({ name: f, size: fs.statSync(path.join(backupDir, f)).size }));
+    res.json(files);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Download specific auto-backup (admin only)
+app.get('/api/backups/download/:filename', requireAuthAPI, requireAdminAPI, (req, res) => {
+  const fs = require('fs'), path = require('path');
+  const filename = req.params.filename.replace(/[^\w\-_.]/g, '');
+  const filePath = path.join('/app/data/backups', filename);
+  if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+  res.download(filePath);
+});
+
+
+
+// ── Auto backup daily at 1:00 AM SGT (17:00 UTC) ─────────────────────────────
+function scheduleAutoBackup() {
+  const fs = require('fs');
+  const path = require('path');
+
+  function runBackup() {
+    try {
+      const db = require('./database');
+      const data = db.exportDB(); // returns Uint8Array of the SQLite file
+      if (!data) { console.log('[Auto backup] No data to backup'); return; }
+
+      const backupDir = '/app/data/backups';
+      if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+      // Keep last 7 daily backups
+      const date = new Date().toISOString().slice(0, 10);
+      const backupPath = path.join(backupDir, `attendance-${date}.db`);
+      fs.writeFileSync(backupPath, Buffer.from(data));
+
+      // Keep up to 365 daily backups (1 year)
+      const files = fs.readdirSync(backupDir)
+        .filter(f => f.startsWith('attendance-') && f.endsWith('.db'))
+        .sort();
+      if (files.length > 365) {
+        files.slice(0, files.length - 365).forEach(f => {
+          try { fs.unlinkSync(path.join(backupDir, f)); } catch(e) {}
+        });
+      }
+
+      console.log(`[Auto backup] Saved to ${backupPath} (${(data.length / 1024).toFixed(0)} KB)`);
+    } catch(e) {
+      console.error('[Auto backup] Error:', e.message);
+    }
+  }
+
+  function scheduleNext() {
+    const now = new Date();
+    const next = new Date();
+    next.setUTCHours(17, 0, 0, 0); // 1:00 AM SGT
+    if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+    const delay = next - now;
+    const hrs = Math.floor(delay / 3600000);
+    const mins = Math.floor((delay % 3600000) / 60000);
+    console.log(`[Auto backup] Next run in ${hrs}h ${mins}m (1:00 AM SGT)`);
+    setTimeout(() => { runBackup(); scheduleNext(); }, delay);
+  }
+
+  scheduleNext();
+}
 
 // ── Auto clock-out at 11:59pm SGT daily ──────────────────────────────────────
 function runAutoClockout() {
@@ -282,6 +346,7 @@ app.post('/api/admin/auto-clockout', requireAuthAPI, (req, res) => {
     res.json({ success: true, count, message: `${count} staff clocked out` });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
 
 initDB().then(() => syncAdminPassword()).then(() => {
   app.listen(PORT, () => {

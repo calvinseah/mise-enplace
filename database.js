@@ -22,6 +22,10 @@ async function initDB() {
   return db;
 }
 
+function exportDB() {
+  try { return db.export(); } catch(e) { return null; }
+}
+
 function saveDB() {
   fs.writeFileSync(DB_PATH, Buffer.from(db.export()));
 }
@@ -412,7 +416,7 @@ async function syncAdminPassword() {
 }
 
 module.exports = {
-  initDB, syncAdminPassword, run, get, all, saveDB,
+  initDB, syncAdminPassword, run, get, all, saveDB, exportDB,
   encryptField, decryptField,
   computeShiftCost, computeCPF, getCPFRates, getAge,
 };
