@@ -105,6 +105,7 @@ app.post('/api/apply', (req, res, next) => {
 app.get('/api/attendance/my-shifts', attendanceRoutes);
 
 // ── Manager API ───────────────────────────────────────────────────────────────
+app.use('/api/staff/public-search', staffRoutes); // public name search
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);

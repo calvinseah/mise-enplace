@@ -37,6 +37,20 @@ function safeStaff(s, includeSecure = false, isAdmin = false) {
 }
 
 // GET all staff
+
+// Public: staff name search for leave/clock pages (returns only name, id, role, staff_type)
+router.get('/public-search', (req, res) => {
+  const { q } = req.query;
+  if (!q || q.length < 2) return res.json([]);
+  try {
+    const results = db.all(
+      `SELECT id, name, role, staff_type FROM staff WHERE is_active=1 AND staff_type='fulltime' AND name LIKE ? LIMIT 8`,
+      ['%' + q + '%']
+    );
+    res.json(results);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 router.get('/', (req, res) => {
   try {
     const isAdmin = req.session?.user?.role === 'admin';

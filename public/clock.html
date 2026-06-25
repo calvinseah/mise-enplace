@@ -379,10 +379,12 @@ function selBreak(m,btn){ breakMins=m; document.querySelectorAll('.break-btn').f
 
 
 // Auto-open leave tab if redirected from index
-if (sessionStorage.getItem('openLeave')) {
-  sessionStorage.removeItem('openLeave');
-  window.addEventListener('DOMContentLoaded', () => showTab('leave'));
-}
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('openLeave') || window.location.hash === '#leave') {
+    sessionStorage.removeItem('openLeave');
+    showTab('leave');
+  }
+});
 
 // ── Leave Tab ─────────────────────────────────────────────────────────────────
 let leaveStaffId = null;
@@ -404,9 +406,8 @@ async function searchLeaveStaff() {
   const res = document.getElementById('leaveStaffResults');
   if (q.length < 2) { res.innerHTML = ''; return; }
   try {
-    const r = await fetch('/api/staff?search=' + encodeURIComponent(q));
-    const staff = await r.json();
-    const active = staff.filter(s => s.is_active !== 0 && s.staff_type === 'fulltime');
+    const r = await fetch('/api/staff/public-search?q=' + encodeURIComponent(q));
+    const active = await r.json();
     if (!active.length) { res.innerHTML = '<div style="font-size:13px;color:var(--ink-60);padding:8px">No full-time staff found</div>'; return; }
     res.innerHTML = active.slice(0,6).map(s =>
       '<div onclick="selectLeaveStaff(' + s.id + ','' + s.name.replace(/'/g,"\'") + '','' + (s.role||'') + '')" ' +
