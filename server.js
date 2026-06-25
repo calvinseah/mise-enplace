@@ -191,72 +191,79 @@ app.get('/api/backup', (req, res) => {
 });
 
 
-// ── Auto clock-out at 11:59pm daily ──────────────────────────────────────────
-function scheduleAutoClockout() {
-  function runAutoClockout() {
-    const db = require('./database');
-    const now = new Date();
-    const todayStr = now.toISOString().slice(0, 10);
-    const clockoutTime = new Date(todayStr + 'T23:59:00.000Z');
-    // Adjust for Singapore time (UTC+8) — 23:59 SGT = 15:59 UTC
-    const sgtOffset = 8 * 60 * 60 * 1000;
-    const sgtMidnight = new Date(now);
-    sgtMidnight.setUTCHours(15, 59, 0, 0); // 23:59 SGT
+// ── Auto clock-out at 11:59pm SGT daily ──────────────────────────────────────
+function runAutoClockout() {
+  const db = require('./database');
+  // 23:59 SGT = 15:59 UTC
+  const now = new Date();
+  const clockOutISO = (() => {
+    const d = new Date();
+    d.setUTCHours(15, 59, 0, 0);
+    // If it's past 15:59 UTC today, use today; otherwise use yesterday
+    if (d > now) d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString();
+  })();
 
-    try {
-      // Find all staff still clocked in from today or earlier
-      const open = db.all(
-        `SELECT a.id, a.staff_id, a.clock_in FROM attendance a WHERE a.clock_out IS NULL`
+  try {
+    const open = db.all(`SELECT a.id, a.staff_id, a.clock_in FROM attendance a WHERE a.clock_out IS NULL`);
+    if (!open.length) { console.log('[Auto clock-out] No open shifts found'); return 0; }
+
+    const { computeShiftCost } = db;
+    let count = 0;
+    for (const record of open) {
+      const clockIn = new Date(record.clock_in);
+      // Set clock-out to 23:59 SGT on the same SGT date as clock-in
+      const sgtDate = new Date(clockIn.getTime() + 8 * 3600000).toISOString().slice(0,10);
+      const clockOut = new Date(sgtDate + 'T15:59:00.000Z');
+
+      const durationMs = Math.max(0, clockOut - clockIn);
+      const totalMins = durationMs / 60000;
+      const breakMins = db.get(`SELECT COALESCE(SUM(duration_mins),0) as total FROM breaks WHERE attendance_id=?`, [record.id])?.total || 0;
+      const netMins = Math.max(0, totalMins - breakMins);
+      const totalHours = Math.round(netMins / 60 * 100) / 100;
+
+      const staff = db.get(`SELECT * FROM staff WHERE id=?`, [record.staff_id]);
+      const cost = staff ? Math.round(computeShiftCost(staff, totalHours, clockOut.toISOString(), false) * 100) / 100 : 0;
+
+      db.run(
+        `UPDATE attendance SET clock_out=?, break_minutes=?, total_hours=?, total_cost=?, notes=? WHERE id=?`,
+        [clockOut.toISOString(), breakMins, totalHours, cost, 'Auto clocked out at 23:59', record.id]
       );
-      if (!open.length) return;
-
-      const { computeShiftCost } = db;
-      let count = 0;
-      for (const record of open) {
-        const clockOut = new Date(record.clock_in.slice(0, 10) + 'T15:59:00.000Z'); // 23:59 SGT
-        const durationMs = clockOut - new Date(record.clock_in);
-        const totalMins = Math.max(0, durationMs / 60000);
-        const breakMins = db.get(`SELECT COALESCE(SUM(duration_mins),0) as total FROM breaks WHERE attendance_id=?`, [record.id])?.total || 0;
-        const netMins = Math.max(0, totalMins - breakMins);
-        const totalHours = netMins / 60;
-
-        const staff = db.get(`SELECT * FROM staff WHERE id=?`, [record.staff_id]);
-        const cost = staff ? computeShiftCost(staff, totalHours, clockOut.toISOString(), false) : 0;
-
-        db.run(
-          `UPDATE attendance SET clock_out=?, break_minutes=?, total_hours=?, total_cost=?, notes=? WHERE id=?`,
-          [clockOut.toISOString(), breakMins, Math.round(totalHours * 100) / 100, Math.round(cost * 100) / 100, 'Auto clocked out at 23:59', record.id]
-        );
-
-        // Auto-end any open breaks
-        db.run(`UPDATE breaks SET break_end=?, duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [clockOut.toISOString(), record.id]);
-        count++;
-      }
-      if (count) {
-        db.saveDB();
-        console.log(`[Auto clock-out] ${count} staff clocked out at 23:59 SGT`);
-      }
-    } catch(e) {
-      console.error('[Auto clock-out] Error:', e.message);
+      db.run(`UPDATE breaks SET break_end=?, duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [clockOut.toISOString(), record.id]);
+      count++;
     }
+    if (count) { db.saveDB(); }
+    console.log(`[Auto clock-out] ${count} staff processed at 23:59 SGT`);
+    return count;
+  } catch(e) {
+    console.error('[Auto clock-out] Error:', e.message);
+    return 0;
   }
+}
 
+function scheduleAutoClockout() {
   function scheduleNext() {
     const now = new Date();
-    // Next 23:59 SGT = 15:59 UTC
     const next = new Date();
     next.setUTCHours(15, 59, 0, 0);
     if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
     const delay = next - now;
-    console.log(`[Auto clock-out] Next run in ${Math.round(delay/60000)} minutes`);
-    setTimeout(() => {
-      runAutoClockout();
-      scheduleNext(); // reschedule for next day
-    }, delay);
+    const hrs = Math.floor(delay/3600000), mins = Math.floor((delay%3600000)/60000);
+    console.log(`[Auto clock-out] Scheduled — next run in ${hrs}h ${mins}m (23:59 SGT)`);
+    setTimeout(() => { runAutoClockout(); scheduleNext(); }, delay);
   }
-
   scheduleNext();
 }
+
+
+// Manual auto clock-out trigger (admin only, for testing)
+app.post('/api/admin/auto-clockout', requireAuthAPI, (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    const count = runAutoClockout();
+    res.json({ success: true, count, message: `${count} staff clocked out` });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 initDB().then(() => syncAdminPassword()).then(() => {
   app.listen(PORT, () => {
