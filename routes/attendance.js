@@ -103,26 +103,39 @@ router.post('/clock-in', (req, res) => {
 
 // Clock out
 router.post('/clock-out', (req, res) => {
-  const { staffId, breakMinutes = 0 } = req.body;
-  if (!staffId) return res.status(400).json({ error: 'staffId required' });
+  const { staffId, attendanceId, breakMinutes = 0, clockOutTime } = req.body;
+  if (!staffId && !attendanceId) return res.status(400).json({ error: 'staffId or attendanceId required' });
   try {
-    const record = db.get(
-      `SELECT a.*, s.staff_type, s.monthly_salary, s.hourly_rate
-       FROM attendance a JOIN staff s ON a.staff_id=s.id
-       WHERE a.staff_id=? AND a.clock_out IS NULL ORDER BY a.clock_in DESC LIMIT 1`,
-      [staffId]
-    );
+    let record;
+    if (attendanceId) {
+      record = db.get(
+        `SELECT a.*, s.staff_type, s.monthly_salary, s.hourly_rate
+         FROM attendance a JOIN staff s ON a.staff_id=s.id
+         WHERE a.id=? AND a.clock_out IS NULL`,
+        [attendanceId]
+      );
+    } else {
+      record = db.get(
+        `SELECT a.*, s.staff_type, s.monthly_salary, s.hourly_rate
+         FROM attendance a JOIN staff s ON a.staff_id=s.id
+         WHERE a.staff_id=? AND a.clock_out IS NULL ORDER BY a.clock_in DESC LIMIT 1`,
+        [staffId]
+      );
+    }
     if (!record) return res.status(400).json({ error: 'No active clock-in found' });
-    const now = new Date();
+    const now = clockOutTime ? new Date(clockOutTime) : new Date();
     const grossMins  = (now - new Date(record.clock_in)) / 60000;
-    const workedMins = grossMins - Number(breakMinutes);
+    const workedMins = Math.max(0, grossMins - Number(breakMinutes));
     const totalHours = Math.round((workedMins / 60) * 100) / 100;
-    const staff = db.get(`SELECT * FROM staff WHERE id=?`, [staffId]);
+    const staff = db.get(`SELECT * FROM staff WHERE id=?`, [record.staff_id]);
     const { cost } = db.computeShiftCost(staff, totalHours, record.is_public_holiday);
     db.run(
       `UPDATE attendance SET clock_out=?,break_minutes=?,total_hours=?,total_cost=? WHERE id=?`,
       [now.toISOString(), breakMinutes, totalHours, cost, record.id]
     );
+    // Auto-end any open breaks
+    db.run(`UPDATE breaks SET break_end=?,duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [now.toISOString(), record.id]);
+    db.saveDB();
     res.json({ success: true, totalHours, totalCost: cost });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
