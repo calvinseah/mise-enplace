@@ -587,10 +587,15 @@ function closeEntityAssign() {
 }
 
 async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
-loadOutlets();
-loadCompanies();
-loadStaffDropdown();
-loadSummary();
+(async function init(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('psMonth').value=y+'-'+m;
+  onMonthChange();
+  await loadOutlets();
+  await loadCompanies();
+})();
 </script>
 <script src="/maise.js"></script>
 
