@@ -311,7 +311,8 @@ async function generate() {
 
 function renderTable(data) {
   var tbody = document.getElementById('payrollBody');
-  if (!data.length) {
+  var rows = (data && data.rows) ? data.rows : (Array.isArray(data) ? data : []);
+  if (!rows.length) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No records found for this period</td></tr>';
     document.getElementById('cardStaff').textContent = '0';
     document.getElementById('cardHours').textContent = '0h';
@@ -321,7 +322,7 @@ function renderTable(data) {
   }
 
   var totHours = 0, totGross = 0, totNet = 0;
-  tbody.innerHTML = data.map(function(s) {
+  tbody.innerHTML = rows.map(function(s) {
     totHours += s.totalHours || 0;
     totGross += s.grossPay || 0;
     totNet += s.netPay || 0;
@@ -342,14 +343,16 @@ function renderTable(data) {
     '</tr>';
   }).join('');
 
-  document.getElementById('cardStaff').textContent = data.length;
-  document.getElementById('cardHours').textContent = totHours.toFixed(1) + 'h';
-  document.getElementById('cardGross').textContent = '$' + totGross.toFixed(2);
-  document.getElementById('cardNet').textContent = '$' + totNet.toFixed(2);
+  var t = (data && data.totals) ? data.totals : { totalHours: totHours, grossPay: totGross, netPay: totNet };
+  document.getElementById('cardStaff').textContent = rows.length;
+  document.getElementById('cardHours').textContent = (t.totalHours || 0).toFixed(1) + 'h';
+  document.getElementById('cardGross').textContent = '$' + (t.grossPay || 0).toFixed(2);
+  document.getElementById('cardNet').textContent = '$' + (t.netPay || 0).toFixed(2);
 }
 
 async function openDetail(staffId) {
-  var s = payrollData.find(function(x){ return x.id === staffId; });
+  var list = (payrollData && payrollData.rows) ? payrollData.rows : (Array.isArray(payrollData) ? payrollData : []);
+  var s = list.find(function(x){ return x.id === staffId; });
   if (!s) return;
   document.getElementById('detailName').textContent = s.name;
   document.getElementById('detailPeriod').textContent = currentFrom + ' to ' + currentTo;
