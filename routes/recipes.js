@@ -1,10 +1,12 @@
 'use strict';
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 const db = require('../database');
 
-const CATEGORIES = ['Mains', 'Soups', 'Desserts', 'Sauces', 'Sides', 'Drinks', 'Snacks', 'Other'];
-const ICONS = { 'Mains':'🍽️', 'Soups':'🍲', 'Desserts':'🍮', 'Sauces':'🥫', 'Sides':'🥗', 'Drinks':'🥤', 'Snacks':'🍟', 'Other':'📋' };
+const CATEGORIES = ['Mains', 'Sauces', 'Meats', 'Aioli & Dressings', 'Prep & Components', 'Soups', 'Sides', 'Desserts', 'Drinks', 'Snacks', 'Other'];
+const ICONS = { 'Mains':'🍽️', 'Sauces':'🥫', 'Meats':'🥩', 'Aioli & Dressings':'🥣', 'Prep & Components':'🧂', 'Soups':'🍲', 'Sides':'🥗', 'Desserts':'🍮', 'Drinks':'🥤', 'Snacks':'🍟', 'Other':'📋' };
 
 router.get('/categories', (req, res) => res.json(CATEGORIES));
 router.get('/icons', (req, res) => res.json(ICONS));
@@ -93,6 +95,45 @@ router.delete('/:id', (req, res) => {
     db.run('DELETE FROM recipes WHERE id=?', [req.params.id]);
     db.saveDB();
     res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Bulk import from bundled seed file. Idempotent: skips recipes whose name
+// already exists, so it is safe to run more than once.
+// Trigger once after deploy:  /api/recipes/import-seed?token=mise-recipes-2026
+router.get('/import-seed', (req, res) => {
+  if (req.query.token !== 'mise-recipes-2026') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const seedPath = path.join(__dirname, '..', 'recipes-seed.json');
+    if (!fs.existsSync(seedPath)) return res.status(404).json({ error: 'Seed file not found' });
+    const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    const now = new Date().toISOString();
+    let created = 0, skipped = 0;
+    const createdNames = [];
+    for (const r of seed) {
+      if (!r.name || !r.category) { skipped++; continue; }
+      const exists = db.get('SELECT id FROM recipes WHERE name=?', [r.name]);
+      if (exists) { skipped++; continue; }
+      db.run(
+        'INSERT INTO recipes (name,category,outlet_id,description,icon,base_servings,allergens,notes,is_shared,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        [r.name, r.category, r.outlet_id||null, r.description||'', r.icon||ICONS[r.category]||'🍽️',
+         r.base_servings||1, JSON.stringify(r.allergens||[]), r.notes||'', r.is_shared===0?0:1,
+         'import', now, now]
+      );
+      const idRow = db.get('SELECT id FROM recipes WHERE name=? AND created_at=? ORDER BY id DESC LIMIT 1', [r.name, now]);
+      const id = idRow ? idRow.id : db.get('SELECT MAX(id) as id FROM recipes').id;
+      (r.ingredients||[]).forEach((ing, i) => {
+        db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
+          [id, i, ing.name, ing.amount, ing.unit||null, ing.cost_per_unit||0]);
+      });
+      (r.steps||[]).forEach((step, i) => {
+        db.run('INSERT INTO recipe_steps (recipe_id,sort_order,title,content,timer_seconds) VALUES (?,?,?,?,?)',
+          [id, i, step.title, step.content, step.timer_seconds||null]);
+      });
+      created++; createdNames.push(r.name);
+    }
+    db.saveDB();
+    res.json({ success: true, created, skipped, total: seed.length, createdNames });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
