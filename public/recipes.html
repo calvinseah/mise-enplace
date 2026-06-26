@@ -230,7 +230,7 @@ html,body{height:100%;font-family:var(--font);background:var(--green-d);color:va
     </div>
     <div class="fg"><label>Description</label><input id="fDesc" placeholder="Short description…"></div>
     <div class="fg"><label>Allergens</label>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;padding:6px 0" id="allergenChecks"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px 12px;padding:6px 0" id="allergenChecks"></div>
     </div>
     <div class="fg"><label>Ingredients</label>
       <div id="ingList"></div>
@@ -320,7 +320,7 @@ async function init() {
   // Allergen checkboxes
   const ac = document.getElementById('allergenChecks');
   ALLERGENS.forEach(a => {
-    ac.innerHTML += '<label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;white-space:nowrap"><input type="checkbox" value="'+a+'"> '+a+'</label>';
+    ac.innerHTML += '<label style="display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;white-space:nowrap"><input type="checkbox" value="'+a+'" style="width:15px;height:15px;flex-shrink:0;margin:0;accent-color:var(--accent)"> '+a+'</label>';
   });
 
   await loadRecipes();
@@ -345,12 +345,19 @@ function filterCat(btn, cat) {
   applyFilters();
 }
 
+function recipeOutletIds(r) {
+  var ids = [];
+  if (r.outlet_id) ids.push(Number(r.outlet_id));
+  if (r.outlet_ids) String(r.outlet_ids).split(',').forEach(function(x){ if (x !== '') ids.push(Number(x)); });
+  return ids;
+}
+
 function applyFilters() {
   const q = document.getElementById('searchInput').value.toLowerCase();
   let list = allRecipes;
   const TIPO_IDS = [5, 7, 8, 9, 11, 12];
-  if (currentOutlet === 'tipo') list = list.filter(r => TIPO_IDS.includes(r.outlet_id));
-  else if (currentOutlet) list = list.filter(r => r.outlet_id == currentOutlet || r.is_shared);
+  if (currentOutlet === 'tipo') list = list.filter(r => recipeOutletIds(r).some(id => TIPO_IDS.includes(id)));
+  else if (currentOutlet) list = list.filter(r => recipeOutletIds(r).includes(Number(currentOutlet)) || r.is_shared);
   if (currentCat)   list = list.filter(r => r.category === currentCat);
   if (q)            list = list.filter(r => r.name.toLowerCase().includes(q));
   renderGrid(list);
@@ -365,7 +372,10 @@ function renderGrid(list) {
   grid.innerHTML = list.map(r => {
     const allergens = JSON.parse(r.allergens || '[]');
     const tags = [];
+    const TIPO_IDS = [5, 7, 8, 9, 11, 12];
+    const oids = recipeOutletIds(r);
     if (r.is_shared) tags.push('<span class="tag tag-shared">Shared</span>');
+    else if (oids.length && oids.every(id => TIPO_IDS.includes(id))) tags.push('<span class="tag tag-outlet">Tipo</span>');
     else if (r.outlet_name) tags.push('<span class="tag tag-outlet">'+r.outlet_name+'</span>');
     allergens.slice(0,2).forEach(a => tags.push('<span class="tag tag-allergen">'+a+'</span>'));
     return '<div class="recipe-card" onclick="openRecipe('+r.id+')">' +
@@ -396,7 +406,12 @@ function renderDetail() {
   const costPerPax = totalCost / currentServings;
 
   let html = '<div class="detail-name">'+r.name+'</div>';
-  html += '<div class="detail-sub">'+(r.is_shared ? 'Shared · ' : (r.outlet_name ? r.outlet_name+' · ' : ''))+r.category+'</div>';
+  const TIPO_IDS = [5, 7, 8, 9, 11, 12];
+  const oids = recipeOutletIds(r);
+  const outletLabel = r.is_shared ? 'Shared · '
+    : (oids.length && oids.every(id => TIPO_IDS.includes(id))) ? 'Tipo · '
+    : (r.outlet_name ? r.outlet_name+' · ' : '');
+  html += '<div class="detail-sub">'+outletLabel+r.category+'</div>';
 
   const tags = [];
   if (r.is_shared) tags.push('<span class="tag tag-shared">Shared</span>');
