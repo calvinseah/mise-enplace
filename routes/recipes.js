@@ -15,7 +15,7 @@ router.get('/icons', (req, res) => res.json(ICONS));
 router.get('/', (req, res) => {
   try {
     const { outlet_id, category, q } = req.query;
-    let sql = 'SELECT r.*, o.name as outlet_name FROM recipes r LEFT JOIN outlets o ON r.outlet_id=o.id WHERE 1=1';
+    let sql = 'SELECT r.*, o.name as outlet_name, (SELECT GROUP_CONCAT(outlet_id) FROM recipe_outlets WHERE recipe_id=r.id) AS outlet_ids FROM recipes r LEFT JOIN outlets o ON r.outlet_id=o.id WHERE 1=1';
     const params = [];
     if (outlet_id) { sql += ' AND (r.is_shared=1 OR r.outlet_id=? OR EXISTS (SELECT 1 FROM recipe_outlets ro WHERE ro.recipe_id=r.id AND ro.outlet_id=?))'; params.push(outlet_id, outlet_id); }
     if (category)  { sql += ' AND r.category=?'; params.push(category); }
@@ -95,6 +95,7 @@ router.get('/:id', (req, res) => {
     recipe.allergens = JSON.parse(recipe.allergens || '[]');
     recipe.ingredients = db.all('SELECT * FROM recipe_ingredients WHERE recipe_id=? ORDER BY sort_order', [req.params.id]);
     recipe.steps = db.all('SELECT * FROM recipe_steps WHERE recipe_id=? ORDER BY sort_order', [req.params.id]);
+    recipe.outlet_ids = db.all('SELECT outlet_id FROM recipe_outlets WHERE recipe_id=?', [req.params.id]).map(x => x.outlet_id).join(',');
     res.json(recipe);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -102,7 +103,7 @@ router.get('/:id', (req, res) => {
 // Create recipe
 router.post('/', (req, res) => {
   const actor = req.session?.user?.username || 'admin';
-  const { name, category, outlet_id, description, icon, base_servings, allergens, notes, is_shared, ingredients, steps } = req.body;
+  const { name, category, outlet_id, description, icon, base_servings, allergens, notes, is_shared, ingredients, steps, outlet_ids } = req.body;
   if (!name || !category) return res.status(400).json({ error: 'Name and category required' });
   try {
     const now = new Date().toISOString();
@@ -112,6 +113,9 @@ router.post('/', (req, res) => {
     );
     const idRow = db.get('SELECT id FROM recipes WHERE name=? AND created_at=? ORDER BY id DESC LIMIT 1', [name, now]);
     const id = idRow ? idRow.id : db.get('SELECT MAX(id) as id FROM recipes').id;
+    if (Array.isArray(outlet_ids) && outlet_ids.length) {
+      outlet_ids.forEach(oid => db.run('INSERT OR IGNORE INTO recipe_outlets (recipe_id,outlet_id) VALUES (?,?)', [id, oid]));
+    }
     (ingredients||[]).forEach((ing, i) => {
       db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
         [id, i, ing.name, ing.amount, ing.unit||null, ing.cost_per_unit||0]);
@@ -127,7 +131,7 @@ router.post('/', (req, res) => {
 
 // Update recipe
 router.put('/:id', (req, res) => {
-  const { name, category, outlet_id, description, icon, base_servings, allergens, notes, is_shared, ingredients, steps } = req.body;
+  const { name, category, outlet_id, description, icon, base_servings, allergens, notes, is_shared, ingredients, steps, outlet_ids } = req.body;
   try {
     const now = new Date().toISOString();
     db.run(
@@ -136,6 +140,11 @@ router.put('/:id', (req, res) => {
     );
     db.run('DELETE FROM recipe_ingredients WHERE recipe_id=?', [req.params.id]);
     db.run('DELETE FROM recipe_steps WHERE recipe_id=?', [req.params.id]);
+    // Rebuild outlet links to exactly match what the form sent
+    db.run('DELETE FROM recipe_outlets WHERE recipe_id=?', [req.params.id]);
+    if (Array.isArray(outlet_ids) && outlet_ids.length) {
+      outlet_ids.forEach(oid => db.run('INSERT OR IGNORE INTO recipe_outlets (recipe_id,outlet_id) VALUES (?,?)', [req.params.id, oid]));
+    }
     (ingredients||[]).forEach((ing, i) => {
       db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
         [req.params.id, i, ing.name, ing.amount, ing.unit||null, ing.cost_per_unit||0]);

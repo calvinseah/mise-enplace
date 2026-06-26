@@ -225,7 +225,7 @@ html,body{height:100%;font-family:var(--font);background:var(--green-d);color:va
       <div class="fg"><label>Icon (emoji)</label><input id="fIcon" placeholder="🍽️" maxlength="4"></div>
     </div>
     <div class="two-col">
-      <div class="fg"><label>Outlet</label><select id="fOutlet"><option value="">Shared (all outlets)</option></select></div>
+      <div class="fg"><label>Outlet</label><select id="fOutlet"><option value="">Shared (all outlets)</option><option value="tipo">Tipo (all Tipo outlets)</option></select></div>
       <div class="fg"><label>Base servings</label><input id="fServings" type="number" min="1" value="4"></div>
     </div>
     <div class="fg"><label>Description</label><input id="fDesc" placeholder="Short description…"></div>
@@ -517,7 +517,10 @@ function editCurrent() {
   document.getElementById('fServings').value = r.base_servings;
   document.getElementById('fNotes').value = r.notes || '';
   document.getElementById('fCategory').value = r.category;
-  document.getElementById('fOutlet').value = r.outlet_id || '';
+  const TIPO_IDS = [5, 7, 8, 9, 11, 12];
+  const oids = recipeOutletIds(r);
+  if (oids.length > 1 && oids.every(x => TIPO_IDS.includes(x))) document.getElementById('fOutlet').value = 'tipo';
+  else document.getElementById('fOutlet').value = r.outlet_id || '';
   document.querySelectorAll('#allergenChecks input').forEach(c => { c.checked = r.allergens.includes(c.value); });
   document.getElementById('ingList').innerHTML = '';
   r.ingredients.forEach(i => addIngRow(i));
@@ -568,15 +571,21 @@ async function saveRecipe() {
     timer_seconds: parseInt(d.querySelector('.step-timer-f').value) || null
   })).filter(s => s.title && s.content);
   const outletVal = document.getElementById('fOutlet').value;
+  const TIPO_IDS = [5, 7, 8, 9, 11, 12];
+  let outlet_id = null, is_shared = false, outlet_ids = [];
+  if (outletVal === '')        { is_shared = true; }
+  else if (outletVal === 'tipo') { outlet_ids = TIPO_IDS; }
+  else                         { outlet_id = Number(outletVal); }
   const body = {
     name: document.getElementById('fName').value.trim(),
     category: document.getElementById('fCategory').value,
-    outlet_id: outletVal || null,
+    outlet_id,
     description: document.getElementById('fDesc').value.trim(),
     icon: document.getElementById('fIcon').value.trim() || null,
     base_servings: parseInt(document.getElementById('fServings').value) || 4,
     allergens, notes: document.getElementById('fNotes').value.trim(),
-    is_shared: !outletVal,
+    is_shared,
+    outlet_ids,
     ingredients, steps
   };
   if (!body.name) { alert('Recipe name required'); return; }
