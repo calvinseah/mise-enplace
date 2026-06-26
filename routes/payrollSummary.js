@@ -201,53 +201,58 @@ router.get('/export/pdf', (req, res) => {
     const GREEN = '#3D5240';
     const W     = doc.page.width - 80;
 
-    // Header
-    doc.fontSize(18).font('Helvetica-Bold').fillColor(GREEN).text('Mise — Payroll Summary', 40, 40);
+    // ── Header ──
+    let hy = 40;
+    doc.fontSize(18).font('Helvetica-Bold').fillColor(GREEN)
+       .text('Mise — Payroll Summary', 40, hy);
+    hy += 26;
+
     const outletName = outletId ? db.get('SELECT name FROM outlets WHERE id=?',[outletId])?.name : 'All outlets';
     const company = companyId ? db.get('SELECT name,uen FROM companies WHERE id=?',[companyId]) : null;
     if (company) {
-      doc.fontSize(14).font('Helvetica-Bold').fillColor('#1B3A5C').text(company.name, 40, 50);
-      if (company.uen && company.uen !== 'TBC') {
-        doc.fontSize(9).font('Helvetica').fillColor('#555').text(`UEN: ${company.uen}`, 40, 68);
-      }
-      doc.fontSize(9).font('Helvetica').fillColor('#555')
-         .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 80);
-    } else {
-      doc.fontSize(10).font('Helvetica').fillColor('#555')
-         .text(`Pay period: ${from} to ${to}   |   Outlet: ${outletName}   |   Generated: ${new Date().toLocaleDateString('en-SG')}   |   ${rows.length} staff`, 40, 64);
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#1B3A5C').text(company.name, 40, hy);
+      hy += 16;
     }
-    doc.moveTo(40, 78).lineTo(doc.page.width - 40, 78).strokeColor(GREEN).lineWidth(1.5).stroke();
+    const metaParts = [];
+    if (company && company.uen && company.uen !== 'TBC') metaParts.push(`UEN: ${company.uen}`);
+    metaParts.push(`Pay period: ${from} to ${to}`);
+    metaParts.push(`Outlet: ${outletName}`);
+    metaParts.push(`Generated: ${new Date().toLocaleDateString('en-SG')}`);
+    metaParts.push(`${rows.length} staff`);
+    doc.fontSize(9).font('Helvetica').fillColor('#555').text(metaParts.join('   |   '), 40, hy);
+    hy += 15;
+    doc.moveTo(40, hy).lineTo(doc.page.width - 40, hy).strokeColor(GREEN).lineWidth(1.5).stroke();
+    hy += 8;
 
     // Table
     const cols = [
-      { label: 'Name',         w: 110 },
+      { label: 'Name',         w: 170 },
       { label: 'Role',         w: 50  },
-      { label: 'Type',         w: 55  },
-      { label: 'Shifts',       w: 40  },
-      { label: 'Hours',        w: 48  },
-      { label: 'OT hrs',       w: 48  },
-      { label: 'Gross Pay',    w: 68  },
-      { label: 'Emp CPF (–)',  w: 68  },
-      { label: 'Net Pay',      w: 68  },
-      { label: 'Er CPF*',      w: 62  },
+      { label: 'Type',         w: 58  },
+      { label: 'Shifts',       w: 42  },
+      { label: 'Hours',        w: 50  },
+      { label: 'OT hrs',       w: 50  },
+      { label: 'Gross Pay',    w: 70  },
+      { label: 'Emp CPF (–)',  w: 72  },
+      { label: 'Net Pay',      w: 70  },
+      { label: 'Er CPF*',      w: 64  },
     ];
 
-    let y = 88;
-    // Header row
-    doc.rect(40, y, W, 16).fill(GREEN);
-    let x = 40;
-    cols.forEach(c => {
-      doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff')
-         .text(c.label, x + 3, y + 3, { width: c.w - 6, ellipsis: true });
-      x += c.w;
-    });
-    y += 17;
+    function drawColHeader(yy) {
+      doc.rect(40, yy, W, 17).fill(GREEN);
+      let xx = 40;
+      cols.forEach(c => {
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#fff')
+           .text(c.label, xx + 4, yy + 5, { width: c.w - 8, ellipsis: true });
+        xx += c.w;
+      });
+      return yy + 17;
+    }
+
+    let y = drawColHeader(hy);
 
     // Data rows
     rows.forEach((r, i) => {
-      const bg = i % 2 === 0 ? '#F5F7F2' : '#fff';
-      doc.rect(40, y, W, 15).fill(bg);
-      x = 40;
       const vals = [
         r.name, r.role,
         r.staff_type === 'fulltime' ? 'Full-time' : 'Part-time',
@@ -259,12 +264,31 @@ router.get('/export/pdf', (req, res) => {
         '$' + r.netPay.toFixed(2),
         r.hasCPF ? '$' + r.erCPF.toFixed(2) : '—',
       ];
+
+      // Row height driven by the tallest wrapping cell (the name)
+      doc.fontSize(8).font('Helvetica');
+      const nameH = doc.heightOfString(String(r.name), { width: cols[0].w - 8 });
+      const rowH  = Math.max(16, nameH + 8);
+
+      // Page break: start a fresh page and redraw the column header
+      if (y + rowH > doc.page.height - 46) {
+        doc.addPage();
+        y = drawColHeader(40);
+      }
+
+      const bg = i % 2 === 0 ? '#F5F7F2' : '#fff';
+      doc.rect(40, y, W, rowH).fill(bg);
+
+      let x = 40;
       cols.forEach((c, ci) => {
+        const txt   = String(vals[ci]);
+        const cellH = doc.heightOfString(txt, { width: c.w - 8 });
+        const ty    = y + Math.max(3, (rowH - cellH) / 2);
         doc.fontSize(8).font('Helvetica').fillColor('#222')
-           .text(String(vals[ci]), x + 3, y + 3, { width: c.w - 6, ellipsis: true });
+           .text(txt, x + 4, ty, { width: c.w - 8, ellipsis: ci !== 0 });
         x += c.w;
       });
-      y += 16;
+      y += rowH;
     });
 
     // Totals row
@@ -274,9 +298,10 @@ router.get('/export/pdf', (req, res) => {
       net: a.net+r.netPay, er: a.er+r.erCPF
     }), {hrs:0,ot:0,gross:0,emp:0,net:0,er:0});
 
+    if (y + 18 > doc.page.height - 46) { doc.addPage(); y = drawColHeader(40); }
     y += 2;
-    doc.rect(40, y, W, 16).fill('#E8EDE3');
-    x = 40;
+    doc.rect(40, y, W, 17).fill('#E8EDE3');
+    let tx = 40;
     const totVals = [
       'TOTAL', '', '', rows.length + ' staff',
       tot.hrs.toFixed(2), tot.ot.toFixed(2),
@@ -287,8 +312,8 @@ router.get('/export/pdf', (req, res) => {
     ];
     cols.forEach((c, ci) => {
       doc.fontSize(8).font('Helvetica-Bold').fillColor(GREEN)
-         .text(totVals[ci], x + 3, y + 3, { width: c.w - 6 });
-      x += c.w;
+         .text(totVals[ci], tx + 4, y + 5, { width: c.w - 8 });
+      tx += c.w;
     });
 
     // Footer
