@@ -28,6 +28,7 @@ function safeStaff(s, includeSecure = false, isAdmin = false) {
     has_pin: s.pin ? 1 : 0,
     cpf_exempt: isAdmin ? (s.cpf_exempt || 0) : undefined,
     race: isAdmin ? s.race : undefined,
+    mbmf: isAdmin ? (s.mbmf || 0) : undefined,
   };
   if (includeSecure && isAdmin) {
     out.nric_full = db.decryptField(s.nric_full_enc) || null;
@@ -100,7 +101,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { name, role, staff_type, monthly_salary, hourly_rate, date_of_birth,
           pr_status, pr_year, nric_last4, nric_full, bank_name, bank_account,
-          cpf_exempt, race } = req.body;
+          cpf_exempt, race, mbmf } = req.body;
   try {
     const existing = db.get(`SELECT nric_full_enc, bank_account_enc FROM staff WHERE id = ?`, [req.params.id]);
     if (!existing) return res.status(404).json({ error: 'Not found' });
@@ -115,13 +116,13 @@ router.put('/:id', async (req, res) => {
     db.run(
       `UPDATE staff SET name=?,role=?,staff_type=?,monthly_salary=?,hourly_rate=?,
        date_of_birth=?,pr_status=?,pr_year=?,nric_last4=?,nric_full_enc=?,
-       bank_name=?,bank_account_enc=?,cpf_exempt=?,race=? WHERE id=?`,
+       bank_name=?,bank_account_enc=?,cpf_exempt=?,race=?,mbmf=? WHERE id=?`,
       [name, role, staff_type,
        staff_type === 'fulltime' ? (monthly_salary || null) : null,
        staff_type === 'parttime' ? (hourly_rate || null) : null,
        date_of_birth || null, pr_status || 'citizen', pr_year || null,
        nric_last4 || null, newNricEnc, bank_name || null, newBankEnc,
-       cpf_exempt ? 1 : 0, race || null,
+       cpf_exempt ? 1 : 0, race || null, mbmf ? 1 : 0,
        req.params.id]
     );
     res.json({ success: true });

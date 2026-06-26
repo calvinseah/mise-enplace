@@ -304,6 +304,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="fg" id="grpPrYr" style="display:none"><label>Year PR obtained</label><input type="number" id="sPrYr" placeholder="2022" min="2000" max="2099"><div class="hint">Used for CPF graduated rates</div></div>
       <div class="fg"><label>Race</label><select id="sRace"><option value="">Not specified</option><option value="Chinese">Chinese</option><option value="Malay">Malay</option><option value="Indian">Indian</option><option value="Eurasian">Eurasian</option><option value="Others">Others</option></select></div>
       <div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500"><input type="checkbox" id="sCpfExempt" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"> CPF exempt <span style="font-size:11px;font-weight:400;color:var(--ink-60)">(foreigners, EP holders etc.)</span></label></div>
+      <div class="fg" style="grid-column:1/-1"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:500"><input type="checkbox" id="sMbmf" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer"> Muslim — contributes MBMF <span style="font-size:11px;font-weight:400;color:var(--ink-60)">(any race; stacks on CDAC/SINDA if applicable)</span></label></div>
 
       <!-- Secure section -->
       <div class="section-heading">Identity &amp; Banking — encrypted at rest</div>
@@ -413,7 +414,7 @@ function openAdd(){
   document.getElementById('staffId').value='';
   ['sName','sRole','sHourly','sSalary','sDob','sPrYr','sNric4','sNricFull','sBankAcc'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sType').value='parttime';document.getElementById('sPr').value='citizen';document.getElementById('sBank').value='';
-  document.getElementById('sRace').value='';document.getElementById('sCpfExempt').checked=false;
+  document.getElementById('sRace').value='';document.getElementById('sCpfExempt').checked=false;document.getElementById('sMbmf').checked=false;
   onType();onPr();document.getElementById('staffOverlay').classList.add('open');
 }
 
@@ -428,6 +429,7 @@ async function openEdit(id){
   document.getElementById('sPr').value=s.pr_status||'citizen';document.getElementById('sPrYr').value=s.pr_year||'';
   document.getElementById('sRace').value=s.race||'';
   document.getElementById('sCpfExempt').checked=!!s.cpf_exempt;
+  document.getElementById('sMbmf').checked=!!s.mbmf;
   document.getElementById('sNric4').value=s.nric_last4||'';
   document.getElementById('sNricFull').value=s.nric_full||'';
   document.getElementById('sBank').value=s.bank_name||'';
@@ -447,6 +449,7 @@ async function saveStaff(){
     pr_year:document.getElementById('sPrYr').value?parseInt(document.getElementById('sPrYr').value):null,
     race:document.getElementById('sRace').value||null,
     cpf_exempt:document.getElementById('sCpfExempt').checked?1:0,
+    mbmf:document.getElementById('sMbmf').checked?1:0,
     nric_last4:document.getElementById('sNric4').value||null,
     nric_full:document.getElementById('sNricFull').value||null,
     bank_name:document.getElementById('sBank').value||null,

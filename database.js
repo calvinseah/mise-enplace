@@ -72,6 +72,7 @@ function createSchema() {
     nric_full_enc   TEXT,
     bank_name       TEXT,
     bank_account_enc TEXT,
+    mbmf            INTEGER NOT NULL DEFAULT 0,
     pin             TEXT,
     pin_active      INTEGER NOT NULL DEFAULT 1,
     is_active       INTEGER NOT NULL DEFAULT 1
@@ -83,6 +84,7 @@ function createSchema() {
   if (!cols.includes('bank_name'))        db.run(`ALTER TABLE staff ADD COLUMN bank_name TEXT`);
   if (!cols.includes('bank_account_enc')) db.run(`ALTER TABLE staff ADD COLUMN bank_account_enc TEXT`);
   if (!cols.includes('pin_active'))       db.run(`ALTER TABLE staff ADD COLUMN pin_active INTEGER NOT NULL DEFAULT 1`);
+  if (!cols.includes('mbmf'))             db.run(`ALTER TABLE staff ADD COLUMN mbmf INTEGER NOT NULL DEFAULT 0`);
 
   db.run(`CREATE TABLE IF NOT EXISTS attendance (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -442,6 +444,56 @@ function computeShiftCost(staff, hours, isPublicHoliday) {
   return { cost, rate: hourlyEquiv, otHours, isOT: otHours > 0, isPH: isPublicHoliday };
 }
 
+// ─── SHG (Self-Help Group) DONATIONS ──────────────────────────────────────────
+// 2026 rates, validated against CPF Board tables. Flat amount by monthly gross wage.
+// Each band is [upperBound, amount]; an employee pays the amount of the first band
+// whose upper bound their gross wage does not exceed.
+const SHG_TABLES = {
+  CDAC:  [[2000, 0.50], [3500, 1.00], [5000, 1.50], [7500, 2.00], [Infinity, 3.00]],
+  ECF:   [[1000, 2], [1500, 4], [2500, 6], [4000, 9], [7000, 12], [10000, 16], [Infinity, 20]],
+  SINDA: [[1000, 1], [1500, 3], [2500, 5], [4500, 7], [7500, 9], [10000, 12], [15000, 18], [Infinity, 30]],
+  MBMF:  [[1000, 3], [2000, 4.50], [3000, 6.50], [4000, 15], [6000, 19.50], [8000, 22], [10000, 24], [Infinity, 26]],
+};
+
+function shgLookup(table, gross) {
+  for (const [bound, amount] of table) {
+    if (gross <= bound) return amount;
+  }
+  return 0;
+}
+
+// Returns a breakdown plus total. Community fund is derived from `staff.race`
+// (Chinese→CDAC, Indian→SINDA, Eurasian→ECF) and applies to citizens & PRs only.
+// `staff.mbmf` (Muslim) adds MBMF on top and applies to all, foreigners included.
+const RACE_TO_COMMUNITY = { Chinese: 'CDAC', Indian: 'SINDA', Eurasian: 'ECF' };
+
+function computeSHG(staff, grossWages) {
+  const g = grossWages || 0;
+  const out = { cdac: 0, ecf: 0, sinda: 0, mbmf: 0, total: 0 };
+  if (g <= 0) return out;
+  const isLocal = staff.pr_status === 'citizen' || staff.pr_status === 'pr';
+  if (isLocal) {
+    const community = RACE_TO_COMMUNITY[staff.race];
+    if (community === 'CDAC')       out.cdac  = shgLookup(SHG_TABLES.CDAC,  g);
+    else if (community === 'SINDA') out.sinda = shgLookup(SHG_TABLES.SINDA, g);
+    else if (community === 'ECF')   out.ecf   = shgLookup(SHG_TABLES.ECF,   g);
+  }
+  if (staff.mbmf) out.mbmf = shgLookup(SHG_TABLES.MBMF, g); // applies to all, incl. foreigners
+  out.total = Math.round((out.cdac + out.ecf + out.sinda + out.mbmf) * 100) / 100;
+  return out;
+}
+
+// ─── SDL (Skills Development Levy) ─────────────────────────────────────────────
+// Employer-paid: 0.25% of monthly gross wages, min $2, max $11.25.
+function computeSDL(grossWages) {
+  const g = grossWages || 0;
+  if (g <= 0) return 0;
+  const levy = g * 0.0025;
+  if (levy < 2) return 2;
+  if (levy > 11.25) return 11.25;
+  return Math.round(levy * 100) / 100;
+}
+
 async function syncAdminPassword() {
   const bcrypt = require('bcryptjs');
   const pw = process.env.ADMIN_PASSWORD || 'admin1234';
@@ -454,7 +506,7 @@ async function syncAdminPassword() {
 module.exports = {
   initDB, syncAdminPassword, run, get, all, saveDB, exportDB,
   encryptField, decryptField,
-  computeShiftCost, computeCPF, getCPFRates, getAge,
+  computeShiftCost, computeCPF, computeSHG, computeSDL, getCPFRates, getAge,
 };
 
 // ─── APPLICATIONS SCHEMA (appended at runtime via initDB migration) ───────────
