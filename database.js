@@ -217,6 +217,8 @@ function createSchema() {
 
   db.run("CREATE TABLE IF NOT EXISTS recipe_outlets (recipe_id INTEGER NOT NULL, outlet_id INTEGER NOT NULL, PRIMARY KEY (recipe_id, outlet_id), FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
 
+  db.run("CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, data TEXT, expires INTEGER)");
+
   db.run(`CREATE TABLE IF NOT EXISTS maise_kb (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL,

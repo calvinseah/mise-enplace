@@ -8,14 +8,46 @@ if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.startsWith('change
 const express = require('express');
 const session = require('express-session');
 const path    = require('path');
-const { initDB, syncAdminPassword } = require('./database');
+const { initDB, syncAdminPassword, run: dbRun, get: dbGet } = require('./database');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// ── Persistent session store ─────────────────────────────────────────────────
+// Sessions are stored in the app's SQLite DB (which persists across deploys),
+// so restarting or redeploying the server no longer logs everyone out.
+class DBSessionStore extends session.Store {
+  get(sid, cb) {
+    try {
+      const row = dbGet('SELECT data, expires FROM sessions WHERE sid=?', [sid]);
+      if (!row) return cb(null, null);
+      if (row.expires && row.expires < Date.now()) {
+        dbRun('DELETE FROM sessions WHERE sid=?', [sid]);
+        return cb(null, null);
+      }
+      cb(null, JSON.parse(row.data));
+    } catch (e) { cb(e); }
+  }
+  set(sid, sess, cb) {
+    try {
+      const expires = (sess.cookie && sess.cookie.expires)
+        ? new Date(sess.cookie.expires).getTime()
+        : Date.now() + 8 * 60 * 60 * 1000;
+      dbRun('INSERT OR REPLACE INTO sessions (sid, data, expires) VALUES (?,?,?)', [sid, JSON.stringify(sess), expires]);
+      cb(null);
+    } catch (e) { cb(e); }
+  }
+  destroy(sid, cb) {
+    try { dbRun('DELETE FROM sessions WHERE sid=?', [sid]); cb(null); } catch (e) { cb(e); }
+  }
+  // No-op: avoid re-serialising the whole DB on every request.
+  touch(sid, sess, cb) { if (cb) cb(null); }
+}
+
 app.use(session({
+  store: new DBSessionStore(),
   secret: process.env.SESSION_SECRET || 'mise-secret-change-me',
   resave: false,
   saveUninitialized: false,
