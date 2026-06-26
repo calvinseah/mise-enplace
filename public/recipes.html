@@ -281,7 +281,7 @@ async function init() {
   });
 
   // Load outlets
-  outlets = await fetch('/api/outlets').then(r => r.json()).catch(() => []);
+  outlets = await fetch('/api/attendance/outlets').then(r => r.json()).catch(() => []);
   const tabsEl = document.getElementById('outletTabs');
   const fOutlet = document.getElementById('fOutlet');
   outlets.forEach(o => {
