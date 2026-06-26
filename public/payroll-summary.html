@@ -389,7 +389,7 @@ async function openDetail(staffId) {
         html += '<div class="punch-card' + (r.is_public_holiday ? ' ph' : '') + '">' +
           (r.is_public_holiday ? '<div class="ph-badge">PH</div>' : '') +
           (r.is_amended ? '<div class="edited-badge">Edited</div>' : '') +
-          '<div class="punch-top' + (r.is_amended ? ' style='padding-top:8px'' : '') + '">' +
+          '<div class="punch-top"' + (r.is_amended ? ' style="padding-top:8px"' : '') + '>' +
             '<div class="punch-date">' + dateStr + '</div>' +
             '<div class="punch-cost">$' + (r.total_cost||0).toFixed(2) + '</div>' +
           '</div>' +
