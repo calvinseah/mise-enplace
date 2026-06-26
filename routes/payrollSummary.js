@@ -8,7 +8,7 @@ const db         = require('../database');
 // ── Helper: compute payroll for all staff in a period ──────────────────────────
 function computeAllPayroll(from, to, outletId, staffId) {
   const staff = db.all(`SELECT * FROM staff WHERE is_active=1`);
-  const { computeShiftCost, computeCPF, decryptField } = db;
+  const { computeShiftCost, computeCPF, computeSHG, computeSDL, decryptField } = db;
   const results = [];
 
   for (const s of staff) {
@@ -45,7 +45,12 @@ function computeAllPayroll(from, to, outletId, staffId) {
     }
 
     grossPay = Math.round(grossPay * 100) / 100;
-    const cpf = grossPay > 50 ? computeCPF(s, grossPay, to) : null;
+    const exempt = !!s.cpf_exempt;
+    const cpf = (!exempt && grossPay > 50) ? computeCPF(s, grossPay, to) : null;
+    const shg = computeSHG(s, grossPay);          // applies regardless of CPF exemption
+    const sdl = exempt ? 0 : computeSDL(grossPay); // SDL follows the CPF exemption
+    const empCPF = cpf ? cpf.empCPF : 0;
+    const netPay = Math.round((grossPay - empCPF - shg.total) * 100) / 100;
 
     results.push({
       id:           s.id,
@@ -59,9 +64,13 @@ function computeAllPayroll(from, to, outletId, staffId) {
       otHours:      Math.round(otHours * 100) / 100,
       phHours:      Math.round(phHours * 100) / 100,
       grossPay,
-      empCPF:       cpf ? cpf.empCPF   : 0,
-      erCPF:        cpf ? cpf.erCPF    : 0,
-      netPay:       cpf ? cpf.netPay   : grossPay,
+      empCPF,
+      erCPF:        cpf ? cpf.erCPF : 0,
+      shgTotal:     shg.total,
+      shgBreakdown: shg,
+      sdl,
+      cpfExempt:    exempt,
+      netPay,
       hasCPF:       !!cpf,
     });
   }
@@ -107,8 +116,11 @@ router.get('/summary', (req, res) => {
       grossPay:   acc.grossPay  + r.grossPay,
       empCPF:     acc.empCPF    + r.empCPF,
       erCPF:      acc.erCPF     + r.erCPF,
+      shg:        acc.shg       + r.shgTotal,
+      sdl:        acc.sdl       + r.sdl,
       netPay:     acc.netPay    + r.netPay,
-    }), { totalHours: 0, grossPay: 0, empCPF: 0, erCPF: 0, netPay: 0 });
+    }), { totalHours: 0, grossPay: 0, empCPF: 0, erCPF: 0, shg: 0, sdl: 0, netPay: 0 });
+    Object.keys(totals).forEach(k => totals[k] = Math.round(totals[k] * 100) / 100);
     res.json({ rows, totals, from, to });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -128,29 +140,32 @@ router.get('/export/excel', (req, res) => {
     const headers = [
       'Name','Role','Type','NRIC Last 4','Shifts','Total Hours',
       'Regular Hours','OT Hours','PH Hours',
-      'Gross Pay ($)','Employee CPF ($)','Net Pay ($)','Employer CPF ($)'
+      'Gross Pay ($)','Employee CPF ($)','SHG ($)','Net Pay ($)','Employer CPF ($)','SDL ($)'
     ];
     const data = rows.map(r => [
       r.name, r.role,
       r.staff_type === 'fulltime' ? 'Full-time' : 'Part-time',
       r.nric_last4,
       r.shifts, r.totalHours, r.regularHours, r.otHours, r.phHours,
-      r.grossPay, r.empCPF, r.netPay, r.erCPF,
+      r.grossPay, r.empCPF, r.shgTotal, r.netPay, r.erCPF, r.sdl,
     ]);
 
     // Totals row
     const totals = rows.reduce((a, r) => ({
       hrs: a.hrs + r.totalHours, gross: a.gross + r.grossPay,
-      emp: a.emp + r.empCPF, net: a.net + r.netPay, er: a.er + r.erCPF
-    }), { hrs:0, gross:0, emp:0, net:0, er:0 });
+      emp: a.emp + r.empCPF, shg: a.shg + r.shgTotal,
+      net: a.net + r.netPay, er: a.er + r.erCPF, sdl: a.sdl + r.sdl
+    }), { hrs:0, gross:0, emp:0, shg:0, net:0, er:0, sdl:0 });
 
     data.push([]);
     data.push(['TOTAL','','','','',
       Math.round(totals.hrs*100)/100,'','','',
       Math.round(totals.gross*100)/100,
       Math.round(totals.emp*100)/100,
+      Math.round(totals.shg*100)/100,
       Math.round(totals.net*100)/100,
       Math.round(totals.er*100)/100,
+      Math.round(totals.sdl*100)/100,
     ]);
 
     const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
@@ -226,16 +241,18 @@ router.get('/export/pdf', (req, res) => {
 
     // Table
     const cols = [
-      { label: 'Name',         w: 170 },
-      { label: 'Role',         w: 50  },
-      { label: 'Type',         w: 58  },
-      { label: 'Shifts',       w: 42  },
-      { label: 'Hours',        w: 50  },
-      { label: 'OT hrs',       w: 50  },
-      { label: 'Gross Pay',    w: 70  },
-      { label: 'Emp CPF (–)',  w: 72  },
-      { label: 'Net Pay',      w: 70  },
-      { label: 'Er CPF*',      w: 64  },
+      { label: 'Name',        w: 155 },
+      { label: 'Role',        w: 40  },
+      { label: 'Type',        w: 50  },
+      { label: 'Shifts',      w: 36  },
+      { label: 'Hours',       w: 44  },
+      { label: 'OT hrs',      w: 44  },
+      { label: 'Gross Pay',   w: 60  },
+      { label: 'Emp CPF (–)', w: 60  },
+      { label: 'SHG (–)',     w: 54  },
+      { label: 'Net Pay',     w: 60  },
+      { label: 'Er CPF *',    w: 54  },
+      { label: 'SDL *',       w: 48  },
     ];
 
     function drawColHeader(yy) {
@@ -261,8 +278,10 @@ router.get('/export/pdf', (req, res) => {
         r.otHours > 0 ? r.otHours.toFixed(2) : '—',
         '$' + r.grossPay.toFixed(2),
         r.hasCPF ? '–$' + r.empCPF.toFixed(2) : '—',
+        r.shgTotal > 0 ? '–$' + r.shgTotal.toFixed(2) : '—',
         '$' + r.netPay.toFixed(2),
         r.hasCPF ? '$' + r.erCPF.toFixed(2) : '—',
+        r.sdl > 0 ? '$' + r.sdl.toFixed(2) : '—',
       ];
 
       // Row height driven by the tallest wrapping cell (the name)
@@ -294,9 +313,9 @@ router.get('/export/pdf', (req, res) => {
     // Totals row
     const tot = rows.reduce((a,r) => ({
       hrs: a.hrs+r.totalHours, ot: a.ot+r.otHours,
-      gross: a.gross+r.grossPay, emp: a.emp+r.empCPF,
-      net: a.net+r.netPay, er: a.er+r.erCPF
-    }), {hrs:0,ot:0,gross:0,emp:0,net:0,er:0});
+      gross: a.gross+r.grossPay, emp: a.emp+r.empCPF, shg: a.shg+r.shgTotal,
+      net: a.net+r.netPay, er: a.er+r.erCPF, sdl: a.sdl+r.sdl
+    }), {hrs:0,ot:0,gross:0,emp:0,shg:0,net:0,er:0,sdl:0});
 
     if (y + 18 > doc.page.height - 46) { doc.addPage(); y = drawColHeader(40); }
     y += 2;
@@ -305,10 +324,12 @@ router.get('/export/pdf', (req, res) => {
     const totVals = [
       'TOTAL', '', '', rows.length + ' staff',
       tot.hrs.toFixed(2), tot.ot.toFixed(2),
-      '$'+Math.round(tot.gross*100)/100,
-      '–$'+Math.round(tot.emp*100)/100,
-      '$'+Math.round(tot.net*100)/100,
-      '$'+Math.round(tot.er*100)/100,
+      '$'+(Math.round(tot.gross*100)/100).toFixed(2),
+      '–$'+(Math.round(tot.emp*100)/100).toFixed(2),
+      '–$'+(Math.round(tot.shg*100)/100).toFixed(2),
+      '$'+(Math.round(tot.net*100)/100).toFixed(2),
+      '$'+(Math.round(tot.er*100)/100).toFixed(2),
+      '$'+(Math.round(tot.sdl*100)/100).toFixed(2),
     ];
     cols.forEach((c, ci) => {
       doc.fontSize(8).font('Helvetica-Bold').fillColor(GREEN)
@@ -320,7 +341,7 @@ router.get('/export/pdf', (req, res) => {
     const fy = doc.page.height - 36;
     doc.moveTo(40, fy).lineTo(doc.page.width-40, fy).strokeColor('#ccc').lineWidth(0.5).stroke();
     doc.fontSize(7.5).font('Helvetica-Oblique').fillColor('#999')
-       .text('* Employer CPF is for company records only and is not deducted from staff pay.   This is a computer-generated document. Not a tax document.', 40, fy + 6);
+       .text('SHG is deducted from staff wages.  * Employer CPF and SDL are company costs, not deducted from staff pay.  Computer-generated document. Not a tax document.', 40, fy + 6);
 
     doc.end();
   } catch(e) { res.status(500).json({ error: e.message }); }
