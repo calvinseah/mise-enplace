@@ -215,6 +215,8 @@ function createSchema() {
 
   db.run("CREATE TABLE IF NOT EXISTS recipe_steps (id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_id INTEGER NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0, title TEXT NOT NULL, content TEXT NOT NULL, timer_seconds INTEGER, FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
 
+  db.run("CREATE TABLE IF NOT EXISTS recipe_outlets (recipe_id INTEGER NOT NULL, outlet_id INTEGER NOT NULL, PRIMARY KEY (recipe_id, outlet_id), FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE)");
+
   db.run(`CREATE TABLE IF NOT EXISTS maise_kb (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL,

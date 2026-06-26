@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
     const { outlet_id, category, q } = req.query;
     let sql = 'SELECT r.*, o.name as outlet_name FROM recipes r LEFT JOIN outlets o ON r.outlet_id=o.id WHERE 1=1';
     const params = [];
-    if (outlet_id) { sql += ' AND (r.outlet_id=? OR r.is_shared=1)'; params.push(outlet_id); }
+    if (outlet_id) { sql += ' AND (r.is_shared=1 OR r.outlet_id=? OR EXISTS (SELECT 1 FROM recipe_outlets ro WHERE ro.recipe_id=r.id AND ro.outlet_id=?))'; params.push(outlet_id, outlet_id); }
     if (category)  { sql += ' AND r.category=?'; params.push(category); }
     if (q)         { sql += ' AND r.name LIKE ?'; params.push('%'+q+'%'); }
     sql += ' ORDER BY r.category, r.name';
@@ -62,6 +62,28 @@ router.get('/import-seed', (req, res) => {
     }
     db.saveDB();
     res.json({ success: true, created, skipped, total: seed.length, createdNames });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// One-time: assign all imported recipes to every Tipo-branded outlet, so they
+// show across Tipo (Pasta Bar + Strada) but not the other brands.
+// Trigger once:  /api/recipes/assign-tipo?token=mise-recipes-2026
+const TIPO_OUTLETS = [7, 8, 11, 12, 9, 5]; // Aliwal, Waterloo, Great World, Keong Saik, Novena, Wheelock
+router.get('/assign-tipo', (req, res) => {
+  if (req.query.token !== 'mise-recipes-2026') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const recs = db.all("SELECT id FROM recipes WHERE created_by='import'");
+    let updated = 0;
+    for (const r of recs) {
+      db.run('UPDATE recipes SET is_shared=0, outlet_id=NULL WHERE id=?', [r.id]);
+      db.run('DELETE FROM recipe_outlets WHERE recipe_id=?', [r.id]);
+      for (const oid of TIPO_OUTLETS) {
+        db.run('INSERT OR IGNORE INTO recipe_outlets (recipe_id,outlet_id) VALUES (?,?)', [r.id, oid]);
+      }
+      updated++;
+    }
+    db.saveDB();
+    res.json({ success: true, updated, outlets: TIPO_OUTLETS });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
