@@ -69,6 +69,31 @@ function computeAllPayroll(from, to, outletId, staffId) {
   return results;
 }
 
+// Staff detail with punch cards
+router.get('/detail/:staffId', (req, res) => {
+  const { from, to } = req.query;
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  const s = db.get('SELECT * FROM staff WHERE id=?', [req.params.staffId]);
+  if (!s) return res.status(404).json({ error: 'Staff not found' });
+  const records = db.all(
+    `SELECT a.*, o.name as outlet_name FROM attendance a
+     LEFT JOIN outlets o ON a.outlet_id=o.id
+     WHERE a.staff_id=? AND substr(a.clock_in,1,10)>=? AND substr(a.clock_in,1,10)<=?
+     ORDER BY a.clock_in`,
+    [req.params.staffId, from, to]
+  );
+  // Outlet summary
+  const outletMap = {};
+  records.forEach(r => {
+    const k = r.outlet_id || 0;
+    if (!outletMap[k]) outletMap[k] = { name: r.outlet_name||'Unknown', shifts:0, hours:0, cost:0 };
+    outletMap[k].shifts++;
+    outletMap[k].hours += r.total_hours||0;
+    outletMap[k].cost += r.total_cost||0;
+  });
+  res.json({ records, outletSummary: Object.values(outletMap) });
+});
+
 // ── JSON preview ───────────────────────────────────────────────────────────────
 router.get('/summary', (req, res) => {
   const { from, to, outletId } = req.query;

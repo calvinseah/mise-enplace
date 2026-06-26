@@ -2,135 +2,132 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <title>Mise — Payroll Summary</title>
 <style>
-:root{--ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;--ink-60:rgba(26,35,24,.60);--ink-30:rgba(26,35,24,.30);--ink-08:rgba(26,35,24,.08);--ink-04:rgba(26,35,24,.04);--white:#ffffff;--card-radius:16px;--card-shadow:0 2px 12px rgba(26,35,24,.06),0 1px 3px rgba(26,35,24,.04);--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;--danger:#C0392B;--success:#2E6B3E;--warn:#B7791F;}
+:root{--ink:#1A2318;--accent:#3D5240;--surface:#F0F2EC;--white:#fff;--ink-60:rgba(26,35,24,.6);--ink-30:rgba(26,35,24,.3);--ink-08:rgba(26,35,24,.08);--font:'Inter',sans-serif;--font-display:'DM Serif Display',serif;--success:#2E6B3E;--danger:#C0392B}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;min-height:100vh;font-size:13px}
+body{font-family:var(--font);background:var(--surface);color:var(--ink);display:flex;min-height:100vh;font-size:13px}
 .sidebar{width:216px;background:#1A2318;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-.sb-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-.sb-logo-row{display:flex;align-items:center;gap:9px}
-.sb-icon{width:28px;height:28px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-icon span{font-family:var(--font-display);font-size:16px;color:#fff;line-height:1}
-.sb-name{font-size:15px;font-weight:400;color:#fff;font-family:var(--font-display)}
-.sb-addr{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px}
-.sb-nav{padding:8px;flex:1}
-.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;transition:all .12s;margin-bottom:1px}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:9px}
+.sb-icon{width:28px;height:28px;background:#3D5240;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.sb-icon span{font-family:var(--font-display);font-size:16px;color:#fff;font-style:italic}
+.sb-name{font-size:15px;color:#fff;font-family:var(--font-display)}
+.sb-nav{padding:8px;flex:1;overflow-y:auto}
+.sb-nav a{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:rgba(255,255,255,.45);text-decoration:none;font-size:12.5px;font-weight:500;margin-bottom:1px;transition:all .12s}
 .sb-nav a:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.05)}
 .sb-nav a.active{color:#fff;background:rgba(255,255,255,.09)}
 .sb-nav a svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
-.sb-nav a:hover svg,.sb-nav a.active svg{opacity:1}
-.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
-.sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s}
-.sb-logout:hover{color:rgba(255,255,255,.6)}
-.sb-logout svg{width:13px;height:13px}
-.main{flex:1;padding:28px 32px;min-width:0;overflow:auto}
-.page-title{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink);margin-bottom:4px}
-.page-sub{font-size:12.5px;color:var(--ink-60);margin-bottom:24px}
-.card{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:20px 24px;margin-bottom:16px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.stat{background:var(--white);border-radius:var(--card-radius);box-shadow:var(--card-shadow);border:1px solid var(--ink-08);padding:14px 18px}
-.stat-label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
-.stat-val{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink);line-height:1}
-.stat-val.green{color:var(--success)}
-.filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg label{font-size:11px;font-weight:500;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
-.fg input{height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:130px}
-.fg input:focus{border-color:var(--accent)}
-.btn{height:32px;padding:0 14px;border-radius:10px;border:none;font-size:12.5px;font-weight:500;font-family:var(--font);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px}
-.btn svg{width:13px;height:13px}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.85}
-.btn-ghost{background:transparent;color:var(--ink-60);border:1px solid var(--ink-08)}.btn-ghost:hover{background:var(--ink-04);color:var(--ink)}
-.export-row{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--ink-08)}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-thead th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--ink-08);white-space:nowrap}
-tbody td{padding:9px 12px;border-bottom:1px solid var(--ink-04)}
-tbody tr:hover td{background:var(--surface)}
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:8px}
+.sb-user{color:rgba(255,255,255,.5);font-size:11.5px}
+.sb-logout{background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;gap:6px;padding:0}
+.main{flex:1;padding:28px 32px;min-width:0}
+.page-title{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink)}
+.page-sub{font-size:12.5px;color:var(--ink-60);margin-top:3px;margin-bottom:20px}
+
+/* Summary cards */
+.summary-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sum-card{background:var(--white);border-radius:12px;border:1px solid var(--ink-08);padding:14px 16px}
+.sum-label{font-size:10px;font-weight:600;color:var(--ink-30);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.sum-val{font-size:22px;font-weight:400;font-family:var(--font-display);color:var(--ink)}
+
+/* Filters */
+.filters{background:var(--white);border-radius:12px;border:1px solid var(--ink-08);padding:16px 18px;margin-bottom:20px}
+.filter-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select{height:34px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12.5px;font-family:var(--font);color:var(--ink);background:var(--surface);outline:none}
+.fg input[type=month]{min-width:150px}
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 16px;border-radius:8px;font-size:12.5px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:opacity .12s}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--surface);color:var(--ink-60);border:1px solid var(--ink-08)}
+.btn-sm{height:28px;padding:0 12px;font-size:12px}
+
+.filter-row2{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--ink-08);flex-wrap:wrap}
+.company-label{font-size:10.5px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em}
+
+/* Table */
+.table-wrap{background:var(--white);border-radius:12px;border:1px solid var(--ink-08);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--ink-30);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--ink-08);white-space:nowrap}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--ink-08);font-size:12.5px;color:var(--ink);white-space:nowrap}
 tbody tr:last-child td{border-bottom:none}
-.sum-row td{background:#E8EDE3;font-weight:600;color:var(--accent);border-top:1px solid var(--ink-08);border-bottom:none}
-.cpf-note{font-size:11px;color:var(--ink-30);margin-top:10px}
-.empty{text-align:center;color:var(--ink-30);padding:40px;font-size:12.5px}
-.avatar{width:26px;height:26px;border-radius:50%;background:#E8EDE3;color:var(--accent);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.name-cell{display:flex;align-items:center;gap:8px}
-@media(max-width:480px){.sidebar{width:100%;height:auto;position:relative}.sb-nav{display:flex;flex-direction:row;overflow-x:auto;padding:6px 0}.sb-nav a{padding:6px 10px;white-space:nowrap;margin-bottom:0;font-size:12px}.sb-nav a svg{display:none}.sb-footer{display:none}.main{padding:16px}.stats{grid-template-columns:1fr 1fr}}
-</style>
-<style>
-/* ── Mobile: hamburger drawer ── */
-.mob-topbar{display:none}
-@media(max-width:480px){
-  body{flex-direction:column}
-  .sidebar{display:none;position:fixed;inset:0;z-index:400;width:82%;max-width:280px;height:100vh;overflow-y:auto;transform:translateX(-100%);transition:transform .25s ease}
-  .sidebar.mob-open{display:flex;transform:translateX(0)}
-  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:399}
-  .mob-overlay.open{display:block}
-  .mob-topbar{display:flex;align-items:center;gap:12px;background:#1A2318;padding:14px 16px;padding-top:max(14px,env(safe-area-inset-top));flex-shrink:0;position:sticky;top:0;z-index:10}
-  .mob-hamburger{width:38px;height:38px;background:rgba(255,255,255,.08);border:none;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
-  .mob-hamburger span{display:block;width:18px;height:1.5px;background:#fff;border-radius:2px}
-  .mob-brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex:1}
-  .mob-icon{width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
-  .mob-icon span{font-family:'DM Serif Display',serif;font-size:16px;color:#fff;line-height:1;font-style:italic}
-  .mob-name{font-size:17px;font-weight:400;font-family:'DM Serif Display',serif;color:#fff}
-  .main{padding:14px 12px;padding-bottom:env(safe-area-inset-bottom,20px)}
-  .stats,.col-stats{grid-template-columns:1fr 1fr;gap:8px}
-  .stat,.col-stat{padding:12px 14px}
-  .stat-val,.col-stat-val{font-size:20px}
-  .filters{flex-direction:column;gap:8px}
-  .filters .fg{width:100%}
-  .filters .fg input,.filters .fg select{min-width:0;width:100%;height:40px;font-size:14px}
-  .filters .btn{height:40px;width:100%;justify-content:center}
-  .card{padding:14px;border-radius:12px;margin-bottom:10px}
-  .page-title{font-size:18px}
-  .page-header{flex-direction:column;gap:10px;align-items:flex-start}
-  .page-header .btn{width:100%;justify-content:center}
-  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px}
-  table{font-size:12px;min-width:520px}
-  thead th{padding:8px 10px;font-size:10px}
-  tbody td{padding:8px 10px}
-  .modal{width:calc(100vw - 24px);max-height:85vh;padding:18px;border-radius:14px}
-  .btn-sm{height:28px;padding:0 10px;font-size:11px}
-  .form-grid{grid-template-columns:1fr}
-  .tabs{overflow-x:auto;flex-wrap:nowrap}
-  .tab{white-space:nowrap;padding:7px 12px;font-size:12px}
-}
+tbody tr:hover{background:var(--surface);cursor:pointer}
+.empty-row td{text-align:center;color:var(--ink-30);padding:32px;font-style:italic}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:600}
+.badge-ft{background:#EFF6FF;color:#1D4ED8}
+.badge-pt{background:#F0FDF4;color:var(--success)}
+
+/* Alert */
+.alert{padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.alert-ok{background:#F0FDF4;color:var(--success);border:1px solid rgba(46,107,62,.2)}
+.alert-err{background:#FEF2F2;color:var(--danger);border:1px solid rgba(192,57,43,.2)}
+
+/* Staff detail panel */
+.detail-overlay{display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end}
+.detail-overlay.open{display:flex}
+.detail-panel{width:520px;height:100vh;background:var(--surface);overflow-y:auto;display:flex;flex-direction:column}
+.detail-header{padding:20px;border-bottom:1px solid var(--ink-08);background:var(--white);display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:1}
+.detail-close{width:32px;height:32px;border-radius:50%;border:1px solid var(--ink-08);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.detail-name{font-size:16px;font-weight:400;font-family:var(--font-display);color:var(--ink)}
+.detail-body{padding:16px;flex:1}
+
+/* Punch cards */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.sum-mini{background:var(--white);border-radius:10px;padding:10px 12px;border:1px solid var(--ink-08)}
+.sum-mini-label{font-size:9.5px;font-weight:600;color:var(--ink-30);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.sum-mini-val{font-size:17px;font-weight:400;font-family:var(--font-display);color:var(--accent)}
+.outlet-row{display:flex;align-items:center;justify-content:space-between;background:var(--white);border-radius:9px;padding:10px 12px;margin-bottom:6px;border:1px solid var(--ink-08)}
+.outlet-name{font-size:13px;font-weight:600;color:var(--ink)}
+.outlet-detail{font-size:11px;color:var(--ink-60)}
+.outlet-cost{font-size:13px;font-weight:600;color:var(--accent)}
+.outlet-hrs{font-size:11px;color:var(--ink-30)}
+.sec-label{font-size:10px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;margin-top:14px}
+.punch-card{background:var(--white);border:1px solid var(--ink-08);border-radius:12px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden}
+.punch-card.ph{border-color:#FDE68A}
+.ph-badge{position:absolute;top:0;right:0;background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:3px 9px;border-radius:0 12px 0 8px}
+.edited-badge{position:absolute;top:0;left:0;background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:3px 9px;border-radius:12px 0 8px 0}
+.punch-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.punch-date{font-size:13px;font-weight:700;color:var(--ink)}
+.punch-cost{font-size:13px;font-weight:600;color:var(--accent)}
+.punch-outlet{font-size:11px;color:var(--ink-60);margin-bottom:8px}
+.punch-times{display:flex;align-items:center;gap:5px}
+.time-box{flex:1;background:var(--surface);border-radius:8px;padding:7px 8px;text-align:center}
+.time-box-label{font-size:9px;font-weight:600;color:var(--ink-30);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.time-box-val{font-size:12.5px;font-weight:600;color:var(--ink)}
+.time-box-val.active{color:var(--success)}
+.punch-arrow{color:var(--ink-30);font-size:13px;flex-shrink:0}
+.punch-break{font-size:10.5px;color:var(--ink-30);text-align:center;margin-top:5px}
 </style>
 </head>
 <body>
+
 <aside class="sidebar">
   <div class="sb-logo">
-    <div class="sb-logo-row">
-      <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none">
-      <div class="sb-icon"><span>M</span></div>
-      <div><div class="sb-name">Mise</div><div class="sb-addr">Every person, in place.</div></div>
-      </a>
-    </div>
+    <div class="sb-icon"><span>M</span></div>
+    <div class="sb-name">Mise</div>
   </div>
-    <nav class="sb-nav">
-    <a href="/dashboard" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
-    <a href="/staff" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
-    <a href="/applications" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Applications</a>
-    <a href="/roster" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Roster</a>
-    <a href="/payslip"  data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Payslip</a>
-    <a href="/payroll-summary" class="active" data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
-    <a href="/companies"  data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Companies</a>
-    <a href="/labour-cost" ><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
-    <a href="/audit"  data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Audit Log</a>
+  <nav class="sb-nav">
+    <a href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/></svg>Dashboard</a>
+    <a href="/staff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</a>
+    <a href="/applications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Applications</a>
+    <a href="/roster"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Roster</a>
+    <a href="/payslip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Payslip</a>
+    <a href="/payroll-summary" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Payroll</a>
+    <a href="/companies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Companies</a>
+    <a href="/labour-cost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Labour Cost</a>
+    <a href="/audit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Audit Log</a>
+    <a href="/maise-kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>MAIse KB</a>
     <a href="/recipes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Recipes</a>
-    <a href="/maise-kb"  data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>MAIse KB</a>
-    <a href="/users"  data-admin-only="1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users</a>
+    <a href="/users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
     <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>Clock-in page</a>
   </nav>
   <div class="sb-footer">
-    <button class="sb-backup" onclick="backupDB()" data-admin-only="1" style="background:none;border:none;color:rgba(255,255,255,.3);font-size:11.5px;font-family:var(--font);cursor:pointer;padding:0;display:flex;align-items:center;gap:6px;transition:color .12s;margin-bottom:10px;width:100%">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Backup database
-    </button>
+    <div class="sb-user" id="sbUser"></div>
     <button class="sb-logout" onclick="logout()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Sign out
     </button>
   </div>
@@ -140,547 +137,330 @@ tbody tr:last-child td{border-bottom:none}
   <div class="page-title">Payroll Summary</div>
   <div class="page-sub">All staff for a pay period — export as Excel or PDF</div>
 
-  <div class="stats" id="statsRow">
-    <div class="stat"><div class="stat-label">Staff</div><div class="stat-val" id="sStaff">—</div></div>
-    <div class="stat"><div class="stat-label">Total hours</div><div class="stat-val" id="sHours">—</div></div>
-    <div class="stat"><div class="stat-label">Gross pay</div><div class="stat-val" id="sGross">—</div></div>
-    <div class="stat"><div class="stat-label">Net pay</div><div class="stat-val green" id="sNet">—</div></div>
+  <div id="alertBox" class="alert"></div>
+
+  <!-- Summary cards -->
+  <div class="summary-cards">
+    <div class="sum-card"><div class="sum-label">Staff</div><div class="sum-val" id="cardStaff">—</div></div>
+    <div class="sum-card"><div class="sum-label">Total Hours</div><div class="sum-val" id="cardHours">—</div></div>
+    <div class="sum-card"><div class="sum-label">Gross Pay</div><div class="sum-val" id="cardGross">—</div></div>
+    <div class="sum-card"><div class="sum-label">Net Pay</div><div class="sum-val" id="cardNet">—</div></div>
   </div>
 
-  <div class="card">
-    <!-- Row 1: Period -->
-    <div class="filters" style="margin-bottom:10px">
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-row">
       <div class="fg">
         <label>Month</label>
-        <input type="month" id="psMonth" onchange="onMonthChange()" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:140px">
+        <input type="month" id="psMonth">
       </div>
-      <div class="fg" id="customRangeFields" style="display:none"><label>From</label><input type="date" id="psFrom"></div>
-      <div class="fg" id="customRangeFields2" style="display:none"><label>To</label><input type="date" id="psTo"></div>
-      <div class="fg" style="align-self:flex-end"><label style="visibility:hidden">x</label><button onclick="toggleCustomRange()" id="customRangeBtn" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--ink-08);background:transparent;font-size:12px;color:var(--ink-60);font-family:var(--font);cursor:pointer;white-space:nowrap">Custom range</button></div>
-      <div class="fg"><label>Outlet</label><select id="psOutlet" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:140px;-webkit-appearance:none"><option value="">All outlets</option></select></div>
-      <div class="fg"><label>Staff</label><select id="psStaffFilter" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:160px;-webkit-appearance:none"><option value="">All staff</option></select></div>
-      <div style="align-self:flex-end">
-        <button class="btn btn-primary" onclick="loadSummary()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          Generate
-        </button>
-      </div>
-    </div>
-    <!-- Row 2: Export options -->
-    <div class="filters" style="border-top:1px solid var(--ink-08);padding-top:10px;margin-bottom:0">
       <div class="fg">
-        <label>Company (for export)</label>
-        <select id="psCompany" style="height:32px;padding:0 10px;border:1px solid var(--ink-08);border-radius:10px;font-size:12.5px;color:var(--ink);background:var(--white);font-family:var(--font);outline:none;min-width:200px;-webkit-appearance:none"><option value="">— Select company —</option></select>
+        <label>From</label>
+        <input type="date" id="psFrom">
       </div>
-      <div style="align-self:flex-end;display:flex;gap:6px">
-        <button class="btn btn-ghost" onclick="openEntityAssign()" title="Assign staff to entities for this month">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Assign entities
-        </button>
-        <a href="/companies" class="btn btn-ghost">Edit UENs ↗</a>
+      <div class="fg">
+        <label>To</label>
+        <input type="date" id="psTo">
       </div>
+      <div class="fg">
+        <label>Outlet</label>
+        <select id="psOutlet"><option value="">All outlets</option></select>
+      </div>
+      <div class="fg">
+        <label>Staff</label>
+        <select id="psStaff"><option value="">All staff</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="generate()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Generate
+      </button>
     </div>
-    <div class="export-row" id="exportRow" style="display:none">
-      <button class="btn btn-ghost" onclick="exportExcel()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Excel
+    <div class="filter-row2">
+      <div class="company-label">Company (for export)</div>
+      <select id="psCompany" style="height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12.5px;font-family:var(--font);color:var(--ink);background:var(--surface);outline:none;min-width:200px">
+        <option value="">— Select company —</option>
+      </select>
+      <button class="btn btn-ghost btn-sm" onclick="openAssignEntities()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Assign entities
       </button>
-      <button class="btn btn-ghost" onclick="exportPDF()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Download PDF
-      </button>
+      <button class="btn btn-ghost btn-sm" onclick="exportExcel()" id="exportExcelBtn" style="display:none">Export Excel</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportPDF()" id="exportPDFBtn" style="display:none">Export PDF</button>
     </div>
   </div>
 
-  <div class="card" style="padding:0">
+  <!-- Table -->
+  <div class="table-wrap">
     <table>
-      <thead><tr>
-        <th>Name</th><th>Role</th><th>Type</th><th>Shifts</th>
-        <th>Hours</th><th>OT hrs</th><th>Gross pay</th>
-        <th>Emp CPF (–)</th><th>Net pay</th><th>Er CPF *</th>
-      </tr></thead>
-      <tbody id="payrollBody"><tr><td colspan="10" class="empty">Select a pay period and click Generate</td></tr></tbody>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Type</th>
+          <th>Shifts</th>
+          <th>Hours</th>
+          <th>OT Hrs</th>
+          <th>Gross Pay</th>
+          <th>Emp CPF (−)</th>
+          <th>Net Pay</th>
+          <th>Er CPF *</th>
+        </tr>
+      </thead>
+      <tbody id="payrollBody">
+        <tr class="empty-row"><td colspan="10">Select a pay period and click Generate</td></tr>
+      </tbody>
     </table>
-    <div class="cpf-note" style="padding:10px 16px">* Employer CPF is for company records and is not deducted from staff pay.</div>
   </div>
+  <p style="font-size:11px;color:var(--ink-30);margin-top:8px">* Employer CPF is for company records and is not deducted from staff pay.</p>
 </main>
 
+<!-- Staff detail overlay -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <button class="detail-close" onclick="closeDetail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div>
+        <div class="detail-name" id="detailName">—</div>
+        <div style="font-size:11.5px;color:var(--ink-60)" id="detailPeriod">—</div>
+      </div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
 <script>
-const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
-// Set default month to current month
-document.getElementById('psMonth').value=`${y}-${m}`;
+var payrollData = [];
+var currentFrom = '', currentTo = '';
 
-function toggleCustomRange(){
-  const f1=document.getElementById('customRangeFields');
-  const f2=document.getElementById('customRangeFields2');
-  const btn=document.getElementById('customRangeBtn');
-  const showing = f1.style.display !== 'none';
-  f1.style.display = showing ? 'none' : '';
-  f2.style.display = showing ? 'none' : '';
-  btn.textContent = showing ? 'Custom range' : 'Use month picker';
-  btn.style.color = showing ? 'var(--ink-60)' : 'var(--accent)';
+// Set default month on load
+(function(){
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  document.getElementById('psMonth').value = y + '-' + m;
+  setDatesFromMonth(y + '-' + m);
+})();
+
+document.getElementById('psMonth').addEventListener('change', function() {
+  setDatesFromMonth(this.value);
+});
+
+function setDatesFromMonth(val) {
+  if (!val) return;
+  var parts = val.split('-');
+  var yr = parts[0], mo = parts[1];
+  var lastDay = new Date(parseInt(yr), parseInt(mo), 0).getDate();
+  document.getElementById('psFrom').value = yr + '-' + mo + '-01';
+  document.getElementById('psTo').value = yr + '-' + mo + '-' + String(lastDay).padStart(2, '0');
 }
 
-function onMonthChange(){
-  const val=document.getElementById('psMonth').value;
-  if(!val)return;
-  const [yr,mo]=val.split('-');
-  const lastDay=new Date(parseInt(yr),parseInt(mo),0).getDate();
-  // Always update hidden fields so params() can read them
-  document.getElementById('psFrom').value=`${yr}-${mo}-01`;
-  document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
-  // Update visible custom fields if shown
-  const cf=document.getElementById('customRangeFields');
-  if(cf&&cf.style.display!=='none'){
-    document.getElementById('psFrom').value=`${yr}-${mo}-01`;
-    document.getElementById('psTo').value=`${yr}-${mo}-${String(lastDay).padStart(2,'0')}`;
-  }
-}
+// Load outlets
+fetch('/api/attendance/outlets').then(function(r){ return r.json(); }).then(function(outlets){
+  var sel = document.getElementById('psOutlet');
+  outlets.forEach(function(o){
+    sel.innerHTML += '<option value="' + o.id + '">' + o.name + '</option>';
+  });
+});
 
+// Load staff
+fetch('/api/staff').then(function(r){ return r.json(); }).then(function(staff){
+  var sel = document.getElementById('psStaff');
+  staff.filter(function(s){ return s.is_active; }).forEach(function(s){
+    sel.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
+  });
+});
 
-async function loadCompanies(){
-  try{
-    const r=await fetch('/api/companies');
-    const companies=await r.json();
-    _entityCompanies=companies;
-    const bulkSel=document.getElementById('entityBulkAssign');
-    companies.forEach(c=>{const opt=document.createElement('option');opt.value=c.id;opt.textContent=c.name;bulkSel.appendChild(opt);});
-    const sel=document.getElementById('psCompany');
-    companies.forEach(c=>{
-      const opt=document.createElement('option');
-      opt.value=c.id;
-      opt.textContent=c.name;
-      opt.dataset.uen=c.uen||'';
-      sel.appendChild(opt);
-    });
-  }catch(e){}
-}
+// Load companies
+fetch('/api/companies').then(function(r){ return r.json(); }).then(function(companies){
+  var sel = document.getElementById('psCompany');
+  companies.forEach(function(c){
+    sel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>';
+  });
+});
 
-async function exportAllCompanies(e){
-  e.preventDefault();
-  const from=document.getElementById('psFrom').value;
-  const to=document.getElementById('psTo').value;
-  if(!from||!to){showAlert('Please set a pay period first','err');return;}
-  // Export one PDF per company
-  try{
-    const r=await fetch('/api/companies');
-    const companies=await r.json();
-    for(const c of companies){
-      const p=new URLSearchParams({from,to,companyId:c.id});
-      const o=document.getElementById('psOutlet').value;
-      if(o)p.set('outletId',o);
-      window.open('/api/payroll-summary/export/pdf?'+p.toString(),'_blank');
-      await new Promise(res=>setTimeout(res,800)); // stagger to avoid popup blocking
-    }
-  }catch(e){showAlert('Error generating exports','err');}
-}
+async function generate() {
+  var from = document.getElementById('psFrom').value;
+  var to = document.getElementById('psTo').value;
+  if (!from || !to) { showAlert('Please select a month or date range', 'err'); return; }
+  currentFrom = from; currentTo = to;
 
-async function loadStaffDropdown(){
-  try{
-    const r=await fetch('/api/staff');
-    const staff=await r.json();
-    _entityStaff=staff.filter(s=>s.is_active!==0);
-    const sel=document.getElementById('psStaffFilter');
-    staff.filter(s=>s.is_active!==0).sort((a,b)=>a.name.localeCompare(b.name)).forEach(s=>{
-      const opt=document.createElement('option');
-      opt.value=s.id;
-      opt.textContent=s.name;
-      sel.appendChild(opt);
-    });
-  }catch(e){}
-}
+  var outlet = document.getElementById('psOutlet').value;
+  var staff = document.getElementById('psStaff').value;
+  var url = '/api/payroll-summary/summary?from=' + from + '&to=' + to;
+  if (outlet) url += '&outlet_id=' + outlet;
+  if (staff) url += '&staff_id=' + staff;
 
-async function loadOutlets(){
-  try{
-    const r=await fetch('/api/staff/outlets/list');
-    const outlets=await r.json();
-    const sel=document.getElementById('psOutlet');
-    outlets.forEach(o=>{const opt=document.createElement('option');opt.value=o.id;opt.textContent=o.name;sel.appendChild(opt);});
-  }catch(e){}
-}
+  var tbody = document.getElementById('payrollBody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Loading…</td></tr>';
 
-function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
-function params(){
-  const p=new URLSearchParams({from:document.getElementById('psFrom').value,to:document.getElementById('psTo').value});
-  const o=document.getElementById('psOutlet').value;
-  if(o)p.set('outletId',o);
-  const c=document.getElementById('psCompany').value;
-  if(c)p.set('companyId',c);
-  const s=document.getElementById('psStaffFilter').value;
-  if(s)p.set('staffId',s);
-  return p;
-}
-
-async function loadSummary(){
-  const from=document.getElementById('psFrom').value,to=document.getElementById('psTo').value;
-  if(!from||!to)return;
-  try{
-    const r=await fetch('/api/payroll-summary/summary?'+params());
-    const d=await r.json();
-    if(!d.rows){return;}
-    renderTable(d.rows,d.totals);
-    document.getElementById('sStaff').textContent=d.rows.length;
-    document.getElementById('sHours').textContent=d.totals.totalHours.toFixed(1);
-    document.getElementById('sGross').textContent='$'+(Math.round(d.totals.grossPay*100)/100).toFixed(2);
-    document.getElementById('sNet').textContent='$'+(Math.round(d.totals.netPay*100)/100).toFixed(2);
-    document.getElementById('exportRow').style.display='flex';
-  }catch(e){console.error(e);}
-}
-
-function renderTable(rows,totals){
-  const tb=document.getElementById('payrollBody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="10" class="empty">No shifts found in this period</td></tr>';return;}
-  tb.innerHTML=rows.map(r=>`<tr>
-    <td><div class="name-cell"><div class="avatar">${initials(r.name)}</div><div><div style="font-weight:500">${r.name}</div>${r.nric_last4?`<div style="font-size:11px;color:var(--ink-60)">****${r.nric_last4}</div>`:''}</div></div></td>
-    <td>${r.role}</td>
-    <td>${r.staff_type==='fulltime'?'Full-time':'Part-time'}</td>
-    <td>${r.shifts}</td>
-    <td style="font-variant-numeric:tabular-nums">${r.totalHours.toFixed(2)}</td>
-    <td style="font-variant-numeric:tabular-nums;color:var(--ink-60)">${r.otHours>0?r.otHours.toFixed(2):'—'}</td>
-    <td style="font-weight:500">$${r.grossPay.toFixed(2)}</td>
-    <td style="color:var(--danger)">${r.hasCPF?'–$'+r.empCPF.toFixed(2):'—'}</td>
-    <td style="font-weight:600;color:var(--success)">$${r.netPay.toFixed(2)}</td>
-    <td style="color:var(--ink-60)">${r.hasCPF?'$'+r.erCPF.toFixed(2):'—'}</td>
-  </tr>`).join('');
-
-  tb.innerHTML+=`<tr class="sum-row">
-    <td colspan="4">Total — ${rows.length} staff</td>
-    <td>${(Math.round(totals.totalHours*100)/100).toFixed(2)} hrs</td>
-    <td>—</td>
-    <td>$${(Math.round(totals.grossPay*100)/100).toFixed(2)}</td>
-    <td>–$${(Math.round(totals.empCPF*100)/100).toFixed(2)}</td>
-    <td>$${(Math.round(totals.netPay*100)/100).toFixed(2)}</td>
-    <td>$${(Math.round(totals.erCPF*100)/100).toFixed(2)}</td>
-  </tr>`;
-}
-
-function exportExcel(){window.open('/api/payroll-summary/export/excel?'+params(),'_blank');}
-function exportPDF(){window.open('/api/payroll-summary/export/pdf?'+params(),'_blank');}
-
-function openStaffDetail(r) {
-  document.getElementById('staffDetailOverlay').style.display = 'flex';
-  document.getElementById('staffDetailName').textContent = r.name;
-  loadStaffDetail(r);
-}
-
-function closeStaffDetail() {
-  document.getElementById('staffDetailOverlay').style.display = 'none';
-}
-
-async function loadStaffDetail(r) {
-  const el = document.getElementById('staffDetailContent');
-  const from = document.getElementById('psFrom').value;
-  const to = document.getElementById('psTo').value;
-  const outletId = document.getElementById('psOutlet').value;
-
-  // Summary header
-  const grossPay = r.gross_pay || r.grossPay || 0;
-  const netPay = r.net_pay || r.netPay || 0;
-  const empCPF = r.employee_cpf || r.employeeCPF || 0;
-  const emplCPF = r.employer_cpf || r.employerCPF || 0;
-  const totalHours = r.total_hours || r.totalHours || 0;
-
-  // Fetch individual shift records
   try {
-    const p = new URLSearchParams({ from, to });
-    if (outletId) p.set('outletId', outletId);
-    const res = await fetch('/api/attendance?staffId=' + r.staff_id + '&' + p);
-    const shifts = res.ok ? await res.json() : [];
-
-    const summaryHtml = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px">
-        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
-          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Gross Pay</div>
-          <div style="font-size:20px;font-weight:400;font-family:var(--font-display);color:var(--accent)">$${grossPay.toFixed(2)}</div>
-        </div>
-        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
-          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Net Pay</div>
-          <div style="font-size:20px;font-weight:400;font-family:var(--font-display);color:var(--accent)">$${netPay.toFixed(2)}</div>
-        </div>
-        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
-          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Total Hours</div>
-          <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)">${totalHours.toFixed(1)}h</div>
-        </div>
-        <div style="background:var(--surface);border-radius:10px;padding:12px 14px">
-          <div style="font-size:10px;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Employer CPF</div>
-          <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)">$${emplCPF.toFixed(2)}</div>
-        </div>
-      </div>`;
-
-    // Build outlet summary
-    const outletMap = {};
-    shifts.forEach(s => {
-      const name = s.outlet_name || 'Unknown';
-      if (!outletMap[name]) outletMap[name] = { shifts: 0, hours: 0, cost: 0 };
-      outletMap[name].shifts++;
-      outletMap[name].hours += s.total_hours || 0;
-      outletMap[name].cost += s.total_cost || 0;
-    });
-
-    const outletSummaryHtml = Object.entries(outletMap).length > 0 ? `
-      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Outlets worked</div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px">
-        ${Object.entries(outletMap).map(([name, data]) => `
-          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border-radius:8px;padding:10px 12px">
-            <div>
-              <div style="font-size:13px;font-weight:600;color:var(--ink)">${name}</div>
-              <div style="font-size:11px;color:var(--ink-60)">${data.shifts} shift${data.shifts!==1?'s':''}</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:13px;font-weight:600;color:var(--accent)">$${data.cost.toFixed(2)}</div>
-              <div style="font-size:11px;color:var(--ink-60)">${data.hours.toFixed(1)} hrs</div>
-            </div>
-          </div>`).join('')}
-      </div>` : '';
-
-    const shiftRows = shifts.map(s => {
-      const date = s.clock_in ? s.clock_in.slice(0,10) : '—';
-      const tin = s.clock_in ? new Date(s.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
-      const tout = s.clock_out ? new Date(s.clock_out).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : 'Active';
-      const hrs = s.total_hours ? s.total_hours.toFixed(2) : '—';
-      const cost = s.total_cost ? '$' + s.total_cost.toFixed(2) : '—';
-      const ph = s.is_public_holiday ? '<span style="font-size:9px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 5px;margin-left:4px">PH</span>' : '';
-      const outlet = s.outlet_name ? '<div style="font-size:10.5px;color:var(--ink-60)">' + s.outlet_name + '</div>' : '';
-      return '<tr>' +
-        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04)">' + date + ph + outlet + '</td>' +
-        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);color:var(--ink-60)">' + tin + ' – ' + tout + '</td>' +
-        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);text-align:right">' + hrs + 'h</td>' +
-        '<td style="padding:8px 10px;font-size:12px;border-bottom:1px solid var(--ink-04);text-align:right;font-weight:500">' + cost + '</td>' +
-        '</tr>';
-    }).join('');
-
-    // Punch cards
-    const punchCards = shifts.length ? `
-      <div style="font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Shift records</div>
-      ${shifts.map(s => {
-        const date = s.clock_in ? new Date(s.clock_in).toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short'}) : '—';
-        const tin  = s.clock_in  ? new Date(s.clock_in).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : '—';
-        const tout = s.clock_out ? new Date(s.clock_out).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true}) : 'Active';
-        const hrs  = s.total_hours ? s.total_hours.toFixed(1) : '—';
-        const cost = s.total_cost ? '$'+Number(s.total_cost).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
-        const isActive = !s.clock_out;
-        const isPH = s.is_public_holiday;
-        const brk = s.break_minutes ? s.break_minutes + 'm break' : '';
-        const isAmended = s.is_amended;
-        return \`<div style="background:#fff;border:1px solid var(--ink-08);border-radius:12px;padding:12px 14px;margin-bottom:8px;position:relative;overflow:hidden">
-          \${isPH ? '<div style="position:absolute;top:0;right:0;background:#FEF3C7;color:#92400E;font-size:9px;font-weight:700;padding:3px 8px;border-radius:0 12px 0 8px">PH</div>' : ''}
-          \${isAmended ? '<div style="position:absolute;top:0;left:0;background:#EFF6FF;color:#1D4ED8;font-size:9px;font-weight:700;padding:3px 8px;border-radius:12px 0 8px 0">Edited</div>' : ''}
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div style="font-size:12.5px;font-weight:700;color:var(--ink)">\${date}</div>
-            <div style="font-size:11.5px;font-weight:600;color:var(--accent)">\${cost}</div>
-          </div>
-          <div style="font-size:11px;color:var(--ink-60);margin-bottom:8px">\${s.outlet_name||'—'}</div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
-              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Clock in</div>
-              <div style="font-size:13px;font-weight:600;color:var(--ink)">\${tin}</div>
-            </div>
-            <div style="color:var(--ink-30);font-size:16px">→</div>
-            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
-              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Clock out</div>
-              <div style="font-size:13px;font-weight:600;color:\${isActive?'#2E6B3E':' var(--ink)'}">\${tout}</div>
-            </div>
-            <div style="flex:1;background:var(--surface);border-radius:8px;padding:8px 10px;text-align:center">
-              <div style="font-size:9.5px;color:var(--ink-30);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px">Hours</div>
-              <div style="font-size:13px;font-weight:600;color:var(--ink)">\${hrs}h</div>
-            </div>
-          </div>
-          \${brk ? '<div style="font-size:10.5px;color:var(--ink-30);margin-top:6px;text-align:center">'+brk+'</div>' : ''}
-        </div>\`;
-      }).join('')}` : '<div style="text-align:center;padding:20px;color:var(--ink-60);font-size:13px">No shifts found for this period</div>';
-
-    el.innerHTML = summaryHtml + outletSummaryHtml + punchCards;
+    var r = await fetch(url);
+    var data = await r.json();
+    if (data.error) { showAlert(data.error, 'err'); return; }
+    payrollData = data;
+    renderTable(data);
+    document.getElementById('exportExcelBtn').style.display = 'inline-flex';
+    document.getElementById('exportPDFBtn').style.display = 'inline-flex';
   } catch(e) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--ink-60)">Error loading shifts</div>';
+    showAlert('Error loading payroll data', 'err');
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Error loading data</td></tr>';
   }
 }
 
-
-// ── Entity assignments ────────────────────────────────────────────────────────
-let _entityCompanies = [];
-let _entityStaff = [];
-let _entityAssignments = {}; // staffId -> companyId
-
-async function openEntityAssign() {
-  const month = document.getElementById('psMonth').value;
-  if (!month) { showAlert('Please select a month first', 'err'); return; }
-  const [yr, mo] = month.split('-');
-
-  document.getElementById('entityPanelTitle').textContent = 'Assign entities — ' + month;
-  document.getElementById('entityOverlay').style.display = 'flex';
-
-  // Load companies into bulk selector
-  const bulkSel = document.getElementById('entityBulkAssign');
-  if (bulkSel.options.length <= 1 && _entityCompanies.length) {
-    _entityCompanies.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id; opt.textContent = c.name;
-      bulkSel.appendChild(opt);
-    });
+function renderTable(data) {
+  var tbody = document.getElementById('payrollBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No records found for this period</td></tr>';
+    document.getElementById('cardStaff').textContent = '0';
+    document.getElementById('cardHours').textContent = '0h';
+    document.getElementById('cardGross').textContent = '$0';
+    document.getElementById('cardNet').textContent = '$0';
+    return;
   }
 
-  // Load existing assignments for this month
+  var totHours = 0, totGross = 0, totNet = 0;
+  tbody.innerHTML = data.map(function(s) {
+    totHours += s.totalHours || 0;
+    totGross += s.grossPay || 0;
+    totNet += s.netPay || 0;
+    var empCPF = s.empCPF || 0;
+    var erCPF = s.erCPF || 0;
+    var type = s.staff_type === 'fulltime' ? '<span class="badge badge-ft">FT</span>' : '<span class="badge badge-pt">PT</span>';
+    return '<tr onclick="openDetail(' + s.id + ')">' +
+      '<td style="font-weight:600">' + s.name + '</td>' +
+      '<td>' + (s.role || '—') + '</td>' +
+      '<td>' + type + '</td>' +
+      '<td>' + (s.shifts || 0) + '</td>' +
+      '<td>' + (s.totalHours || 0).toFixed(1) + '</td>' +
+      '<td>' + (s.otHours || 0).toFixed(1) + '</td>' +
+      '<td>$' + (s.grossPay || 0).toFixed(2) + '</td>' +
+      '<td>' + (empCPF > 0 ? '$' + empCPF.toFixed(2) : '—') + '</td>' +
+      '<td style="font-weight:600">$' + (s.netPay || 0).toFixed(2) + '</td>' +
+      '<td style="color:var(--ink-60)">' + (erCPF > 0 ? '$' + erCPF.toFixed(2) : '—') + '</td>' +
+    '</tr>';
+  }).join('');
+
+  document.getElementById('cardStaff').textContent = data.length;
+  document.getElementById('cardHours').textContent = totHours.toFixed(1) + 'h';
+  document.getElementById('cardGross').textContent = '$' + totGross.toFixed(2);
+  document.getElementById('cardNet').textContent = '$' + totNet.toFixed(2);
+}
+
+async function openDetail(staffId) {
+  var s = payrollData.find(function(x){ return x.id === staffId; });
+  if (!s) return;
+  document.getElementById('detailName').textContent = s.name;
+  document.getElementById('detailPeriod').textContent = currentFrom + ' to ' + currentTo;
+  document.getElementById('detailBody').innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-30)">Loading…</div>';
+  document.getElementById('detailOverlay').classList.add('open');
+
+  var empCPF = s.empCPF || 0;
+  var erCPF = s.erCPF || 0;
+  var html = '<div class="sum-grid">' +
+    '<div class="sum-mini"><div class="sum-mini-label">Gross Pay</div><div class="sum-mini-val">$' + (s.grossPay||0).toFixed(2) + '</div></div>' +
+    '<div class="sum-mini"><div class="sum-mini-label">Net Pay</div><div class="sum-mini-val">$' + (s.netPay||0).toFixed(2) + '</div></div>' +
+    '<div class="sum-mini"><div class="sum-mini-label">Total Hours</div><div class="sum-mini-val" style="color:var(--ink)">' + (s.totalHours||0).toFixed(1) + 'h</div></div>' +
+    '<div class="sum-mini"><div class="sum-mini-label">Employer CPF</div><div class="sum-mini-val" style="color:var(--ink)">' + (erCPF > 0 ? '$'+erCPF.toFixed(2) : '—') + '</div></div>' +
+  '</div>';
+
+  // Fetch detail
   try {
-    const r = await fetch('/api/payroll-summary/entity-assignments?year=' + yr + '&month=' + mo);
-    const existing = await r.json();
-    _entityAssignments = {};
-    existing.forEach(a => { _entityAssignments[a.staff_id] = a.company_id; });
+    var detail = await fetch('/api/payroll-summary/detail/' + staffId + '?from=' + currentFrom + '&to=' + currentTo).then(function(r){ return r.json(); });
+
+    if (detail.outletSummary && detail.outletSummary.length) {
+      html += '<div class="sec-label">Outlets worked</div>';
+      detail.outletSummary.forEach(function(o){
+        html += '<div class="outlet-row">' +
+          '<div><div class="outlet-name">' + o.name + '</div><div class="outlet-detail">' + o.shifts + ' shifts</div></div>' +
+          '<div style="text-align:right"><div class="outlet-cost">$' + o.cost.toFixed(2) + '</div><div class="outlet-hrs">' + o.hours.toFixed(1) + ' hrs</div></div>' +
+        '</div>';
+      });
+    }
+
+    if (detail.records && detail.records.length) {
+      html += '<div class="sec-label">Shift records</div>';
+      detail.records.forEach(function(r){
+        var date = new Date(r.clock_in);
+        var dateStr = date.toLocaleDateString('en-SG', {weekday:'short', day:'numeric', month:'short'});
+        var inTime = date.toLocaleTimeString('en-SG', {hour:'2-digit', minute:'2-digit', hour12:true});
+        var outTime = r.clock_out ? new Date(r.clock_out).toLocaleTimeString('en-SG', {hour:'2-digit', minute:'2-digit', hour12:true}) : null;
+        html += '<div class="punch-card' + (r.is_public_holiday ? ' ph' : '') + '">' +
+          (r.is_public_holiday ? '<div class="ph-badge">PH</div>' : '') +
+          (r.is_amended ? '<div class="edited-badge">Edited</div>' : '') +
+          '<div class="punch-top' + (r.is_amended ? ' style='padding-top:8px'' : '') + '">' +
+            '<div class="punch-date">' + dateStr + '</div>' +
+            '<div class="punch-cost">$' + (r.total_cost||0).toFixed(2) + '</div>' +
+          '</div>' +
+          '<div class="punch-outlet">' + (r.outlet_name||'—') + '</div>' +
+          '<div class="punch-times">' +
+            '<div class="time-box"><div class="time-box-label">Clock in</div><div class="time-box-val">' + inTime + '</div></div>' +
+            '<div class="punch-arrow">→</div>' +
+            '<div class="time-box"><div class="time-box-label">Clock out</div><div class="time-box-val' + (!outTime?' active':'') + '">' + (outTime||'● Active') + '</div></div>' +
+            '<div class="punch-arrow">·</div>' +
+            '<div class="time-box"><div class="time-box-label">Hours</div><div class="time-box-val">' + (r.total_hours||0).toFixed(1) + 'h</div></div>' +
+          '</div>' +
+          (r.break_minutes > 0 ? '<div class="punch-break">' + r.break_minutes + 'm break</div>' : '') +
+        '</div>';
+      });
+    }
   } catch(e) {}
 
-  renderEntityList(yr, mo);
+  html += '<div style="height:24px"></div>';
+  document.getElementById('detailBody').innerHTML = html;
 }
 
-function renderEntityList(yr, mo) {
-  const el = document.getElementById('entityStaffList');
-  const outletId = document.getElementById('psOutlet').value;
-  const staff = outletId
-    ? _entityStaff.filter(s => String(s.outlet_id) === String(outletId))
-    : _entityStaff;
-
-  el.innerHTML = staff.map(s => {
-    const assigned = _entityAssignments[s.id] || '';
-    const opts = _entityCompanies.map(c =>
-      `<option value="${c.id}" ${String(assigned)===String(c.id)?'selected':''}>${c.name}</option>`
-    ).join('');
-    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ink-08)">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>
-        <div style="font-size:11px;color:var(--ink-60)">${s.role||''} · ${s.staff_type==='fulltime'?'Full-time':'Part-time'}</div>
-      </div>
-      <select data-staff-id="${s.id}" onchange="_entityAssignments[${s.id}]=this.value"
-        style="width:190px;height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none;-webkit-appearance:none">
-        <option value="">— Unassigned —</option>
-        ${opts}
-      </select>
-    </div>`;
-  }).join('');
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
 }
 
-function bulkAssignEntity() {
-  const companyId = document.getElementById('entityBulkAssign').value;
-  if (!companyId) return;
-  document.querySelectorAll('[data-staff-id]').forEach(sel => {
-    sel.value = companyId;
-    _entityAssignments[sel.dataset.staffId] = companyId;
-  });
+function exportExcel() {
+  var from = document.getElementById('psFrom').value;
+  var to = document.getElementById('psTo').value;
+  var company = document.getElementById('psCompany').value;
+  var outlet = document.getElementById('psOutlet').value;
+  var url = '/api/payroll-summary/export/excel?from=' + from + '&to=' + to;
+  if (company) url += '&company_id=' + company;
+  if (outlet) url += '&outlet_id=' + outlet;
+  window.location.href = url;
 }
 
-async function saveEntityAssignments() {
-  const month = document.getElementById('psMonth').value;
-  const [yr, mo] = month.split('-');
-  const assignments = Object.entries(_entityAssignments).map(([staffId, companyId]) => ({
-    staffId: parseInt(staffId), companyId: companyId ? parseInt(companyId) : null
-  }));
-  try {
-    const r = await fetch('/api/payroll-summary/entity-assignments', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ assignments, year: parseInt(yr), month: parseInt(mo) })
-    });
-    const d = await r.json();
-    if (d.success) { showAlert('Entity assignments saved', 'ok'); closeEntityAssign(); }
-    else showAlert(d.error || 'Error', 'err');
-  } catch(e) { showAlert('Network error', 'err'); }
+function exportPDF() {
+  var from = document.getElementById('psFrom').value;
+  var to = document.getElementById('psTo').value;
+  var company = document.getElementById('psCompany').value;
+  var outlet = document.getElementById('psOutlet').value;
+  var url = '/api/payroll-summary/export/pdf?from=' + from + '&to=' + to;
+  if (company) url += '&company_id=' + company;
+  if (outlet) url += '&outlet_id=' + outlet;
+  window.location.href = url;
 }
 
-function closeEntityAssign() {
-  document.getElementById('entityOverlay').style.display = 'none';
+function openAssignEntities() {
+  var from = document.getElementById('psFrom').value;
+  var to = document.getElementById('psTo').value;
+  if (!from) { showAlert('Generate payroll first', 'err'); return; }
+  window.location.href = '/staff?assign=1&from=' + from + '&to=' + to;
 }
 
-async function logout(){await fetch('/api/auth/logout',{method:'POST'});location.href='/login';}
-(async function init(){
-  const now=new Date();
-  const y=now.getFullYear();
-  const m=String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('psMonth').value=y+'-'+m;
-  onMonthChange();
-  await loadOutlets();
-  await loadCompanies();
-})();
+function showAlert(msg, type) {
+  var el = document.getElementById('alertBox');
+  el.className = 'alert alert-' + type;
+  el.textContent = msg;
+  el.style.display = 'flex';
+  setTimeout(function(){ el.style.display = 'none'; }, 4000);
+}
+
+async function logout() { await fetch('/api/auth/logout', {method:'POST'}); location.href='/login'; }
+
+// Auth check
+fetch('/api/me').then(function(r){
+  if (!r.ok) { location.href = '/login'; return; }
+  return r.json();
+}).then(function(u){
+  if (u) document.getElementById('sbUser').textContent = u.name || u.username;
+});
 </script>
-<script src="/maise.js"></script>
-
-<script>
-// Role-aware nav
-(async function(){
-  try{
-    const r=await fetch('/api/me');
-    if(!r.ok){location.href='/login';return;}
-    const u=await r.json();
-    // Hide admin-only nav items for managers
-    if(u.role!=='admin'){
-      document.querySelectorAll('[data-admin-only]').forEach(el=>el.style.display='none');
-    }
-    // Show username in footer if present
-    const nameEl=document.getElementById('sbUserName');
-    if(nameEl)nameEl.textContent=u.name||u.username;
-    const roleEl=document.getElementById('sbUserRole');
-    if(roleEl)roleEl.textContent=u.role==='admin'?'Admin':'Manager';
-  }catch(e){}
-})();
-</script>
-
-<script>
-function openNav(){
-  document.getElementById('sidebar').classList.add('mob-open');
-  document.getElementById('mobOverlay').classList.add('open');
-  document.querySelector('.mob-close-btn').style.display='flex';
-}
-function closeNav(){
-  document.getElementById('sidebar').classList.remove('mob-open');
-  document.getElementById('mobOverlay').classList.remove('open');
-}
-document.querySelectorAll('.sb-nav a').forEach(a=>a.addEventListener('click',()=>{
-  if(window.innerWidth<=768)closeNav();
-}));
-</script>
-
-
-<script>
-async function backupDB() {
-  const token = prompt('Enter your BACKUP_TOKEN to download the database:');
-  if (!token) return;
-  window.location.href = '/api/backup?token=' + encodeURIComponent(token);
-}
-</script>
-
-<!-- Staff detail panel -->
-<div id="staffDetailOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeStaffDetail()">
-  <div id="staffDetailPanel" onclick="event.stopPropagation()" style="background:#fff;width:420px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div id="staffDetailName" style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)"></div>
-      <button onclick="closeStaffDetail()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:20px;line-height:1">×</button>
-    </div>
-    <div id="staffDetailContent"><div style="text-align:center;padding:40px;color:var(--ink-60)">Loading…</div></div>
-  </div>
-</div>
-
-
-<!-- Entity Assignment Panel -->
-<div id="entityOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,35,24,.4);z-index:300;align-items:flex-start;justify-content:flex-end" onclick="closeEntityAssign()">
-  <div onclick="event.stopPropagation()" style="background:#fff;width:480px;max-width:100vw;height:100vh;overflow-y:auto;padding:28px 24px;box-shadow:-4px 0 24px rgba(0,0,0,.12)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <div style="font-size:18px;font-weight:400;font-family:var(--font-display);color:var(--ink)" id="entityPanelTitle">Assign entities</div>
-      <button onclick="closeEntityAssign()" style="background:none;border:none;cursor:pointer;color:var(--ink-60);font-size:22px;line-height:1">×</button>
-    </div>
-    <div style="font-size:12px;color:var(--ink-60);margin-bottom:20px">Assign each staff member to a legal entity for this pay period. Used for CPF submissions and payslip headers.</div>
-
-    <!-- Quick assign all -->
-    <div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
-      <div style="font-size:12.5px;font-weight:500;color:var(--ink);flex:1">Assign all to:</div>
-      <select id="entityBulkAssign" style="flex:1;height:30px;padding:0 10px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none">
-        <option value="">— Select —</option>
-      </select>
-      <button onclick="bulkAssignEntity()" style="height:30px;padding:0 12px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font)">Apply all</button>
-    </div>
-
-    <div id="entityStaffList" style="margin-bottom:16px"></div>
-
-    <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--ink-08)">
-      <button onclick="closeEntityAssign()" style="height:32px;padding:0 16px;border-radius:8px;border:1px solid var(--ink-08);background:transparent;color:var(--ink-60);font-size:13px;font-family:var(--font);cursor:pointer">Cancel</button>
-      <button onclick="saveEntityAssignments()" style="height:32px;padding:0 16px;border-radius:8px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer">Save assignments</button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
