@@ -209,7 +209,6 @@ tbody tr:last-child td{border-bottom:none}
 const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0');
 // Set default month to current month
 document.getElementById('psMonth').value=`${y}-${m}`;
-onMonthChange(); // auto-fill from/to
 
 function toggleCustomRange(){
   const f1=document.getElementById('customRangeFields');
