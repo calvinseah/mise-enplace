@@ -1,0 +1,1788 @@
+[
+  {
+    "name": "Beef Ragu",
+    "category": "Mains",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Sweet paprika powder"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Onion powder"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 15,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 390,
+        "unit": "g",
+        "name": "Demi glace"
+      },
+      {
+        "amount": 3,
+        "unit": "tin",
+        "name": "Hossen tomatoes"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Celery"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Carrot"
+      },
+      {
+        "amount": 1,
+        "unit": "kg",
+        "name": "Onion"
+      },
+      {
+        "amount": 6,
+        "unit": "L",
+        "name": "Water"
+      },
+      {
+        "amount": 3,
+        "unit": "g",
+        "name": "Vegetable powder"
+      },
+      {
+        "amount": 10,
+        "unit": "kg",
+        "name": "Beef chuck"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Sauté vegetables",
+        "content": "Sauté all the vegetables in a large pot until aromatic and the onion is slightly golden brown."
+      },
+      {
+        "title": "Add tomatoes & demi glace",
+        "content": "Add 3 tins of Hossen tomatoes with veal jus and demi glace into the pot and bring to a boil."
+      },
+      {
+        "title": "Grill beef",
+        "content": "Grill all trimmed beef chuck, season with salt and pepper, then add to the pot."
+      },
+      {
+        "title": "Season",
+        "content": "Once boiling, add all the seasoning powders and stir properly."
+      },
+      {
+        "title": "Slow cook",
+        "content": "Lower the heat and cook the beef ragu for about 6 hours.",
+        "timer_seconds": 21600
+      },
+      {
+        "title": "Overnight in oven",
+        "content": "Set the oven to 86°C and put the ragu in overnight."
+      },
+      {
+        "title": "Separate & blend",
+        "content": "Separate the pulled beef aside and hand-blend the ragu sauce until smooth."
+      }
+    ]
+  },
+  {
+    "name": "Chili Paste",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Dried chili"
+      },
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Water"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Boil",
+        "content": "Boil water and chili together in a big pot until totally soft."
+      },
+      {
+        "title": "Blend",
+        "content": "Strain the chili and blend it."
+      },
+      {
+        "title": "Chill",
+        "content": "Let the chili cool down, then keep in the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Harissa Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 60,
+        "unit": "g",
+        "name": "Chili paste"
+      },
+      {
+        "amount": 160,
+        "unit": "g",
+        "name": "Red pepper"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Garlic peeled"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Tomato paste"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Cumin powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Coriander powder"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Sweet paprika"
+      },
+      {
+        "amount": 0.5,
+        "unit": "g",
+        "name": "Lemon"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "EVOO"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend all the ingredients until smooth."
+      }
+    ]
+  },
+  {
+    "name": "Dry Batter",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 6400,
+        "unit": "g",
+        "name": "Flour"
+      },
+      {
+        "amount": 1200,
+        "unit": "g",
+        "name": "Corn flour"
+      },
+      {
+        "amount": 400,
+        "unit": "g",
+        "name": "Baking powder"
+      },
+      {
+        "amount": 40,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 40,
+        "unit": "g",
+        "name": "Curry powder"
+      },
+      {
+        "amount": 260,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix all ingredients in a big bowl."
+      },
+      {
+        "title": "Store",
+        "content": "Stir until well mixed and transfer into the container."
+      }
+    ]
+  },
+  {
+    "name": "Beef Sausage Chorizo",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "g",
+        "name": "Beef minced"
+      },
+      {
+        "amount": 320,
+        "unit": "g",
+        "name": "Chili paste"
+      },
+      {
+        "amount": 80,
+        "unit": "g",
+        "name": "Harissa"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Oregano"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Onion powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Cumin powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Five spice powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Thyme leaves, shredded"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix all the ingredients in a mixing bowl."
+      },
+      {
+        "title": "Portion",
+        "content": "Make sure all is well mixed and portion into sous vide bags."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep inside the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Chicken Rosemary Sausage",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "g",
+        "name": "Minced chicken"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Dried rosemary"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Onion powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Cayenne powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "White pepper"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix all the ingredients in a mixing bowl."
+      },
+      {
+        "title": "Portion",
+        "content": "Make sure all is well mixed and portion into sous vide bags."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep inside the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Lamb Merguez Sausage",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "g",
+        "name": "Minced mutton"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Cumin powder"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Coriander powder"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Fennel powder"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Sweet paprika"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Hot paprika"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 250,
+        "unit": "g",
+        "name": "Harissa"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix all the ingredients in a mixing bowl."
+      },
+      {
+        "title": "Portion",
+        "content": "Make sure all is well mixed and portion into sous vide bags."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep inside the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Pesto Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Basil leaves"
+      },
+      {
+        "amount": 260,
+        "unit": "g",
+        "name": "Almond"
+      },
+      {
+        "amount": 510,
+        "unit": "g",
+        "name": "EVOO"
+      },
+      {
+        "amount": 260,
+        "unit": "g",
+        "name": "Parmesan powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 260,
+        "unit": "g",
+        "name": "Garlic"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Mix all ingredients and blend, lastly cover with Parmesan cheese on top."
+      },
+      {
+        "title": "Store",
+        "content": "Keep individually in rectangle containers in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Pomodoro Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 5000,
+        "unit": "g",
+        "name": "Whole peeled tomato"
+      },
+      {
+        "amount": 150,
+        "unit": "g",
+        "name": "Diced onion"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Garlic"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Basil"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 60,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Oregano"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Sauté",
+        "content": "Sauté the diced onion and garlic."
+      },
+      {
+        "title": "Boil tomato",
+        "content": "Add whole peeled tomato in a large pot and boil until soft."
+      },
+      {
+        "title": "Blend",
+        "content": "Once soft, hand-blend until smooth."
+      },
+      {
+        "title": "Reduce",
+        "content": "Continue to heat and reduce the sauce."
+      },
+      {
+        "title": "Season",
+        "content": "Once thick, add all the ingredients and stir until well mixed."
+      },
+      {
+        "title": "Chill",
+        "content": "Let cool and keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Ceps Stock",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 175,
+        "unit": "g",
+        "name": "Dried ceps"
+      },
+      {
+        "amount": 45,
+        "unit": "g",
+        "name": "Vegetable powder"
+      },
+      {
+        "amount": 2500,
+        "unit": "g",
+        "name": "Water"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Boil",
+        "content": "Boil water in a large pot."
+      },
+      {
+        "title": "Combine",
+        "content": "Once boiling, pour into a 4 L container, stir and make sure all is well mixed."
+      },
+      {
+        "title": "Chill",
+        "content": "Let the stock cool and keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Garlic Aioli",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "g",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Garlic peeled"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 8,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 3,
+        "unit": "g",
+        "name": "Lime juice"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend all ingredients."
+      },
+      {
+        "title": "Portion",
+        "content": "Portion individually into piping bags (600 g each)."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Truffle Aioli",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "Source listed salt as '10' with no unit — assumed 10 g.",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "g",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 800,
+        "unit": "g",
+        "name": "Truffle pâté"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend or whisk all ingredients in a large mixing bowl."
+      },
+      {
+        "title": "Portion",
+        "content": "Portion individually into piping bags (600 g each)."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Italian Vinaigrette",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 320,
+        "unit": "g",
+        "name": "Dijon mustard"
+      },
+      {
+        "amount": 150,
+        "unit": "g",
+        "name": "Lime juice"
+      },
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "White grape vinegar"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 40,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 1200,
+        "unit": "ml",
+        "name": "Pomace oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Add to a tall jug and blend until combined."
+      },
+      {
+        "title": "Portion",
+        "content": "Portion individually into piping bags (600 g each)."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Basil Oil",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Spinach"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Basil"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Canola oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend all ingredients about 5 minutes until hot / smoking."
+      },
+      {
+        "title": "Strain & cool",
+        "content": "Strain and let cool before transferring to a squeeze bottle."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Red Bell Pepper Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Red peppers"
+      },
+      {
+        "amount": 8,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 15,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 120,
+        "unit": "g",
+        "name": "Garlic peeled"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend all ingredients."
+      },
+      {
+        "title": "Store",
+        "content": "Portion individually into rectangle containers, keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Egg Yolk Mix",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Egg yolk"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Cream"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Whisk",
+        "content": "Mix in a mixing bowl and whisk well."
+      },
+      {
+        "title": "Chill",
+        "content": "Keep in the chiller with a label."
+      }
+    ]
+  },
+  {
+    "name": "Salted Water",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Vegetable powder"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 5000,
+        "unit": "g",
+        "name": "Water (boiling)"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Boil",
+        "content": "Boil water in a large pot."
+      },
+      {
+        "title": "Combine",
+        "content": "Once boiling, pour into a 6 L cambro, stir and make sure all is well mixed."
+      },
+      {
+        "title": "Store",
+        "content": "Once cool, label and keep at room temperature."
+      }
+    ]
+  },
+  {
+    "name": "Flour Mix",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Dry batter"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Semolina"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix in a mixing bowl, whisk well, and it's ready to use."
+      }
+    ]
+  },
+  {
+    "name": "Garlic Confit",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 10000,
+        "unit": "g",
+        "name": "Garlic peeled"
+      },
+      {
+        "amount": 6000,
+        "unit": "g",
+        "name": "Canola oil"
+      },
+      {
+        "amount": 25,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Black pepper"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Season & cover",
+        "content": "Separate into 3 trays, season with salt and black pepper, cover with aluminium foil."
+      },
+      {
+        "title": "Bake",
+        "content": "Bake in the oven at 180°C for 1 hour.",
+        "timer_seconds": 3600
+      },
+      {
+        "title": "Cool",
+        "content": "Once done, set aside and let cool."
+      },
+      {
+        "title": "Blend",
+        "content": "Strain the garlic and blend until smooth."
+      },
+      {
+        "title": "Store",
+        "content": "Portion into rectangle containers and label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Tiramisu",
+    "category": "Desserts",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 30,
+        "unit": "nos",
+        "name": "Egg yolk"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 60,
+        "unit": "g",
+        "name": "Nescafé gold"
+      },
+      {
+        "amount": 2400,
+        "unit": "ml",
+        "name": "Water"
+      },
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Cream cheese"
+      },
+      {
+        "amount": 2000,
+        "unit": "ml",
+        "name": "Whip cream"
+      },
+      {
+        "amount": 4,
+        "unit": "pkt",
+        "name": "Sponge fingers"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Egg mixture",
+        "content": "In a large bowl combine 30 egg yolks with 400 g sugar; whisk until pale, thick and creamy. Set aside in the chiller."
+      },
+      {
+        "title": "Coffee",
+        "content": "Mix 2.4 L hot water with 100 g sugar and 60 g coffee powder; stir well until slightly boiling."
+      },
+      {
+        "title": "Cream mixture",
+        "content": "Whip 1 kg cream cheese until smooth, gradually add 2 L whip cream to soft peaks, then fold in the egg-sugar mixture to keep it light."
+      },
+      {
+        "title": "Assemble",
+        "content": "Quickly dip ladyfingers in the warm coffee syrup, layer in a tray, spread tiramisu cream, repeat finishing with cream on top."
+      },
+      {
+        "title": "Chill",
+        "content": "Cover and refrigerate at least 4–5 hours (overnight is best) to let the flavours meld.",
+        "timer_seconds": 14400
+      },
+      {
+        "title": "Serve",
+        "content": "Before serving, dust generously with cocoa powder."
+      }
+    ]
+  },
+  {
+    "name": "Alfredo Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Cream"
+      },
+      {
+        "amount": 70,
+        "unit": "g",
+        "name": "Parmesan powder"
+      },
+      {
+        "amount": 6,
+        "unit": "g",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Cook",
+        "content": "Weigh Parmesan powder, salt and cream into a medium pot; slow-cook until slightly thickened."
+      },
+      {
+        "title": "Cool",
+        "content": "Once done, set aside and let cool."
+      }
+    ]
+  },
+  {
+    "name": "Apricot Basil Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 700,
+        "unit": "g",
+        "name": "Alfredo sauce"
+      },
+      {
+        "amount": 370,
+        "unit": "g",
+        "name": "Apricot jam"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Basil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Combine",
+        "content": "In a 1/6 container weigh the apricot jam and alfredo sauce."
+      },
+      {
+        "title": "Finish",
+        "content": "Stir, then finish with sliced basil; set aside and let cool. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Teriyaki Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 600,
+        "unit": "g",
+        "name": "Alfredo sauce"
+      },
+      {
+        "amount": 400,
+        "unit": "g",
+        "name": "Teriyaki sauce"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Combine",
+        "content": "In a 1/6 container weigh the teriyaki sauce and alfredo sauce; stir."
+      },
+      {
+        "title": "Finish",
+        "content": "Set aside and let cool. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Harissa Pomodoro",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 700,
+        "unit": "g",
+        "name": "Pomodoro sauce"
+      },
+      {
+        "amount": 300,
+        "unit": "g",
+        "name": "Harissa"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Combine",
+        "content": "In a 1/6 container weigh the pomodoro sauce and harissa; stir."
+      },
+      {
+        "title": "Finish",
+        "content": "Set aside and let cool. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Corn Salsa",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 10000,
+        "unit": "g",
+        "name": "Corn"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Coriander leaf"
+      },
+      {
+        "amount": 300,
+        "unit": "g",
+        "name": "Diced red onion"
+      },
+      {
+        "amount": 300,
+        "unit": "g",
+        "name": "Jalapeño"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Lime juice"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Prep",
+        "content": "Dice the red onion, coriander leaf and jalapeño."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix everything in a large mixing bowl."
+      },
+      {
+        "title": "Store",
+        "content": "Package in suitable containers, label accordingly and keep in the chiller / freezer."
+      }
+    ]
+  },
+  {
+    "name": "Roux",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Butter"
+      },
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Flour"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Melt butter",
+        "content": "Slowly heat the butter until melted, then start to add the flour."
+      },
+      {
+        "title": "Cook",
+        "content": "Stir continuously. Once done, set aside and let cool. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Tipo Lasagna",
+    "category": "Mains",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 700,
+        "unit": "g",
+        "name": "Lasagna skin"
+      },
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Pesto béchamel sauce"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Parmesan powder"
+      },
+      {
+        "amount": 800,
+        "unit": "g",
+        "name": "Mozzarella cheese"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Prep tray",
+        "content": "Preheat the oven to 180°C and lightly grease a deep baking tray."
+      },
+      {
+        "title": "Base layer",
+        "content": "Spread a thin layer of pesto béchamel at the base of the tray."
+      },
+      {
+        "title": "Layer",
+        "content": "Arrange lasagna sheets to cover the sauce, spread béchamel, sprinkle Parmesan and mozzarella; repeat finishing with cheese on top."
+      },
+      {
+        "title": "Bake covered",
+        "content": "Cover with foil and bake 30 minutes.",
+        "timer_seconds": 1800
+      },
+      {
+        "title": "Bake uncovered",
+        "content": "Remove foil and bake another 15–20 minutes until golden.",
+        "timer_seconds": 1080
+      },
+      {
+        "title": "Rest",
+        "content": "Rest 10 minutes to allow the layers to set.",
+        "timer_seconds": 600
+      },
+      {
+        "title": "Portion",
+        "content": "Cut into 3 cm × 3 cm portions with straight, even cuts before serving."
+      }
+    ]
+  },
+  {
+    "name": "Whipped Feta",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Cream cheese"
+      },
+      {
+        "amount": 250,
+        "unit": "g",
+        "name": "Feta cheese"
+      },
+      {
+        "amount": 70,
+        "unit": "g",
+        "name": "Cream"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 2,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "White pepper"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Temper",
+        "content": "Bring the cream cheese and feta to room temperature and crumble the feta."
+      },
+      {
+        "title": "Blend",
+        "content": "Blend the cream cheese and feta until smooth and creamy."
+      },
+      {
+        "title": "Add cream",
+        "content": "Add the cream and mix until light and spreadable."
+      },
+      {
+        "title": "Sweeten & season",
+        "content": "Add honey and mix; season with salt and white pepper and mix well."
+      },
+      {
+        "title": "Chill",
+        "content": "Taste, adjust seasoning, and chill before serving."
+      }
+    ]
+  },
+  {
+    "name": "Pesto Béchamel Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "Source listed cinnamon and white pepper as '1' with no unit — assumed 1 g; bay leaf as 1 piece.",
+    "ingredients": [
+      {
+        "amount": 150,
+        "unit": "g",
+        "name": "Roux"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Milk"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "White pepper"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Pesto"
+      },
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "Cinnamon powder"
+      },
+      {
+        "amount": 1,
+        "unit": "pc",
+        "name": "Bay leaf"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Yellow onion"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Sauté onion",
+        "content": "Add yellow onion and sauté gently until soft and fragrant."
+      },
+      {
+        "title": "Add roux",
+        "content": "Add the roux and cook briefly to combine with the onion."
+      },
+      {
+        "title": "Add milk",
+        "content": "Gradually add milk while whisking to avoid lumps; bring to a gentle simmer."
+      },
+      {
+        "title": "Aromatics",
+        "content": "Add the bay leaf and a pinch of cinnamon; cook until the sauce thickens."
+      },
+      {
+        "title": "Finish",
+        "content": "Stir in the pesto, season with salt and white pepper, mix well, remove the bay leaf before use."
+      }
+    ]
+  },
+  {
+    "name": "Bacon Bits",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Beef bacon"
+      },
+      {
+        "amount": 500,
+        "unit": "g",
+        "name": "Cooking oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Heat oil",
+        "content": "Heat the cooking oil in a pan over medium heat."
+      },
+      {
+        "title": "Fry",
+        "content": "Add the beef bacon and fry until crispy and well rendered."
+      },
+      {
+        "title": "Drain",
+        "content": "Remove and drain excess oil before use. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Caramelised Cherry Tomatoes",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Cherry tomatoes"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Pomace oil"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 2,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Honey"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Preheat",
+        "content": "Preheat the combi oven to 180°C in bake mode."
+      },
+      {
+        "title": "Toss",
+        "content": "Toss the cherry tomatoes with pomace oil, salt, black pepper and honey."
+      },
+      {
+        "title": "Bake",
+        "content": "Spread on a tray and bake 5–7 minutes until caramelised and slightly blistered.",
+        "timer_seconds": 420
+      },
+      {
+        "title": "Store",
+        "content": "Once cool, transfer to a container and label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Lemon Capers Aioli",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Capers"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 2,
+        "unit": "g",
+        "name": "Lemon juice"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Place mayonnaise, capers, lemon juice and salt in a jug; blend until smooth and fine."
+      },
+      {
+        "title": "Finish",
+        "content": "Taste and adjust seasoning before serving. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Oil Mixture",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "Chopped basil"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Extra virgin olive oil"
+      },
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 1,
+        "unit": "g",
+        "name": "Chopped parsley"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Parmesan powder"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Balsamic glaze"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Combine herbs",
+        "content": "In a small bowl combine the chopped basil, parsley and chilli flakes."
+      },
+      {
+        "title": "Add parmesan",
+        "content": "Add the Parmesan powder and mix evenly."
+      },
+      {
+        "title": "Finish",
+        "content": "Drizzle in the balsamic glaze and stir gently to combine. Label accordingly."
+      }
+    ]
+  },
+  {
+    "name": "Pasta Cooking Times (Reference)",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "Reference card — boiling times by pasta shape (no ingredients).",
+    "ingredients": [],
+    "steps": [
+      {
+        "title": "Mafalde",
+        "content": "Mafalde — 6 minutes.",
+        "timer_seconds": 360
+      },
+      {
+        "title": "Gemelli",
+        "content": "Gemelli — 5 minutes.",
+        "timer_seconds": 300
+      },
+      {
+        "title": "Conchiglie",
+        "content": "Conchiglie — 4 minutes.",
+        "timer_seconds": 240
+      },
+      {
+        "title": "Fusilli",
+        "content": "Fusilli — 5 minutes.",
+        "timer_seconds": 300
+      },
+      {
+        "title": "Fettuccine",
+        "content": "Fettuccine — 2 minutes.",
+        "timer_seconds": 120
+      },
+      {
+        "title": "Linguine",
+        "content": "Linguine — 3 minutes.",
+        "timer_seconds": 180
+      },
+      {
+        "title": "Creste",
+        "content": "Creste — 5 minutes.",
+        "timer_seconds": 300
+      },
+      {
+        "title": "Radiatori",
+        "content": "Radiatori — 5 minutes.",
+        "timer_seconds": 300
+      },
+      {
+        "title": "Campanelle",
+        "content": "Campanelle — 5 minutes.",
+        "timer_seconds": 300
+      }
+    ]
+  },
+  {
+    "name": "Truffle Tramezzini",
+    "category": "Mains",
+    "base_servings": 1,
+    "is_shared": 1,
+    "description": "Tipo Pasta Bar (Waterloo / Aliwal) — production recipe",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Brioche loaf (2 cm thick)"
+      },
+      {
+        "amount": 2,
+        "unit": "slices",
+        "name": "Mozzarella"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Beef bacon"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Planta"
+      },
+      {
+        "amount": 40,
+        "unit": "g",
+        "name": "Truffle aioli"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Slice",
+        "content": "Slice the brioche loaf into 2 cm slices and trim the edges."
+      },
+      {
+        "title": "Butter",
+        "content": "Spread 10 g Planta evenly on one side of each brioche slice."
+      },
+      {
+        "title": "Fill",
+        "content": "Spread truffle aioli, add mozzarella (1 slice each side), then 10 g beef bacon."
+      },
+      {
+        "title": "Wrap",
+        "content": "Close with the second slice, buttered sides facing outward, press gently and cling-wrap individually. Label before chilling."
+      },
+      {
+        "title": "Toast",
+        "content": "Trim the bread sides, cut into triangle tramezzini, then toast in the oven at 180°C for 4 minutes until golden brown.",
+        "timer_seconds": 240
+      }
+    ]
+  }
+]
