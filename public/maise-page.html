@@ -188,6 +188,20 @@ async function sendMsg() {
   chatEl.scrollTop = chatEl.scrollHeight;
   inputBox.focus();
 }
+
+// Keep the input + send button above the on-screen keyboard on mobile.
+// Without this, iOS Safari leaves the bottom input behind the keyboard, so the
+// send button can't be tapped and sending appears to do nothing.
+const screenEl = document.querySelector('.screen');
+if (window.visualViewport) {
+  const fitToViewport = () => {
+    screenEl.style.height = window.visualViewport.height + 'px';
+    chatEl.scrollTop = chatEl.scrollHeight;
+  };
+  window.visualViewport.addEventListener('resize', fitToViewport);
+  window.visualViewport.addEventListener('scroll', fitToViewport);
+  inputBox.addEventListener('focus', () => setTimeout(fitToViewport, 100));
+}
 </script>
 </body>
 </html>
