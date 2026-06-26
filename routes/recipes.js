@@ -46,7 +46,8 @@ router.post('/', (req, res) => {
       'INSERT INTO recipes (name,category,outlet_id,description,icon,base_servings,allergens,notes,is_shared,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
       [name, category, outlet_id||null, description||'', icon||ICONS[category]||'🍽️', base_servings||4, JSON.stringify(allergens||[]), notes||'', is_shared?1:0, actor, now, now]
     );
-    const id = db.get('SELECT last_insert_rowid() as id').id;
+    const idRow = db.get('SELECT id FROM recipes WHERE name=? AND created_at=? ORDER BY id DESC LIMIT 1', [name, now]);
+    const id = idRow ? idRow.id : db.get('SELECT MAX(id) as id FROM recipes').id;
     (ingredients||[]).forEach((ing, i) => {
       db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
         [id, i, ing.name, ing.amount, ing.unit||null, ing.cost_per_unit||0]);
