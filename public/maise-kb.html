@@ -318,17 +318,22 @@ async function loadUnanswered() {
 
   list.innerHTML = rows.map(r => {
     const date = new Date(r.created_at).toLocaleDateString('en-SG', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const q = kbEscHtml(r.question || '');
+    const by = r.asked_by ? ' by ' + kbEscHtml(r.asked_by) : '';
     return '<div style="background:#fff;border:1px solid var(--ink-08);border-radius:12px;padding:14px 16px;margin-bottom:8px">' +
-      '<div style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px">' + r.question + '</div>' +
-      '<div style="font-size:11px;color:var(--ink-30);margin-bottom:10px">Asked ' + date + (r.asked_by ? ' by ' + r.asked_by : '') + '</div>' +
+      '<div style="font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:6px">' + q + '</div>' +
+      '<div style="font-size:11px;color:var(--ink-30);margin-bottom:10px">Asked ' + date + by + '</div>' +
       '<div style="display:flex;gap:6px">' +
-        '<button class="btn btn-primary" style="height:28px;font-size:11.5px;padding:0 12px" onclick="addToKb('' + r.question.replace(/'/g,"\'") + '')">+ Add to KB</button>' +
+        '<button class="btn btn-primary add-kb-btn" data-q="' + q + '" style="height:28px;font-size:11.5px;padding:0 12px">+ Add to KB</button>' +
         '<button class="btn-sm" onclick="resolveQ(' + r.id + ')">Mark resolved</button>' +
         '<button class="btn-sm btn-danger" onclick="deleteQ(' + r.id + ')">Dismiss</button>' +
       '</div>' +
     '</div>';
   }).join('');
+  list.querySelectorAll('.add-kb-btn').forEach(b => b.addEventListener('click', () => addToKb(b.dataset.q)));
 }
+
+function kbEscHtml(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function addToKb(question) {
   document.getElementById('fTitle').value = question;
