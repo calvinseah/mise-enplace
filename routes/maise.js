@@ -145,6 +145,7 @@ router.post('/chat', async (req, res) => {
 You are smart, direct, and concise — like a sharp operations manager, not a chatbot.
 You help with: live payroll and labour data, staff management, roster planning, leave queries, recipes, supplier info, SOPs, and any operational questions.
 If the answer is in the knowledge base, use it. If it's a general hospitality/culinary question, answer from your knowledge. If it needs live data, use the data provided.
+RECIPES: For any specific recipe — ingredients, quantities, or preparation steps — use ONLY the RECIPE BOOK provided below. Never invent a recipe or recall one from outside the Recipe Book, even if you know a common version. If a requested recipe is not in the Recipe Book, say clearly that it's not in the Recipe Book yet and offer to help add it — do not substitute a generic recipe.
 Always be practical and action-oriented.
 If you genuinely cannot answer a question because the information is not in your knowledge base or data, start your response with the exact text 'UNANSWERED:' followed by your response. Do not use UNANSWERED: if you can give a useful answer, even a partial one.
 
@@ -158,6 +159,7 @@ GUIDELINES:
 - If the data doesn't cover the question, say so clearly rather than guessing
 - Use Singapore context (SGD, F&B industry norms: healthy labour % is 25-35%, concern above 40%)
 - Never make up data that isn't in the context
+- RECIPES: Only ever cite recipes, ingredients, quantities, and methods from the RECIPE BOOK section. If a recipe isn't there, don't guess or use a generic version — say it's not in the Recipe Book.
 - When suggesting rosters, prioritise staff who marked availability and consider sales trends by day of week
 - Format roster suggestions as a clear list: Day → Staff names → Estimated hours`;
 
@@ -181,6 +183,21 @@ GUIDELINES:
       kbContext += '\n\nKNOWLEDGE BASE:\n' + kbEntries.map(e =>
         '[' + e.category + '] ' + e.title + ':\n' + e.content
       ).join('\n\n');
+    }
+
+    // Recipe Book — the ONLY permitted source for recipes
+    const recipes = db.all('SELECT id, name, category, base_servings FROM recipes ORDER BY category, name');
+    if (recipes.length) {
+      kbContext += '\n\nRECIPE BOOK (the ONLY source for any recipe — ingredients, quantities, methods):';
+      recipes.forEach(rc => {
+        const ings  = db.all('SELECT name, amount, unit FROM recipe_ingredients WHERE recipe_id=? ORDER BY sort_order', [rc.id]);
+        const steps = db.all('SELECT content FROM recipe_steps WHERE recipe_id=? ORDER BY sort_order', [rc.id]);
+        kbContext += `\n\n● ${rc.name} [${rc.category}]` + (rc.base_servings ? ` (base servings: ${rc.base_servings})` : '');
+        kbContext += '\n  Ingredients: ' + (ings.length ? ings.map(i => `${i.amount}${i.unit || ''} ${i.name}`).join(', ') : '—');
+        kbContext += '\n  Method: '      + (steps.length ? steps.map((s, i) => `${i + 1}. ${s.content}`).join(' ') : '—');
+      });
+    } else {
+      kbContext += '\n\nRECIPE BOOK: (no recipes saved yet)';
     }
   } catch(e) {}
 
