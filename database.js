@@ -219,6 +219,20 @@ function createSchema() {
 
   db.run("CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, data TEXT, expires INTEGER)");
 
+  db.run("CREATE TABLE IF NOT EXISTS maise_suggestions (id INTEGER PRIMARY KEY AUTOINCREMENT, icon TEXT, label TEXT, prompt TEXT, sort_order INTEGER DEFAULT 0)");
+  // Seed the home-page suggestion chips on first run
+  const sugRes = db.exec("SELECT COUNT(*) AS c FROM maise_suggestions");
+  const sugCount = (sugRes.length && sugRes[0].values.length) ? sugRes[0].values[0][0] : 0;
+  if (sugCount === 0) {
+    const defaultSuggestions = [
+      ['📊', "Today's labour costs", "What are today's labour costs?", 0],
+      ['👥', "Who's on shift now?",   "Which staff are currently on shift?", 1],
+      ['📦', "Order disposables",     "Where do I order disposables?", 2],
+      ['📅', "Pending leave",         "What are the pending leave requests?", 3],
+    ];
+    defaultSuggestions.forEach(d => db.run('INSERT INTO maise_suggestions (icon,label,prompt,sort_order) VALUES (?,?,?,?)', d));
+  }
+
   db.run(`CREATE TABLE IF NOT EXISTS maise_kb (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL,

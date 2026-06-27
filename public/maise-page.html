@@ -54,6 +54,30 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--g
 .send-btn{width:40px;height:40px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity .12s}
 .send-btn:disabled{opacity:.4;cursor:not-allowed}
 .send-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Edit-chips button (admin) */
+.edit-chips-btn{display:block;margin:2px auto 16px;background:none;border:none;color:rgba(255,255,255,.45);font-size:12px;font-family:var(--font);cursor:pointer;padding:4px 8px}
+.edit-chips-btn:active{color:rgba(255,255,255,.8)}
+
+/* Editor modal */
+.editor-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.editor-overlay.open{display:flex}
+.editor-modal{background:var(--surface);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px 18px max(20px,env(safe-area-inset-bottom));max-height:88vh;max-height:88dvh;overflow-y:auto}
+.editor-title{font-family:var(--font-d);font-size:20px;color:var(--ink);margin-bottom:4px}
+.editor-hint{font-size:12px;color:var(--ink-60);margin-bottom:14px}
+.editor-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.er-icon{width:46px;flex-shrink:0;text-align:center;font-size:18px;border:1px solid var(--ink-08);border-radius:10px;padding:9px 4px;background:#fff;outline:none;font-family:var(--font)}
+.er-fields{flex:1;display:flex;flex-direction:column;gap:6px}
+.er-label,.er-prompt{border:1px solid var(--ink-08);border-radius:10px;padding:9px 11px;font-size:13px;font-family:var(--font);color:var(--ink);background:#fff;outline:none;width:100%}
+.er-label:focus,.er-prompt:focus,.er-icon:focus{border-color:var(--green)}
+.er-prompt{font-size:12px;color:var(--ink-60)}
+.er-remove{flex-shrink:0;width:30px;height:30px;border:none;background:rgba(192,57,43,.1);color:#C0392B;border-radius:8px;font-size:18px;line-height:1;cursor:pointer}
+.editor-add{display:block;width:100%;margin:4px 0 16px;background:none;border:1.5px dashed var(--ink-08);border-radius:12px;padding:11px;color:var(--green);font-size:13px;font-weight:500;font-family:var(--font);cursor:pointer}
+.editor-actions{display:flex;gap:10px}
+.editor-cancel,.editor-save{flex:1;height:44px;border-radius:12px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;border:none}
+.editor-cancel{background:var(--ink-08);color:var(--ink)}
+.editor-save{background:var(--green);color:#fff}
+.editor-save:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -78,24 +102,8 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--g
       <div class="welcome-sub">Ask me anything about your restaurant — labour costs, recipes, suppliers, staff, roster, or operations.</div>
     </div>
 
-    <div class="chips-grid" id="chips">
-      <button class="chip-card" onclick="send('What are today\'s labour costs?')">
-        <span class="chip-icon">📊</span>
-        <span class="chip-label">Today's labour costs</span>
-      </button>
-      <button class="chip-card" onclick="send('Which staff are currently on shift?')">
-        <span class="chip-icon">👥</span>
-        <span class="chip-label">Who's on shift now?</span>
-      </button>
-      <button class="chip-card" onclick="send('Where do I order disposables?')">
-        <span class="chip-icon">📦</span>
-        <span class="chip-label">Order disposables</span>
-      </button>
-      <button class="chip-card" onclick="send('What are the pending leave requests?')">
-        <span class="chip-icon">📅</span>
-        <span class="chip-label">Pending leave</span>
-      </button>
-    </div>
+    <div class="chips-grid" id="chips"></div>
+    <button class="edit-chips-btn" id="editChipsBtn" onclick="openEditor()" style="display:none">✏️ Edit these questions</button>
   </div>
 
   <!-- Input -->
@@ -111,17 +119,62 @@ html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--g
   </div>
 </div>
 
+<!-- Suggestion editor (admin) -->
+<div class="editor-overlay" id="editorOverlay">
+  <div class="editor-modal">
+    <div class="editor-title">Home questions</div>
+    <div class="editor-hint">These show as tap-to-ask buttons on the MAIse home screen.</div>
+    <div class="editor-rows" id="editorRows"></div>
+    <button class="editor-add" onclick="addEditorRow()">+ Add question</button>
+    <div class="editor-actions">
+      <button class="editor-cancel" onclick="closeEditor()">Cancel</button>
+      <button class="editor-save" id="editorSaveBtn" onclick="saveEditor()">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const chatEl = document.getElementById('chat');
 const inputBox = document.getElementById('inputBox');
 const sendBtn = document.getElementById('sendBtn');
 let history = [];
 let isLoggedIn = false;
+let isAdmin = false;
 
-// Check auth
-fetch('/api/me').then(r => {
-  if (r.ok) { isLoggedIn = true; document.getElementById('kbLink').style.display = 'flex'; }
+// Check auth + load suggestion chips
+fetch('/api/me').then(r => r.ok ? r.json() : null).then(me => {
+  if (me) {
+    isLoggedIn = true;
+    isAdmin = me.role === 'admin';
+    document.getElementById('kbLink').style.display = 'flex';
+    if (isAdmin) document.getElementById('editChipsBtn').style.display = 'block';
+  }
 }).catch(()=>{});
+
+loadChips();
+
+function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+function escTxt(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function loadChips() {
+  try {
+    const list = await fetch('/api/maise/suggestions').then(r => r.json());
+    renderChips(Array.isArray(list) ? list : []);
+  } catch(e) {}
+}
+
+function renderChips(list) {
+  const grid = document.getElementById('chips');
+  if (!grid) return;
+  grid.innerHTML = '';
+  list.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'chip-card';
+    btn.innerHTML = `<span class="chip-icon">${escTxt(c.icon||'💬')}</span><span class="chip-label">${escTxt(c.label)}</span>`;
+    btn.addEventListener('click', () => send(c.prompt || c.label));
+    grid.appendChild(btn);
+  });
+}
 
 function autoResize(el) {
   el.style.height = 'auto';
@@ -131,8 +184,64 @@ function autoResize(el) {
 function hideWelcome() {
   const w = document.getElementById('welcome');
   const c = document.getElementById('chips');
+  const e = document.getElementById('editChipsBtn');
   if (w) w.remove();
   if (c) c.remove();
+  if (e) e.remove();
+}
+
+// ── Suggestion editor (admin) ───────────────────────────────────────────────
+let editorData = [];
+
+async function openEditor() {
+  try {
+    const list = await fetch('/api/maise/suggestions').then(r => r.json());
+    editorData = (Array.isArray(list) ? list : []).map(c => ({ icon: c.icon||'', label: c.label||'', prompt: c.prompt||'' }));
+  } catch(e) { editorData = []; }
+  if (!editorData.length) editorData.push({ icon:'', label:'', prompt:'' });
+  renderEditorRows();
+  document.getElementById('editorOverlay').classList.add('open');
+}
+
+function renderEditorRows() {
+  const wrap = document.getElementById('editorRows');
+  wrap.innerHTML = '';
+  editorData.forEach((row, idx) => {
+    const div = document.createElement('div');
+    div.className = 'editor-row';
+    div.innerHTML = `
+      <input class="er-icon" maxlength="4" placeholder="🙂" value="${escAttr(row.icon)}">
+      <div class="er-fields">
+        <input class="er-label" placeholder="Button label (e.g. Today's labour costs)" value="${escAttr(row.label)}">
+        <input class="er-prompt" placeholder="Question sent to MAIse (optional)" value="${escAttr(row.prompt)}">
+      </div>
+      <button class="er-remove" title="Remove">×</button>`;
+    div.querySelector('.er-icon').addEventListener('input', e => editorData[idx].icon = e.target.value);
+    div.querySelector('.er-label').addEventListener('input', e => editorData[idx].label = e.target.value);
+    div.querySelector('.er-prompt').addEventListener('input', e => editorData[idx].prompt = e.target.value);
+    div.querySelector('.er-remove').addEventListener('click', () => { editorData.splice(idx,1); renderEditorRows(); });
+    wrap.appendChild(div);
+  });
+}
+
+function addEditorRow() { editorData.push({ icon:'', label:'', prompt:'' }); renderEditorRows(); }
+function closeEditor() { document.getElementById('editorOverlay').classList.remove('open'); }
+
+async function saveEditor() {
+  const clean = editorData
+    .map(r => ({ icon:(r.icon||'').trim(), label:(r.label||'').trim(), prompt:(r.prompt||'').trim() }))
+    .filter(r => r.label);
+  const btn = document.getElementById('editorSaveBtn');
+  btn.disabled = true;
+  try {
+    const d = await fetch('/api/maise/suggestions', {
+      method: 'PUT', headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ suggestions: clean })
+    }).then(r => r.json());
+    if (d.success) { renderChips(d.suggestions); closeEditor(); }
+    else alert(d.error || 'Could not save');
+  } catch(e) { alert('Network error. Please try again.'); }
+  btn.disabled = false;
 }
 
 function addMsg(role, text, thinking=false) {

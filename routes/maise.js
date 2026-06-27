@@ -250,4 +250,28 @@ GUIDELINES:
   }
 });
 
+// ── Home-page suggestion chips ──────────────────────────────────────────────────
+router.get('/suggestions', (req, res) => {
+  try {
+    res.json(db.all('SELECT id, icon, label, prompt FROM maise_suggestions ORDER BY sort_order, id'));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.put('/suggestions', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const list = Array.isArray(req.body.suggestions) ? req.body.suggestions : [];
+  try {
+    db.run('DELETE FROM maise_suggestions');
+    list.forEach((s, i) => {
+      const label = (s.label || '').toString().trim().slice(0, 80);
+      if (!label) return;
+      const icon   = (s.icon || '💬').toString().trim().slice(0, 8) || '💬';
+      const prompt = ((s.prompt || '').toString().trim() || label).slice(0, 300);
+      db.run('INSERT INTO maise_suggestions (icon,label,prompt,sort_order) VALUES (?,?,?,?)', [icon, label, prompt, i]);
+    });
+    db.saveDB();
+    res.json({ success: true, suggestions: db.all('SELECT id, icon, label, prompt FROM maise_suggestions ORDER BY sort_order, id') });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
