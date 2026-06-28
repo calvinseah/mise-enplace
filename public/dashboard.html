@@ -857,6 +857,12 @@ async function backupDB() {
       <div id="mobAppsList"></div>
     </div>
 
+    <!-- Pending leave -->
+    <div id="mobLeaveSection" style="display:none">
+      <div class="mob-sec"><div class="mob-sec-title">Pending leave</div></div>
+      <div id="mobLeaveList"></div>
+    </div>
+
     <!-- Staff on shift -->
     <div class="mob-sec">
       <div class="mob-sec-title">Currently on shift</div>
@@ -903,6 +909,7 @@ if (window.innerWidth <= 768) {
   let allRecords = [];
   let allApps = [];
   let allLeave = [];
+  let allMissed = [];
   let selectedOutlet = '';
 
   async function mobInit() {
@@ -946,6 +953,12 @@ if (window.innerWidth <= 768) {
       if (r.ok) allLeave = await r.json();
     } catch(e){}
 
+    // Load open shifts (for the 12h missed clock-out alert) — spans days, unlike today's records
+    try {
+      const r = await fetch('/api/attendance/missed-clockout');
+      if (r.ok) allMissed = await r.json();
+    } catch(e){}
+
     renderMobHome();
   }
 
@@ -964,10 +977,12 @@ if (window.innerWidth <= 768) {
     const totalCost = records.reduce((s,r) => s + (r.total_cost||0), 0);
     const totalHrs = records.reduce((s,r) => s + (r.total_hours||0), 0);
     const active = records.filter(r => !r.clock_out);
-    const missed = records.filter(r => {
-      if (r.clock_out) return false;
-      const ci = new Date(r.clock_in);
-      return (Date.now() - ci) > 16 * 3600000;
+    const outletName = selectedOutlet ? (allOutlets.find(o => String(o.id) === String(selectedOutlet))||{}).name : null;
+    // Open shifts where clock-in was more than 12 hours ago (spans days)
+    const missed = allMissed.filter(m => {
+      if ((Date.now() - new Date(m.clock_in)) <= 12 * 3600000) return false;
+      if (outletName && m.outlet_name && m.outlet_name !== outletName) return false;
+      return true;
     });
     const geoFlagged = records.filter(r => r.geo_flagged);
     const alerts = [...missed, ...geoFlagged];
@@ -984,19 +999,21 @@ if (window.innerWidth <= 768) {
     document.getElementById('mobStatAppsNote').textContent = allApps.length > 0 ? 'Needs review' : '';
     document.getElementById('mobStatLeave').textContent = allLeave.length;
 
-    // Alerts
+    // Alerts — open shifts past 12h ("missed clock-out") plus any geo-flagged
     const alertSec = document.getElementById('mobAlertSection');
     const alertList = document.getElementById('mobAlertList');
     if (alerts.length) {
       alertSec.style.display = 'block';
-      alertList.innerHTML = alerts.slice(0,3).map(r => {
+      alertList.innerHTML = alerts.slice(0,10).map(r => {
         const isMissed = !r.clock_out;
         const title = isMissed ? 'Missed clock-out' : 'Flagged clock-in';
-        const detail = (r.staff_name||'') + ' · ' + (r.outlet_name||'');
+        const openH = (isMissed && r.clock_in) ? Math.round((Date.now() - new Date(r.clock_in)) / 36e5) : null;
+        const detail = (r.staff_name||'') + ' · ' + (r.outlet_name||'') + (openH ? ' · ' + openH + 'h open' : '');
+        const safeName = (r.staff_name||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
         return '<div class="mob-alert">' +
           '<div class="mob-alert-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B7791F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>' +
           '<div class="mob-alert-body"><div class="mob-alert-title">' + title + '</div><div class="mob-alert-detail">' + detail + '</div></div>' +
-          '<button class="mob-fix-btn" onclick="managerClockOut(' + r.id + ',\"' + (r.staff_name||'').replace(/"/g,'&quot;') + '\")">Fix</button></div>';
+          '<button class="mob-fix-btn" onclick="managerClockOut(' + r.id + ',\'' + safeName + '\')">Fix</button></div>';
       }).join('');
     } else { alertSec.style.display = 'none'; }
 
@@ -1013,11 +1030,31 @@ if (window.innerWidth <= 768) {
           '<div class="mob-app-info"><div class="mob-app-name">' + a.name + '</div>' +
           '<div class="mob-app-detail">Submitted ' + ago + 'h ago</div></div>' +
           '<div class="mob-app-btns">' +
-          '<button class="mob-ok" onclick="reviewApp(' + a.id + ','approved')">✓</button>' +
-          '<button class="mob-no" onclick="reviewApp(' + a.id + ','rejected')">✕</button>' +
+          '<button class="mob-ok" onclick="reviewApp(' + a.id + ',\'approved\')">✓</button>' +
+          '<button class="mob-no" onclick="reviewApp(' + a.id + ',\'rejected\')">✕</button>' +
           '</div></div>';
       }).join('');
     } else { appsSec.style.display = 'none'; }
+
+    // Pending leave
+    const leaveSec = document.getElementById('mobLeaveSection');
+    const leaveList = document.getElementById('mobLeaveList');
+    if (allLeave.length) {
+      leaveSec.style.display = 'block';
+      leaveList.innerHTML = allLeave.slice(0,5).map(a => {
+        const initials = (a.staff_name||'?').split(' ').map(w=>w[0]).join('').slice(0,2);
+        const startFmt = new Date(a.start_date).toLocaleDateString('en-SG',{day:'numeric',month:'short'});
+        const endFmt = a.end_date !== a.start_date ? ' – ' + new Date(a.end_date).toLocaleDateString('en-SG',{day:'numeric',month:'short'}) : '';
+        return '<div class="mob-app-row">' +
+          '<div class="mob-app-av">' + initials + '</div>' +
+          '<div class="mob-app-info"><div class="mob-app-name">' + (a.staff_name||'') + '</div>' +
+          '<div class="mob-app-detail">' + (a.leave_type||'Leave') + ' · ' + startFmt + endFmt + ' · ' + a.days + 'd</div></div>' +
+          '<div class="mob-app-btns">' +
+          '<button class="mob-ok" onclick="reviewLeaveMob(' + a.id + ',\'approved\')">✓</button>' +
+          '<button class="mob-no" onclick="reviewLeaveMob(' + a.id + ',\'rejected\')">✕</button>' +
+          '</div></div>';
+      }).join('');
+    } else { leaveSec.style.display = 'none'; }
 
     // Active shifts
     const onShift = active.slice(0,5);
@@ -1046,6 +1083,18 @@ if (window.innerWidth <= 768) {
         body: JSON.stringify({ status })
       });
       if (r.ok) { allApps = allApps.filter(a => a.id !== id); renderMobHome(); }
+    } catch(e){}
+  }
+
+  async function reviewLeaveMob(id, status) {
+    let reject_reason = null;
+    if (status === 'rejected') { reject_reason = prompt('Reason for rejection (optional):'); if (reject_reason === null) return; }
+    try {
+      const r = await fetch('/api/leave/' + id + '/review', {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ status, reject_reason })
+      });
+      if (r.ok) { allLeave = allLeave.filter(a => a.id !== id); renderMobHome(); }
     } catch(e){}
   }
 
