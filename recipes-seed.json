@@ -1784,5 +1784,350 @@
         "timer_seconds": 240
       }
     ]
+  },
+  {
+    "name": "Butterbeer",
+    "category": "Drinks",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 90,
+        "unit": "ml",
+        "name": "Caramel syrup"
+      },
+      {
+        "amount": 1,
+        "unit": "glass",
+        "name": "Ice (full)"
+      },
+      {
+        "amount": 0,
+        "unit": "to top",
+        "name": "Soda water"
+      },
+      {
+        "amount": 0,
+        "unit": "to brim",
+        "name": "Butterbeer cream"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Build",
+        "content": "Add 90ml caramel syrup to a glass full of ice."
+      },
+      {
+        "title": "Top with soda",
+        "content": "Fill with soda water to the top of the handle and mix well."
+      },
+      {
+        "title": "Finish",
+        "content": "Top with butterbeer cream to the brim of the mug."
+      }
+    ]
+  },
+  {
+    "name": "Butterbeer Cream",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "Source listed ingredients only; method is the standard prep.",
+    "ingredients": [
+      {
+        "amount": 1,
+        "unit": "L",
+        "name": "Whipping cream"
+      },
+      {
+        "amount": 3,
+        "unit": "tbsp",
+        "name": "Icing sugar"
+      },
+      {
+        "amount": 90,
+        "unit": "ml",
+        "name": "Butterscotch sauce"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Whip",
+        "content": "Combine whipping cream, icing sugar and butterscotch sauce; whip to a smooth, pourable cream."
+      }
+    ]
+  },
+  {
+    "name": "Caramel Syrup",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "Source listed ingredients only; method is the standard prep.",
+    "ingredients": [
+      {
+        "amount": 600,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 600,
+        "unit": "ml",
+        "name": "Hot water"
+      },
+      {
+        "amount": 0,
+        "unit": "splash",
+        "name": "Brown food colouring"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Dissolve",
+        "content": "Dissolve the sugar in the hot water."
+      },
+      {
+        "title": "Colour",
+        "content": "Add a splash of brown food colouring and mix well."
+      }
+    ]
+  },
+  {
+    "name": "Berry Bena",
+    "category": "Drinks",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1,
+        "unit": "scoop",
+        "name": "Ice"
+      },
+      {
+        "amount": 60,
+        "unit": "ml",
+        "name": "Ribena"
+      },
+      {
+        "amount": 60,
+        "unit": "ml",
+        "name": "Spa (sparkling) water"
+      },
+      {
+        "amount": 5,
+        "unit": "leaves",
+        "name": "Mint"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend all ingredients for 15 seconds.",
+        "timer_seconds": 15
+      },
+      {
+        "title": "Garnish",
+        "content": "Garnish with mint and lemon."
+      }
+    ]
+  },
+  {
+    "name": "Cold Brew Tea",
+    "category": "Drinks",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 12,
+        "unit": "bags",
+        "name": "Earl Grey tea"
+      },
+      {
+        "amount": 4,
+        "unit": "stalks",
+        "name": "Rosemary"
+      },
+      {
+        "amount": 1,
+        "unit": "pc",
+        "name": "Lemon"
+      },
+      {
+        "amount": 300,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 1,
+        "unit": "glass",
+        "name": "Ice (full)"
+      },
+      {
+        "amount": 0,
+        "unit": "to brim",
+        "name": "Cold brew tea"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Brew",
+        "content": "Cold-brew 12 Earl Grey tea bags with 4 rosemary stalks, 1 lemon and 300g sugar."
+      },
+      {
+        "title": "Serve",
+        "content": "Fill a glass full of ice and top with cold brew tea to the brim."
+      },
+      {
+        "title": "Garnish",
+        "content": "Garnish with rosemary and lemon."
+      }
+    ]
+  },
+  {
+    "name": "Coffee",
+    "category": "Drinks",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "Four espresso builds on one card.",
+    "ingredients": [
+      {
+        "amount": 0,
+        "unit": "shots",
+        "name": "Espresso"
+      },
+      {
+        "amount": 0,
+        "unit": null,
+        "name": "Milk (for white)"
+      },
+      {
+        "amount": 0,
+        "unit": null,
+        "name": "Water (for black)"
+      },
+      {
+        "amount": 0,
+        "unit": null,
+        "name": "Ice (for iced)"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Iced Black",
+        "content": "Mug full of ice, ¾ water, 2 shots of espresso."
+      },
+      {
+        "title": "Iced White",
+        "content": "Mug full of ice, ¾ milk, 2 shots of espresso."
+      },
+      {
+        "title": "Hot White",
+        "content": "Single shot of espresso topped with steamed milk."
+      },
+      {
+        "title": "Hot Black",
+        "content": "Single shot of espresso topped with hot water."
+      }
+    ]
+  },
+  {
+    "name": "Banana Custard",
+    "category": "Desserts",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — bar SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 400,
+        "unit": "g",
+        "name": "Instant custard powder"
+      },
+      {
+        "amount": 1.2,
+        "unit": "L",
+        "name": "Ice water"
+      },
+      {
+        "amount": 60,
+        "unit": "ml",
+        "name": "Vanilla essence"
+      },
+      {
+        "amount": 1,
+        "unit": "L",
+        "name": "Whipping cream"
+      },
+      {
+        "amount": 0,
+        "unit": null,
+        "name": "Milk biscuits (crushed)"
+      },
+      {
+        "amount": 0,
+        "unit": null,
+        "name": "Banana"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Custard base",
+        "content": "Mix instant custard powder, ice water and vanilla essence until smooth."
+      },
+      {
+        "title": "Whip cream",
+        "content": "Whip the whipping cream until soft peaks."
+      },
+      {
+        "title": "Fold",
+        "content": "Fold the custard and whipped cream together until well incorporated."
+      },
+      {
+        "title": "Layer",
+        "content": "Layer banana, crushed biscuits and the custard mixture."
+      },
+      {
+        "title": "Chill",
+        "content": "Let it sit in the fridge for at least 4 hours before serving.",
+        "timer_seconds": 14400
+      },
+      {
+        "title": "Plate",
+        "content": "Serve 1 scoop (≈200g) of the banana pudding."
+      },
+      {
+        "title": "Garnish",
+        "content": "Drizzle with butterscotch sauce and dust with icing sugar."
+      }
+    ]
   }
 ]

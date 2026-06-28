@@ -50,6 +50,9 @@ router.get('/import-seed', (req, res) => {
       );
       const idRow = db.get('SELECT id FROM recipes WHERE name=? AND created_at=? ORDER BY id DESC LIMIT 1', [r.name, now]);
       const id = idRow ? idRow.id : db.get('SELECT MAX(id) as id FROM recipes').id;
+      if (Array.isArray(r.outlet_ids) && r.outlet_ids.length) {
+        r.outlet_ids.forEach(oid => db.run('INSERT OR IGNORE INTO recipe_outlets (recipe_id,outlet_id) VALUES (?,?)', [id, oid]));
+      }
       (r.ingredients||[]).forEach((ing, i) => {
         db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
           [id, i, ing.name, ing.amount, ing.unit||null, ing.cost_per_unit||0]);

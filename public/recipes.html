@@ -376,6 +376,11 @@ function renderGrid(list) {
     const oids = recipeOutletIds(r);
     if (r.is_shared) tags.push('<span class="tag tag-shared">Shared</span>');
     else if (oids.length && oids.every(id => TIPO_IDS.includes(id))) tags.push('<span class="tag tag-outlet">Tipo</span>');
+    else if (oids.length) {
+      const names = oids.map(id => (outlets.find(o => o.id === id)||{}).name).filter(Boolean);
+      const label = names.length > 1 ? names.length + ' outlets' : (names[0] || r.outlet_name || '');
+      if (label) tags.push('<span class="tag tag-outlet">'+label+'</span>');
+    }
     else if (r.outlet_name) tags.push('<span class="tag tag-outlet">'+r.outlet_name+'</span>');
     allergens.slice(0,2).forEach(a => tags.push('<span class="tag tag-allergen">'+a+'</span>'));
     return '<div class="recipe-card" onclick="openRecipe('+r.id+')">' +
@@ -408,9 +413,15 @@ function renderDetail() {
   let html = '<div class="detail-name">'+r.name+'</div>';
   const TIPO_IDS = [5, 7, 8, 9, 11, 12];
   const oids = recipeOutletIds(r);
-  const outletLabel = r.is_shared ? 'Shared · '
-    : (oids.length && oids.every(id => TIPO_IDS.includes(id))) ? 'Tipo · '
-    : (r.outlet_name ? r.outlet_name+' · ' : '');
+  let outletName = '';
+  if (r.is_shared) outletName = 'Shared';
+  else if (oids.length && oids.every(id => TIPO_IDS.includes(id))) outletName = 'Tipo';
+  else if (oids.length) {
+    const names = oids.map(id => (outlets.find(o => o.id === id)||{}).name).filter(Boolean);
+    outletName = names.length > 1 ? names.length + ' outlets' : (names[0] || r.outlet_name || '');
+  }
+  else if (r.outlet_name) outletName = r.outlet_name;
+  const outletLabel = outletName ? outletName + ' · ' : '';
   html += '<div class="detail-sub">'+outletLabel+r.category+'</div>';
 
   const tags = [];
@@ -432,10 +443,11 @@ function renderDetail() {
     html += '<div class="sec"><div class="sec-title">Ingredients</div>';
     r.ingredients.forEach(ing => {
       const qty = ing.amount * ratio;
-      const display = qty % 1 === 0 ? qty.toFixed(0) : (qty < 10 ? qty.toFixed(1) : Math.round(qty).toString());
+      const display = !ing.amount ? '' : (qty % 1 === 0 ? qty.toFixed(0) : (qty < 10 ? qty.toFixed(1) : Math.round(qty).toString()));
+      const qtyText = display ? display + (ing.unit ? ' '+ing.unit : '') : (ing.unit || '—');
       html += '<div class="ing-row">' +
         '<div><div class="ing-name">'+ing.name+'</div>'+(ing.cost_per_unit > 0 ? '<div class="ing-cost">$'+ing.cost_per_unit+'/'+( ing.unit||'unit')+'</div>' : '')+'</div>' +
-        '<div class="ing-qty" data-base="'+ing.amount+'" data-unit="'+(ing.unit||'')+'">'+display+(ing.unit?' '+ing.unit:'')+'</div>' +
+        '<div class="ing-qty" data-base="'+ing.amount+'" data-unit="'+(ing.unit||'')+'">'+qtyText+'</div>' +
       '</div>';
     });
     html += '</div>';
@@ -474,8 +486,8 @@ function changeServings(delta) {
     const base = parseFloat(el.getAttribute('data-base'));
     const unit = el.getAttribute('data-unit');
     const qty = base * ratio;
-    const display = qty % 1 === 0 ? qty.toFixed(0) : (qty < 10 ? qty.toFixed(1) : Math.round(qty).toString());
-    el.textContent = display + (unit ? ' '+unit : '');
+    const display = !base ? '' : (qty % 1 === 0 ? qty.toFixed(0) : (qty < 10 ? qty.toFixed(1) : Math.round(qty).toString()));
+    el.textContent = display ? display + (unit ? ' '+unit : '') : (unit || '—');
   });
   const totalCost = currentRecipe.ingredients.reduce((s,i) => s + (i.amount * ratio * (i.cost_per_unit||0)), 0);
   const chip = document.getElementById('costChip');
