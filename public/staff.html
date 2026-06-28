@@ -51,6 +51,11 @@ body{font-family:var(--font);background:#F0F2EC;color:var(--ink);display:flex;mi
 .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--ink-08)}
 .card-title{font-size:12.5px;font-weight:600;color:var(--ink)}
 .tbl-wrap{overflow-x:auto}
+.staff-search{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--ink-08);border-radius:10px;padding:0 12px;margin-bottom:14px;max-width:340px}
+.staff-search svg{width:15px;height:15px;color:var(--ink-30);flex-shrink:0}
+.staff-search input{flex:1;border:none;outline:none;background:transparent;height:38px;font-size:13.5px;font-family:var(--font);color:var(--ink)}
+.staff-search input::placeholder{color:var(--ink-30)}
+.staff-search:focus-within{border-color:var(--accent)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 thead th{padding:9px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--ink-60);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--ink-08);white-space:nowrap}
 tbody td{padding:11px 14px;border-bottom:1px solid var(--ink-04);vertical-align:middle}
@@ -229,6 +234,10 @@ tbody tr:last-child td{border-bottom:none}
 
     <!-- Staff tab -->
     <div id="tab-staff" class="tab-panel active">
+      <div class="staff-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="staffSearch" placeholder="Search staff by name…" oninput="onStaffSearch()" autocomplete="off">
+      </div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>Name</th><th>Type</th><th>Pay</th><th>Status</th><th>Citizenship</th><th>Bank</th><th></th></tr></thead>
@@ -374,10 +383,18 @@ const svgLockOff=`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" st
 const svgGlobe=`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
 const svgDot=(c)=>`<svg width="8" height="8" viewBox="0 0 24 24" fill="${c}" stroke="none"><circle cx="12" cy="12" r="8"/></svg>`;
 
+let allStaff=[];
 async function loadStaff(){
-  const r=await fetch('/api/staff');const s=await r.json();
+  const r=await fetch('/api/staff');allStaff=await r.json();
+  renderStaff(allStaff);
+}
+function onStaffSearch(){
+  const q=(document.getElementById('staffSearch').value||'').trim().toLowerCase();
+  renderStaff(q?allStaff.filter(x=>(x.name||'').toLowerCase().includes(q)):allStaff, q);
+}
+function renderStaff(s, q){
   const tb=document.getElementById('staffBody');
-  if(!s.length){tb.innerHTML='<tr><td colspan="8" class="empty">No staff yet</td></tr>';return;}
+  if(!s.length){tb.innerHTML='<tr><td colspan="8" class="empty">'+(q?('No staff match \u201c'+q+'\u201d'):'No staff yet')+'</td></tr>';return;}
   tb.innerHTML=s.map(x=>{
     const pay=x.staff_type==='fulltime'?`$${(x.monthly_salary||0).toFixed(2)}/mo`:`$${(x.hourly_rate||0).toFixed(2)}/hr`;
     const prBadge=x.pr_status==='citizen'?`<span class="badge badge-citizen">${svgGlobe} Citizen</span>`:x.pr_status==='pr'?`<span class="badge badge-pr">${svgShield} PR</span>`:`<span class="badge badge-foreign">${svgGlobe} Foreigner</span>`;
