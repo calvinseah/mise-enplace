@@ -525,15 +525,28 @@ async function removeEntry(id) {
 async function updateEntryTime(id, field, value) {
   const entry = schedule.find(s => s.id === id);
   if (!entry) return;
+  const prev = field === 'start' ? entry.start_time : entry.end_time;
   if (field === 'start') entry.start_time = value;
   if (field === 'end') entry.end_time = value;
   const label = entry.start_time && entry.end_time ? entry.start_time + '-' + entry.end_time : '';
+  const fail = (msg) => {
+    if (field === 'start') entry.start_time = prev; else entry.end_time = prev;
+    renderSchedule(); attachDropZones();
+    alert(msg);
+  };
   try {
-    await fetch('/api/roster/schedule/' + id, {
+    const r = await fetch('/api/roster/schedule/' + id, {
       method: 'PUT', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ shift_label: label, start_time: entry.start_time, end_time: entry.end_time })
     });
-  } catch(e) {}
+    if (!r.ok) {
+      fail(r.status === 401
+        ? 'Your session has expired, so the timing was not saved. Please log in again and re-enter it.'
+        : 'The timing could not be saved. Please try again.');
+    }
+  } catch(e) {
+    fail('Network error — the timing was not saved. Please try again.');
+  }
 }
 
 // ── Override closed days ──────────────────────────────────────────────────────
