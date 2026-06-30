@@ -699,60 +699,73 @@ function exportPDF() {
   const weeks = buildWeeks();
   const DOW_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  // Build table rows
-  let tableRows = '';
+  // Build calendar grid (one cell per day, Mon–Sun columns)
+  const DOW_HEAD = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const headRow = DOW_HEAD.map(d => '<th>' + d + '</th>').join('');
+
+  const fmtNames = arr => arr.map(e => {
+    const t = e.start_time && e.end_time
+      ? ' <span class="t">' + e.start_time.slice(0,5) + '–' + e.end_time.slice(0,5) + '</span>' : '';
+    return '<div class="nm">' + e.staff_name + t + '</div>';
+  }).join('');
+
+  let gridRows = '';
   weeks.forEach(week => {
+    let cells = '';
     week.forEach(day => {
-      if (!day) return;
-      const closed = isClosed(day);
+      if (!day) { cells += '<td class="cell empty"></td>'; return; }
+      const closed     = isClosed(day);
+      const overridden = isOverridden(day);
       const daySchedule = schedule.filter(s => s.day == day && !s.removed);
       const foh = daySchedule.filter(s => s.role_group === 'foh');
       const boh = daySchedule.filter(s => s.role_group === 'boh');
-      const dayLabel = getDayShort(day) + ' ' + day;
-      const overridden = isOverridden(day);
 
+      let body;
       if (closed) {
-        tableRows += '<tr class="closed-row"><td>' + dayLabel + '</td><td colspan="2" style="color:#999;font-style:italic">Closed</td></tr>';
-        return;
+        body = '<div class="closed">Closed</div>';
+      } else {
+        body = '<div class="grp"><div class="glbl foh">FOH</div>' + (foh.length ? fmtNames(foh) : '<div class="none">—</div>') + '</div>' +
+               '<div class="grp"><div class="glbl boh">BOH</div>' + (boh.length ? fmtNames(boh) : '<div class="none">—</div>') + '</div>';
       }
-
-      const fohNames = foh.map(e => {
-        const t = e.start_time && e.end_time ? ' (' + e.start_time.slice(0,5) + '–' + e.end_time.slice(0,5) + ')' : '';
-        return e.staff_name + t;
-      }).join('<br>') || '—';
-
-      const bohNames = boh.map(e => {
-        const t = e.start_time && e.end_time ? ' (' + e.start_time.slice(0,5) + '–' + e.end_time.slice(0,5) + ')' : '';
-        return e.staff_name + t;
-      }).join('<br>') || '—';
-
-      const rowStyle = overridden ? 'background:#FFFBEB' : '';
-      tableRows += '<tr style="' + rowStyle + '">' +
-        '<td style="font-weight:600;white-space:nowrap">' + dayLabel + (overridden ? ' <span style="font-size:9px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 5px">SPECIAL</span>' : '') + '</td>' +
-        '<td style="color:#1E40AF">' + fohNames + '</td>' +
-        '<td style="color:#92400E">' + bohNames + '</td>' +
-        '</tr>';
+      const cls = 'cell' + (closed ? ' closed-cell' : '') + (overridden ? ' special' : '');
+      cells += '<td class="' + cls + '">' +
+        '<div class="dnum">' + day + (overridden ? ' <span class="sp">SPECIAL</span>' : '') + '</div>' +
+        body + '</td>';
     });
+    gridRows += '<tr>' + cells + '</tr>';
   });
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Roster — ${outletName} — ${monthName}</title>
   <style>
-    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:32px;color:#1A2318;font-size:12px}
-    h1{font-size:22px;font-weight:700;margin-bottom:4px}
-    .sub{color:#666;font-size:12px;margin-bottom:24px}
-    table{width:100%;border-collapse:collapse}
-    th{text-align:left;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#666;border-bottom:2px solid #3D5240;background:#F0F2EC}
-    td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top}
-    tr.closed-row td{color:#bbb;background:#fafafa}
-    .footer{margin-top:24px;font-size:9px;color:#bbb;text-align:center}
-    @media print{body{padding:16px}@page{margin:1.5cm}}
+    *{box-sizing:border-box}
+    body{font-family:'Helvetica Neue',Arial,sans-serif;padding:24px;color:#1A2318;font-size:10px}
+    h1{font-size:20px;font-weight:700;margin-bottom:4px}
+    .sub{color:#666;font-size:11px;margin-bottom:18px}
+    table.cal{width:100%;border-collapse:collapse;table-layout:fixed}
+    table.cal th{width:14.28%;padding:6px 4px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#3D5240;background:#F0F2EC;border:1px solid #D8DCD2}
+    td.cell{border:1px solid #D8DCD2;vertical-align:top;padding:5px;height:120px;width:14.28%;overflow:hidden}
+    td.empty{background:#FAFAF8;border-color:#EEE}
+    td.closed-cell{background:#FAFAFA}
+    td.special{background:#FFFBEB}
+    .dnum{font-weight:700;font-size:11px;margin-bottom:5px;color:#1A2318}
+    .sp{font-size:7px;background:#FEF3C7;color:#92400E;border-radius:3px;padding:1px 4px;vertical-align:middle;letter-spacing:.03em}
+    .grp{margin-bottom:5px}
+    .glbl{font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;margin-bottom:2px}
+    .glbl.foh{color:#1E40AF}
+    .glbl.boh{color:#92400E}
+    .nm{font-size:9px;line-height:1.35;margin-bottom:1px}
+    .nm .t{color:#888;font-size:8px;white-space:nowrap}
+    .none{color:#CCC;font-size:9px}
+    .closed{color:#BBB;font-style:italic;font-size:9px}
+    .footer{margin-top:18px;font-size:9px;color:#BBB;text-align:center}
+    @media print{body{padding:0}@page{size:A4 landscape;margin:1cm}tr{break-inside:avoid}}
   </style></head><body>
   <h1>${outletName}</h1>
   <div class="sub">Roster · ${monthName} · Generated ${new Date().toLocaleDateString('en-SG')}</div>
-  <table>
-    <thead><tr><th style="width:90px">Date</th><th>FOH</th><th>BOH</th></tr></thead>
-    <tbody>${tableRows}</tbody>
+  <table class="cal">
+    <thead><tr>${headRow}</tr></thead>
+    <tbody>${gridRows}</tbody>
   </table>
   <div class="footer">Mise Restaurant Management · mise-enplace.up.railway.app</div>
   </body></html>`;
