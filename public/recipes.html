@@ -531,8 +531,10 @@ function editCurrent() {
   document.getElementById('fCategory').value = r.category;
   const TIPO_IDS = [5, 7, 8, 9, 11, 12];
   const oids = recipeOutletIds(r);
-  if (oids.length > 1 && oids.every(x => TIPO_IDS.includes(x))) document.getElementById('fOutlet').value = 'tipo';
-  else document.getElementById('fOutlet').value = r.outlet_id || '';
+  const fOutletEl = document.getElementById('fOutlet');
+  if (r.is_shared || oids.length === 0) fOutletEl.value = '';
+  else if (oids.length > 1 && oids.every(x => TIPO_IDS.includes(x))) fOutletEl.value = 'tipo';
+  else fOutletEl.value = String(oids[0]);
   document.querySelectorAll('#allergenChecks input').forEach(c => { c.checked = r.allergens.includes(c.value); });
   document.getElementById('ingList').innerHTML = '';
   r.ingredients.forEach(i => addIngRow(i));
