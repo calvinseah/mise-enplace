@@ -2129,5 +2129,462 @@
         "content": "Drizzle with butterscotch sauce and dust with icing sugar."
       }
     ]
+  },
+  {
+    "name": "Fish Flour",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 900,
+        "unit": "g",
+        "name": "Ikan Terbang flour"
+      },
+      {
+        "amount": 600,
+        "unit": "g",
+        "name": "Rice flour"
+      },
+      {
+        "amount": 40,
+        "unit": "g",
+        "name": "Baking powder"
+      },
+      {
+        "amount": 30,
+        "unit": "g",
+        "name": "Fine salt"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Black pepper powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Turmeric powder"
+      },
+      {
+        "amount": 10,
+        "unit": "g",
+        "name": "Garlic powder"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Pour all ingredients into a large mixing bowl and stir until evenly mixed."
+      },
+      {
+        "title": "Store",
+        "content": "Transfer into a large vacuum bag and seal."
+      }
+    ]
+  },
+  {
+    "name": "Chowder Mirepoix",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 2,
+        "unit": "kg",
+        "name": "Peeled white onion"
+      },
+      {
+        "amount": 2,
+        "unit": "kg",
+        "name": "Celery"
+      },
+      {
+        "amount": 2,
+        "unit": "kg",
+        "name": "Leek"
+      },
+      {
+        "amount": 200,
+        "unit": "ml",
+        "name": "Canola oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Chop",
+        "content": "Separately pulse onions, celery and leeks in a food processor until finely chopped."
+      },
+      {
+        "title": "Sauté",
+        "content": "Heat oil in a large pot and sauté all chopped vegetables until tender — do not brown."
+      },
+      {
+        "title": "Cool & pack",
+        "content": "Cool the mirepoix, then pack into individual 1kg vacuum bags."
+      },
+      {
+        "title": "Store",
+        "content": "Store in the freezer."
+      }
+    ]
+  },
+  {
+    "name": "Clam Chowder",
+    "category": "Soups",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Mirepoix"
+      },
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Vegetable stock powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 4000,
+        "unit": "ml",
+        "name": "Water"
+      },
+      {
+        "amount": 500,
+        "unit": "ml",
+        "name": "UHT milk"
+      },
+      {
+        "amount": 500,
+        "unit": "ml",
+        "name": "Cream"
+      },
+      {
+        "amount": 2,
+        "unit": "pcs",
+        "name": "Bay leaf"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Fresh thyme"
+      },
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Frozen clam meat"
+      },
+      {
+        "amount": 1000,
+        "unit": "g",
+        "name": "Cooked potato"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Corn flour"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Heat mirepoix",
+        "content": "Defrost 1 bag of mirepoix and heat in a pot with a little canola oil."
+      },
+      {
+        "title": "Stock",
+        "content": "Mix vegetable stock powder and sugar into the water and pour into the pot."
+      },
+      {
+        "title": "Simmer",
+        "content": "Add milk, cream, bay leaf and thyme. Bring to a simmer."
+      },
+      {
+        "title": "Add clams & potato",
+        "content": "Roughly dice the cooked potatoes and add with the clam meat. Bring to a simmer."
+      },
+      {
+        "title": "Thicken",
+        "content": "Dilute corn flour with a little water, pour in, and keep stirring until the chowder thickens."
+      }
+    ]
+  },
+  {
+    "name": "Curry Sauce",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 2000,
+        "unit": "g",
+        "name": "Peeled white onion"
+      },
+      {
+        "amount": 200,
+        "unit": "ml",
+        "name": "Canola oil"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Curry powder"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Plain flour"
+      },
+      {
+        "amount": 100,
+        "unit": "g",
+        "name": "Vegetable stock powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 4000,
+        "unit": "ml",
+        "name": "Water"
+      },
+      {
+        "amount": 1,
+        "unit": "btl",
+        "name": "HP sauce"
+      },
+      {
+        "amount": 1,
+        "unit": "btl",
+        "name": "Mango chutney"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Chop",
+        "content": "Pulse the white onion in a food processor until finely chopped."
+      },
+      {
+        "title": "Sauté",
+        "content": "Heat oil in a big pot and sauté the onions until translucent."
+      },
+      {
+        "title": "Cook flour",
+        "content": "Add curry powder, then plain flour, and stir to cook off the raw flour."
+      },
+      {
+        "title": "Stock",
+        "content": "Mix vegetable stock powder and sugar into the water, pour in, and bring to a simmer."
+      },
+      {
+        "title": "Season",
+        "content": "Add HP sauce and mango chutney."
+      },
+      {
+        "title": "Cool",
+        "content": "Cool fully before storing in the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Worcestershire Mayo",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3000,
+        "unit": "ml",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 290,
+        "unit": "ml",
+        "name": "Worcestershire sauce (1 btl)"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Sugar"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Place all ingredients in a mixing bowl and whisk until evenly mixed. Transfer to a container for storage."
+      }
+    ]
+  },
+  {
+    "name": "Tartar Sauce",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 6000,
+        "unit": "ml",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 3,
+        "unit": "btl",
+        "name": "Gherkin"
+      },
+      {
+        "amount": 2,
+        "unit": "btl",
+        "name": "Gherkin juice"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Capers"
+      },
+      {
+        "amount": 200,
+        "unit": "g",
+        "name": "Dill (incl. stalks)"
+      },
+      {
+        "amount": 100,
+        "unit": "ml",
+        "name": "White grape vinegar"
+      },
+      {
+        "amount": 200,
+        "unit": "ml",
+        "name": "Fish sauce"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Chop",
+        "content": "Pulse gherkin, gherkin juice, capers and dill in a food processor until finely chopped."
+      },
+      {
+        "title": "Mix",
+        "content": "Combine all ingredients in a large mixing bowl with the white grape vinegar and fish sauce."
+      },
+      {
+        "title": "Store",
+        "content": "Transfer to a container and keep in the chiller."
+      }
+    ]
+  },
+  {
+    "name": "Pickled Eggs",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      6
+    ],
+    "description": "The Mad Sailors — kitchen prep/SOP",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1000,
+        "unit": "ml",
+        "name": "White vinegar"
+      },
+      {
+        "amount": 550,
+        "unit": "ml",
+        "name": "Water"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Fine salt"
+      },
+      {
+        "amount": 50,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Mustard seed"
+      },
+      {
+        "amount": 5,
+        "unit": "g",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 2,
+        "unit": "pcs",
+        "name": "Bay leaf"
+      },
+      {
+        "amount": 20,
+        "unit": "g",
+        "name": "Dill"
+      },
+      {
+        "amount": 3,
+        "unit": "cans",
+        "name": "Quail eggs"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Pickling liquid",
+        "content": "Place all pickling ingredients in a mixing bowl and stir until evenly mixed."
+      },
+      {
+        "title": "Prep eggs",
+        "content": "Drain the canned quail eggs and rinse with tap water."
+      },
+      {
+        "title": "Pickle",
+        "content": "Add the eggs to the pickling liquid and pickle for at least 6 hours.",
+        "timer_seconds": 21600
+      }
+    ]
   }
 ]
