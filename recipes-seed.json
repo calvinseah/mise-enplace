@@ -2586,5 +2586,1680 @@
         "timer_seconds": 21600
       }
     ]
+  },
+  {
+    "name": "Hummus",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Chickpeas dip",
+    "notes": "Cumin: 40g if cumin too strong",
+    "ingredients": [
+      {
+        "amount": 1500.0,
+        "unit": "g",
+        "name": "Chickpea (drained)"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Tahini"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Ice"
+      },
+      {
+        "amount": 70.0,
+        "unit": "g",
+        "name": "Canola oil"
+      },
+      {
+        "amount": 40.0,
+        "unit": "g",
+        "name": "Lime juice"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 60.0,
+        "unit": "g",
+        "name": "Cumin"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Chickpea juice (if needed)"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Paprika"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Drain",
+        "content": "Drain 2.5kg tin chickpeas. Keep some of the chickpea juice for blending if needed. Once drained, chickpea should weigh roughly 1.5kg."
+      },
+      {
+        "title": "Pour",
+        "content": "Pour in all the ingredients into the chopper and blend till smooth."
+      }
+    ]
+  },
+  {
+    "name": "Tzatziki",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Cucumber yoghurt dip",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Greek yoghurt"
+      },
+      {
+        "amount": 2.0,
+        "unit": "nos",
+        "name": "Cucumber"
+      },
+      {
+        "amount": 1.5,
+        "unit": "tsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 0.25,
+        "unit": "cup",
+        "name": "Dill (fine chopped)"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Sea salt (maldon)"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 2.0,
+        "unit": "tbsp",
+        "name": "White grape vinegar"
+      },
+      {
+        "amount": 125.0,
+        "unit": "ml",
+        "name": "EVOO"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Alternate",
+        "content": "Alternate peel the cucumbers."
+      },
+      {
+        "title": "Cut",
+        "content": "Cut both ends, then cut into halves."
+      },
+      {
+        "title": "Take",
+        "content": "Take out all the seeds."
+      },
+      {
+        "title": "Put",
+        "content": "Put the deseeded half cucumbers into the chopper and blend till fine."
+      },
+      {
+        "title": "Use",
+        "content": "Use a fine sieve to drain out the excess cucumber juices."
+      },
+      {
+        "title": "Keep",
+        "content": "Keep the cucumber ‘pulp’ or ‘meat’ and throw the juice."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix the cucumber pulp into a mixing bowl together with all the other ingredients."
+      }
+    ]
+  },
+  {
+    "name": "Taramosalata",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Cod roe dip",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Breadcrumbs"
+      },
+      {
+        "amount": 1400.0,
+        "unit": "g",
+        "name": "Milk"
+      },
+      {
+        "amount": 220.0,
+        "unit": "g",
+        "name": "Tarama (roe)"
+      },
+      {
+        "amount": 23.0,
+        "unit": "g",
+        "name": "Lime juice"
+      },
+      {
+        "amount": 0.8,
+        "unit": "l",
+        "name": "Canola oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Soak",
+        "content": "Soak the breadcrumbs with the milk in a mayo tub and leave it overnight. If soaked during opening, at night can blend already."
+      },
+      {
+        "title": "Pour",
+        "content": "Pour the soaked breadcrumbs into the chopper together with the tarama and lime juice."
+      },
+      {
+        "title": "Pulse",
+        "content": "Pulse the mixture till blended."
+      },
+      {
+        "title": "Pour",
+        "content": "Pour in the canola oil into the mixture bit by bit to emulsify (means pour, blend pour, blend and repeat)"
+      },
+      {
+        "title": "Blend",
+        "content": "Blend till the dip is smooth and thick and able to hold its shape. If still unable to hold its shape, add more oil bit by bit."
+      }
+    ]
+  },
+  {
+    "name": "Tyrokafteri",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Spicy feta dip",
+    "notes": "2 day prep",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Feta"
+      },
+      {
+        "amount": 215.0,
+        "unit": "g",
+        "name": "Roasted red capsicum"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Cream cheese"
+      },
+      {
+        "amount": 300.0,
+        "unit": "g",
+        "name": "Ricotta cheese"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 13.0,
+        "unit": "g",
+        "name": "Chilli powder"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Cayenne powder"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 19.0,
+        "unit": "g",
+        "name": "Paprika sweet"
+      },
+      {
+        "amount": 6.0,
+        "unit": "nos",
+        "name": "Chilli padi red"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Red grape vinegar"
+      },
+      {
+        "amount": 0.5,
+        "unit": "cup",
+        "name": "EVOO"
+      },
+      {
+        "amount": 13.0,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 125.0,
+        "unit": "g",
+        "name": "Cream"
+      }
+    ],
+    "steps": [
+      {
+        "title": "If",
+        "content": "If recipe requires 215g of roasted capsicum, weigh about 300g to 400g to roast on the grill. So there’s about 100g reduction weight loss."
+      },
+      {
+        "title": "Roast",
+        "content": "Roast the red capsicum till charred on all sides."
+      },
+      {
+        "title": "Once",
+        "content": "Once roasted, put in a container and cover with a cling wrap to further steam and cook till soft and tender."
+      },
+      {
+        "title": "Once",
+        "content": "Once cooled and softened, peel and throw the charred skin."
+      },
+      {
+        "title": "I",
+        "content": "i) If the feta is very solid and hard (if using alba brand), cut into small pieces, put into the chopper and blend together with the ricotta till smooth."
+      },
+      {
+        "title": "Ii",
+        "content": "ii) If the feta is not hard (if using epiros brand), crumble into the chopper and blend together with the ricotta till smooth."
+      },
+      {
+        "title": "Put",
+        "content": "Put the roasted capsicum and the rest of the ingredients including the oil till smooth."
+      },
+      {
+        "title": "Make",
+        "content": "Make sure dip looks very easy to shape. Pour into a container and set in the chiller overnight."
+      }
+    ]
+  },
+  {
+    "name": "Melitzanosalata",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Eggplant dip",
+    "notes": "Red onion (fine chop): range 1-2nos",
+    "ingredients": [
+      {
+        "amount": 5.0,
+        "unit": "kg",
+        "name": "Eggplant"
+      },
+      {
+        "amount": 2.5,
+        "unit": "kg",
+        "name": "Aubergine"
+      },
+      {
+        "amount": 1.5,
+        "unit": "kg",
+        "name": "Roasted red capsicum"
+      },
+      {
+        "amount": 1.0,
+        "unit": "nos",
+        "name": "Red onion (fine chop)"
+      },
+      {
+        "amount": 0.5,
+        "unit": "cup",
+        "name": "Parsley (fine chop)"
+      },
+      {
+        "amount": 2.5,
+        "unit": "tbsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 4.0,
+        "unit": "tbsp",
+        "name": "Paprika sweet"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tbsp",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 4.0,
+        "unit": "tbsp",
+        "name": "Red grape vinegar"
+      },
+      {
+        "amount": 1.0,
+        "unit": "cup",
+        "name": "EVOO"
+      },
+      {
+        "amount": 2.0,
+        "unit": "tbsp",
+        "name": "Lime juice"
+      },
+      {
+        "amount": 3.0,
+        "unit": "tsp",
+        "name": "Salt"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Poke",
+        "content": "Poke the eggplants and aubergine and roast them on the grill till soft and charred. No need to be too charred like super black charred."
+      },
+      {
+        "title": "Roast",
+        "content": "Roast the red capsicums till charred as well."
+      },
+      {
+        "title": "Once",
+        "content": "Once roasted, put them in a full insert and cling wrap to further cook and soften it."
+      },
+      {
+        "title": "Once",
+        "content": "Once done, peel all the skin and the head."
+      },
+      {
+        "title": "Blend",
+        "content": "Blend the eggplants and aubergine separately. Blend till chunky smooth."
+      },
+      {
+        "title": "Blend",
+        "content": "Blend the roasted red capsicum together with the other ingredients except parsley and onion."
+      },
+      {
+        "title": "Pour",
+        "content": "Pour all the blended ingredients and parsley and onion in a full insert. Mix well."
+      },
+      {
+        "title": "Taste",
+        "content": "Taste and add more red grape vinegar and salt if needed."
+      }
+    ]
+  },
+  {
+    "name": "Roasted Chickpeas",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 2.0,
+        "unit": "tin",
+        "name": "Chickpeas (400g tin drained)"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Coriander powder"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Garlic powder"
+      },
+      {
+        "amount": 8.0,
+        "unit": "g",
+        "name": "Brown sugar"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Paprika sweet"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Canola oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Drain",
+        "content": "Drain the 400g chickpea tin and throw the juice."
+      },
+      {
+        "title": "In",
+        "content": "In a separate bowl, mix the other ingredients together. Then, put in the chickpeas and mix well."
+      },
+      {
+        "title": "Roast",
+        "content": "Roast them in a tray at 178℃ for 40mins, then at 160℃ for 8mins.",
+        "timer_seconds": 2400
+      }
+    ]
+  },
+  {
+    "name": "Chilli Butter",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Butter (softened)"
+      },
+      {
+        "amount": 2.0,
+        "unit": "tbsp",
+        "name": "Chilli powder"
+      },
+      {
+        "amount": 2.0,
+        "unit": "tbsp",
+        "name": "Cayenne powder"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tbsp",
+        "name": "Paprika sweet"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tbsp",
+        "name": "Chilli flake"
+      },
+      {
+        "amount": 3.0,
+        "unit": "tbsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Chilli oil"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Sugar"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Leave",
+        "content": "Leave the butter at room temperature to soften."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix the softened butter together with all the ingredients."
+      }
+    ]
+  },
+  {
+    "name": "Garlic Aioli (Ela)",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 3.0,
+        "unit": "l",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 1.0,
+        "unit": "nos",
+        "name": "Lemon zest"
+      },
+      {
+        "amount": 100.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix well together"
+      }
+    ]
+  },
+  {
+    "name": "Dry Batter (Ela)",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Semolina flour"
+      },
+      {
+        "amount": 500.0,
+        "unit": "g",
+        "name": "Plain flour"
+      },
+      {
+        "amount": 500.0,
+        "unit": "g",
+        "name": "Corn flour"
+      },
+      {
+        "amount": 10.0,
+        "unit": "tsp",
+        "name": "Baking powder"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix well together"
+      }
+    ]
+  },
+  {
+    "name": "Olive Tapenade",
+    "category": "Dips",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Kalamata olives"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Sundried tomato"
+      },
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 50.0,
+        "unit": "g",
+        "name": "Anchovies"
+      },
+      {
+        "amount": 35.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Drain",
+        "content": "Drain the kalamata olives and the sundried tomato."
+      },
+      {
+        "title": "Blend",
+        "content": "Blend everything in a chopper till almost smooth and able to hold its shape."
+      }
+    ]
+  },
+  {
+    "name": "Salad Dressing",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 125.0,
+        "unit": "g",
+        "name": "Lemon juice"
+      },
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Mustard yellow"
+      },
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 375.0,
+        "unit": "g",
+        "name": "White grape vinegar"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 12.0,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 1500.0,
+        "unit": "g",
+        "name": "EVOO"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend everything and pour in the oil bit by bit till emulsify"
+      }
+    ]
+  },
+  {
+    "name": "Lemon Ganda",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 5.0,
+        "unit": "nos",
+        "name": "Lemon juice"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Sea salt (maldon)"
+      },
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Mayonnaise"
+      },
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Mustard yellow"
+      },
+      {
+        "amount": 600.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend everything and pour in the oil bit by bit till emulsify"
+      }
+    ]
+  },
+  {
+    "name": "Lemon Pilaf",
+    "category": "Sides",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 380.0,
+        "unit": "g",
+        "name": "Basmati rice"
+      },
+      {
+        "amount": 570.0,
+        "unit": "g",
+        "name": "Water"
+      },
+      {
+        "amount": 12.0,
+        "unit": "g",
+        "name": "Chicken seasoning"
+      },
+      {
+        "amount": 6.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 35.0,
+        "unit": "g",
+        "name": "Lime juice"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Canola oil"
+      },
+      {
+        "amount": 0.0,
+        "unit": "to taste",
+        "name": "Coriander/parsley (fine chop)"
+      },
+      {
+        "amount": 0.0,
+        "unit": "to taste",
+        "name": "Raisin"
+      },
+      {
+        "amount": 123.0,
+        "unit": "g",
+        "name": "Orzo (pasta)"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Wash",
+        "content": "Wash the basmati rice a few times."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix all ingredients except coriander/parsley, raisin and orzo and cook in a rice cooker."
+      },
+      {
+        "title": "Boil",
+        "content": "Boil orzo in salted water (see cooking time on packaging)."
+      },
+      {
+        "title": "Chop",
+        "content": "Chop coriander/parsley finely."
+      },
+      {
+        "title": "Once",
+        "content": "Once rice and orzo cooked, mix them with chopped coriander/parsley and raisin."
+      },
+      {
+        "title": "Portioned",
+        "content": "Portioned them into bags of 120g."
+      },
+      {
+        "title": "Step",
+        "content": "—-> Set lunch bowl 120g, power bowl 150g, ala carte 240g"
+      }
+    ]
+  },
+  {
+    "name": "Tahini Yoghurt",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 125.0,
+        "unit": "g",
+        "name": "Yoghurt"
+      },
+      {
+        "amount": 125.0,
+        "unit": "g",
+        "name": "Tahini"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 2.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Water"
+      },
+      {
+        "amount": 15.0,
+        "unit": "g",
+        "name": "White grape vinegar"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix all together"
+      }
+    ]
+  },
+  {
+    "name": "Shakshuka",
+    "category": "Mains",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "Yellow onion (sliced): range 2-3 nos  •  Red capsicum (sliced): range 2-3 nos",
+    "ingredients": [
+      {
+        "amount": 2.0,
+        "unit": "tin",
+        "name": "Chopped tomato (2.5kg)"
+      },
+      {
+        "amount": 2.0,
+        "unit": "nos",
+        "name": "Yellow onion (sliced)"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Cumin powder"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Cayenne powder"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Paprika sweet"
+      },
+      {
+        "amount": 2.0,
+        "unit": "nos",
+        "name": "Red capsicum (sliced)"
+      },
+      {
+        "amount": 3.0,
+        "unit": "tsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 15.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Sugar"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Slice",
+        "content": "Slice and saute the yellow onions and red capsicums."
+      },
+      {
+        "title": "Add",
+        "content": "Add in the minced garlic."
+      },
+      {
+        "title": "Pour",
+        "content": "Pour in the chopped tin tomato and the spices and seasoning."
+      },
+      {
+        "title": "Once",
+        "content": "Once boiling, put to simmer till shakhsuka is thickened. Stir once in a while to not have burnt bottom."
+      },
+      {
+        "title": "Taste",
+        "content": "Taste and adjust if needed."
+      },
+      {
+        "title": "Portioned",
+        "content": "Portioned in bags of 250g"
+      }
+    ]
+  },
+  {
+    "name": "Kotopoulo Marination",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Chicken halves",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 10.0,
+        "unit": "kg",
+        "name": "Chicken whole (1kg)"
+      },
+      {
+        "amount": 400.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Red grape vinegar"
+      },
+      {
+        "amount": 3.0,
+        "unit": "nos",
+        "name": "Lemon juice & zest"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 50.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Paprika sweet"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Cut",
+        "content": "Cut whole chicken into half, remove the bone/spine and keep in freezer to make stock."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix all ingredients well and marinate chicken halves well."
+      },
+      {
+        "title": "Put",
+        "content": "Put in a full insert and store in chiller."
+      }
+    ]
+  },
+  {
+    "name": "Lamb Syko Marination",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Lamb loin"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Sumac"
+      },
+      {
+        "amount": 8.0,
+        "unit": "g",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 3.0,
+        "unit": "g",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 8.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Cumin powder"
+      },
+      {
+        "amount": 2.0,
+        "unit": "g",
+        "name": "Cinnamon powder"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      },
+      {
+        "amount": 15.0,
+        "unit": "g",
+        "name": "Lime juice"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Remove",
+        "content": "Remove lamb loin from the bones and cap (fats)."
+      },
+      {
+        "title": "Portion",
+        "content": "Portion them 180g - 200g."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix all the spices well and rub onto the portioned lamb loins."
+      },
+      {
+        "title": "Vacuum",
+        "content": "Vacuum pack each portion."
+      }
+    ]
+  },
+  {
+    "name": "Figs Marination",
+    "category": "Prep & Components",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      },
+      {
+        "amount": 60.0,
+        "unit": "g",
+        "name": "Lemon juice"
+      },
+      {
+        "amount": 2.0,
+        "unit": "g",
+        "name": "Cinnamon powder"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix everything well."
+      }
+    ]
+  },
+  {
+    "name": "Lemon Yoghurt",
+    "category": "Aioli & Dressings",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Greek yoghurt"
+      },
+      {
+        "amount": 15.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      },
+      {
+        "amount": 0.5,
+        "unit": "nos",
+        "name": "Lemon juice & zest"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 3.0,
+        "unit": "g",
+        "name": "Black pepper"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Mix",
+        "content": "Mix everything well."
+      }
+    ]
+  },
+  {
+    "name": "Beef Kofta",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Minced beef"
+      },
+      {
+        "amount": 11.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tbsp",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tbsp",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Baking powder"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Breadcrumbs"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Yellow onion"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Cayenne powder"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Roughly",
+        "content": "Roughly chop the yellow onion and blend in the chopper till fine."
+      },
+      {
+        "title": "Press",
+        "content": "Press and squeeze the onion by using a fine sieve and throw away the onion water."
+      },
+      {
+        "title": "Use",
+        "content": "Use the pressed onion and mix well together with the rest of the ingredients till no breadcrumbs is visible."
+      },
+      {
+        "title": "Weigh",
+        "content": "Weigh each portion of kofta at 100g and shape into a rugby ball."
+      }
+    ]
+  },
+  {
+    "name": "Lamb Kofta",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "kg",
+        "name": "Minced lamb"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Salt"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Baking powder"
+      },
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Breadcrumbs"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Yellow onion"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Minced garlic"
+      },
+      {
+        "amount": 1.0,
+        "unit": "nos",
+        "name": "Roasted red cap (finely diced)"
+      },
+      {
+        "amount": 80.0,
+        "unit": "g",
+        "name": "Parsley leaf (finely chopped)"
+      },
+      {
+        "amount": 1.0,
+        "unit": "tsp",
+        "name": "Paprika powder"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Roast",
+        "content": "Roast the red capsicum till charred on all sides. Cling wrap in a container to steam it. Peel off the charred skin and dice finely."
+      },
+      {
+        "title": "Roughly",
+        "content": "Roughly chop the yellow onion and blend in the chopper till fine."
+      },
+      {
+        "title": "Press",
+        "content": "Press and squeeze the onion by using a fine sieve and throw away the onion water."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix well all the ingredients till no breadcrumbs including the pressed onion, chopped parsley and diced roasted red capsicum is visible."
+      },
+      {
+        "title": "Weigh",
+        "content": "Weigh each portion of kofta at 105g and shape into a rugby ball."
+      }
+    ]
+  },
+  {
+    "name": "Pomodoro Sauce (Ela)",
+    "category": "Sauces",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "tin",
+        "name": "Chopped tomato"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Salt"
+      },
+      {
+        "amount": 10.0,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 5.0,
+        "unit": "g",
+        "name": "Black pepper"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Blend",
+        "content": "Blend the tin chopped tomatoes."
+      },
+      {
+        "title": "Put",
+        "content": "Put everything in a pot and boil."
+      },
+      {
+        "title": "Once",
+        "content": "Once boiling, put down to simmer till thicken."
+      },
+      {
+        "title": "Stir",
+        "content": "Stir once in a while so that sauce would not stick to the pot."
+      },
+      {
+        "title": "Taste",
+        "content": "Taste and adjust if needed."
+      }
+    ]
+  },
+  {
+    "name": "Chicken Gyro",
+    "category": "Meats",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 1.0,
+        "unit": "pkt",
+        "name": "Chicken boneless (2kg)"
+      },
+      {
+        "amount": 90.0,
+        "unit": "g",
+        "name": "Greek tomato paste"
+      },
+      {
+        "amount": 0.25,
+        "unit": "tsp",
+        "name": "Black pepper"
+      },
+      {
+        "amount": 0.25,
+        "unit": "tsp",
+        "name": "Salt"
+      },
+      {
+        "amount": 0.25,
+        "unit": "tsp",
+        "name": "Dried oregano"
+      },
+      {
+        "amount": 0.5,
+        "unit": "tsp",
+        "name": "Chilli flakes"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Pomace olive oil"
+      },
+      {
+        "amount": 25.0,
+        "unit": "g",
+        "name": "Lime juice"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Strain",
+        "content": "Strain the boneless chicken."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix all the ingredients for the marination."
+      },
+      {
+        "title": "Marinade",
+        "content": "Marinade the chicken well. Make sure all parts of the chicken are coated with the marination."
+      }
+    ]
+  },
+  {
+    "name": "Loukoumades",
+    "category": "Desserts",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 600.0,
+        "unit": "hot",
+        "name": "Water"
+      },
+      {
+        "amount": 525.0,
+        "unit": "g",
+        "name": "Plain flour"
+      },
+      {
+        "amount": 8.0,
+        "unit": "g",
+        "name": "Yeast"
+      },
+      {
+        "amount": 20.0,
+        "unit": "g",
+        "name": "Sugar"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Measure",
+        "content": "Measure in 3 separate bowls; water, sugar and yeast, plain flour."
+      },
+      {
+        "title": "Mix",
+        "content": "Mix in the sugar and yeast in the bowl of water. After that, mix in the plain flour and beat it in a circular and outward motion till mixture is smooth."
+      },
+      {
+        "title": "Rest",
+        "content": "Rest in a warm environment for 90mins.",
+        "timer_seconds": 5400
+      },
+      {
+        "title": "Once",
+        "content": "Once 90min is done, beat it 1 more time and transfer to a mayo tub.",
+        "timer_seconds": 5400
+      }
+    ]
+  },
+  {
+    "name": "Loukoumades Syrup",
+    "category": "Desserts",
+    "base_servings": 1,
+    "is_shared": 0,
+    "outlet_ids": [
+      10
+    ],
+    "description": "Ela — Greek kitchen",
+    "notes": "",
+    "ingredients": [
+      {
+        "amount": 250.0,
+        "unit": "g",
+        "name": "Sugar"
+      },
+      {
+        "amount": 300.0,
+        "unit": "g",
+        "name": "Honey"
+      },
+      {
+        "amount": 30.0,
+        "unit": "g",
+        "name": "Rose water"
+      },
+      {
+        "amount": 1.0,
+        "unit": "nos",
+        "name": "Lemon Wedge"
+      },
+      {
+        "amount": 1.0,
+        "unit": "nos",
+        "name": "Cinnamon stick"
+      },
+      {
+        "amount": 200.0,
+        "unit": "g",
+        "name": "Water"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Pour",
+        "content": "Pour everything in a pot and boil."
+      },
+      {
+        "title": "Boil",
+        "content": "Boil till for 15mins.",
+        "timer_seconds": 900
+      },
+      {
+        "title": "Test",
+        "content": "Test thickness and runniness of the syrup by using the back of the spoon. Draw a line and if the line remains for few seconds, its done."
+      },
+      {
+        "title": "If",
+        "content": "If the syrup very thick once cooled, add a bit of hot water to loosen it up. Make sure the syrup is not too runny, not too thick."
+      }
+    ]
   }
 ]

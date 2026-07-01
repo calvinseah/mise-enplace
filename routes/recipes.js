@@ -5,8 +5,8 @@ const path = require('path');
 const router = express.Router();
 const db = require('../database');
 
-const CATEGORIES = ['Mains', 'Sauces', 'Meats', 'Aioli & Dressings', 'Prep & Components', 'Soups', 'Sides', 'Desserts', 'Drinks', 'Snacks', 'Other'];
-const ICONS = { 'Mains':'🍽️', 'Sauces':'🥫', 'Meats':'🥩', 'Aioli & Dressings':'🥣', 'Prep & Components':'🧂', 'Soups':'🍲', 'Sides':'🥗', 'Desserts':'🍮', 'Drinks':'🥤', 'Snacks':'🍟', 'Other':'📋' };
+const CATEGORIES = ['Mains', 'Sauces', 'Meats', 'Aioli & Dressings', 'Dips', 'Prep & Components', 'Soups', 'Sides', 'Desserts', 'Drinks', 'Snacks', 'Other'];
+const ICONS = { 'Mains':'🍽️', 'Sauces':'🥫', 'Meats':'🥩', 'Aioli & Dressings':'🥣', 'Dips':'🧆', 'Prep & Components':'🧂', 'Soups':'🍲', 'Sides':'🥗', 'Desserts':'🍮', 'Drinks':'🥤', 'Snacks':'🍟', 'Other':'📋' };
 
 router.get('/categories', (req, res) => res.json(CATEGORIES));
 router.get('/icons', (req, res) => res.json(ICONS));
