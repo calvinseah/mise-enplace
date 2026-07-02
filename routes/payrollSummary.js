@@ -17,7 +17,11 @@ function computeAllPayroll(from, to, outletId, staffId) {
     const params = [s.id, from, to];
     if (outletId) { sql += ` AND outlet_id=?`; params.push(outletId); }
     const records = db.all(sql, params);
-    if (!records.length) continue;
+    // Salaried full-timers are paid their monthly salary whether or not they clock in.
+    // Include them even with no attendance — but only in the all-outlets view, so the
+    // salary isn't attributed to a single outlet they may not have worked at.
+    const includeSalaried = s.staff_type === 'fulltime' && (s.monthly_salary || 0) > 0 && !outletId;
+    if (!records.length && !includeSalaried) continue;
 
     let totalHours = 0, grossPay = 0, regularHours = 0, otHours = 0, phHours = 0;
 
@@ -44,6 +48,7 @@ function computeAllPayroll(from, to, outletId, staffId) {
       }
     }
 
+    if (!records.length) grossPay = s.monthly_salary || 0;  // salaried FT with no clock-ins this period
     grossPay = Math.round(grossPay * 100) / 100;
     const exempt = !!s.cpf_exempt;
     const cpf = (!exempt && grossPay > 50) ? computeCPF(s, grossPay, to) : null;
