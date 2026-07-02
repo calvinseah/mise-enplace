@@ -102,6 +102,12 @@ router.post('/clock-in', (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// Auto-break policy: 1 hour of unpaid break per full 7 hours of a shift,
+// applied only when no break was recorded. 7–13.99h → 1h, 14h+ → 2h, <7h → 0.
+function autoBreakMins(grossMins) {
+  return Math.floor((grossMins / 60) / 7) * 60;
+}
+
 // Clock out
 router.post('/clock-out', (req, res) => {
   const { staffId, attendanceId, breakMinutes = 0, clockOutTime } = req.body;
@@ -126,13 +132,17 @@ router.post('/clock-out', (req, res) => {
     if (!record) return res.status(400).json({ error: 'No active clock-in found' });
     const now = clockOutTime ? new Date(clockOutTime) : new Date();
     const grossMins  = (now - new Date(record.clock_in)) / 60000;
-    const workedMins = Math.max(0, grossMins - Number(breakMinutes));
+    // Use any recorded break (manual or tracked); otherwise auto-apply 1h per full 7h.
+    const trackedRow = db.get('SELECT COALESCE(SUM(duration_mins),0) AS m FROM breaks WHERE attendance_id=?', [record.id]);
+    let effBreakMins = Math.max(Number(breakMinutes) || 0, trackedRow ? Number(trackedRow.m) || 0 : 0);
+    if (effBreakMins <= 0) effBreakMins = autoBreakMins(grossMins);
+    const workedMins = Math.max(0, grossMins - effBreakMins);
     const totalHours = Math.round((workedMins / 60) * 100) / 100;
     const staff = db.get(`SELECT * FROM staff WHERE id=?`, [record.staff_id]);
     const { cost } = db.computeShiftCost(staff, totalHours, record.is_public_holiday);
     db.run(
       `UPDATE attendance SET clock_out=?,break_minutes=?,total_hours=?,total_cost=? WHERE id=?`,
-      [now.toISOString(), breakMinutes, totalHours, cost, record.id]
+      [now.toISOString(), effBreakMins, totalHours, cost, record.id]
     );
     db.run(`UPDATE breaks SET break_end=?,duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [now.toISOString(), record.id]);
     const actorU = req.session?.user?.username || 'system';
@@ -162,7 +172,14 @@ router.get('/records', (req, res) => {
     if (staffId)  { sql += ` AND a.staff_id=?`;               params.push(staffId); }
     if (outletId) { sql += ` AND a.outlet_id=?`;              params.push(outletId); }
     sql += ` ORDER BY a.clock_in DESC`;
-    res.json(db.all(sql, params));
+    const rows = db.all(sql, params);
+    // Managers (non-admins) must not see full-timers' salary-derived cost.
+    // Hide it server-side so it isn't even sent to the browser; part-timers stay visible.
+    const isAdmin = req.session?.user?.role === 'admin';
+    if (!isAdmin) {
+      rows.forEach(r => { if (r.staff_type === 'fulltime') r.total_cost = null; });
+    }
+    res.json(rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -180,8 +197,13 @@ router.put('/records/:id', (req, res) => {
     const co  = clockOut ? new Date(clockOut) : null;
     let totalHours = record.total_hours;
     let totalCost  = record.total_cost;
+    let breakStore = breakMinutes ?? record.break_minutes ?? 0;
     if (co) {
-      const workedMins = (co - ci) / 60000 - Number(breakMinutes ?? record.break_minutes ?? 0);
+      const grossMins = (co - ci) / 60000;
+      let brk = Number(breakMinutes ?? record.break_minutes ?? 0) || 0;
+      if (brk <= 0) brk = autoBreakMins(grossMins);   // auto-apply 1h per full 7h if none recorded
+      breakStore = brk;
+      const workedMins = Math.max(0, grossMins - brk);
       totalHours = Math.round((workedMins / 60) * 100) / 100;
       const ph = isPublicHoliday !== undefined ? isPublicHoliday : record.is_public_holiday;
       const { cost } = db.computeShiftCost(record, totalHours, ph);
@@ -191,7 +213,7 @@ router.put('/records/:id', (req, res) => {
       `UPDATE attendance SET clock_in=?,clock_out=?,break_minutes=?,total_hours=?,total_cost=?,
        is_public_holiday=?,outlet_id=?,notes=?,is_amended=1,amended_by=?,amended_at=? WHERE id=?`,
       [clockIn || record.clock_in, clockOut || record.clock_out,
-       breakMinutes ?? record.break_minutes, totalHours, totalCost,
+       breakStore, totalHours, totalCost,
        isPublicHoliday !== undefined ? (isPublicHoliday ? 1 : 0) : record.is_public_holiday,
        outletId !== undefined ? outletId : record.outlet_id,
        notes !== undefined ? notes : record.notes,
