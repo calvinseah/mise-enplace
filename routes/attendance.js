@@ -197,13 +197,8 @@ router.put('/records/:id', (req, res) => {
     const co  = clockOut ? new Date(clockOut) : null;
     let totalHours = record.total_hours;
     let totalCost  = record.total_cost;
-    let breakStore = breakMinutes ?? record.break_minutes ?? 0;
     if (co) {
-      const grossMins = (co - ci) / 60000;
-      let brk = Number(breakMinutes ?? record.break_minutes ?? 0) || 0;
-      if (brk <= 0) brk = autoBreakMins(grossMins);   // auto-apply 1h per full 7h if none recorded
-      breakStore = brk;
-      const workedMins = Math.max(0, grossMins - brk);
+      const workedMins = (co - ci) / 60000 - Number(breakMinutes ?? record.break_minutes ?? 0);
       totalHours = Math.round((workedMins / 60) * 100) / 100;
       const ph = isPublicHoliday !== undefined ? isPublicHoliday : record.is_public_holiday;
       const { cost } = db.computeShiftCost(record, totalHours, ph);
@@ -213,7 +208,7 @@ router.put('/records/:id', (req, res) => {
       `UPDATE attendance SET clock_in=?,clock_out=?,break_minutes=?,total_hours=?,total_cost=?,
        is_public_holiday=?,outlet_id=?,notes=?,is_amended=1,amended_by=?,amended_at=? WHERE id=?`,
       [clockIn || record.clock_in, clockOut || record.clock_out,
-       breakStore, totalHours, totalCost,
+       breakMinutes ?? record.break_minutes, totalHours, totalCost,
        isPublicHoliday !== undefined ? (isPublicHoliday ? 1 : 0) : record.is_public_holiday,
        outletId !== undefined ? outletId : record.outlet_id,
        notes !== undefined ? notes : record.notes,

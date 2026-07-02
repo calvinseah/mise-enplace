@@ -398,6 +398,7 @@ tbody tr:last-child td{border-bottom:none}
       <div class="fg"><label>Clock out</label><input type="datetime-local" id="amendCO"></div>
       <div class="fg"><label>Break (min)</label><input type="number" id="amendBreak" min="0"></div>
       <div class="fg"><label>Public holiday</label><select id="amendPH"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="fg"><label>Outlet</label><select id="amendOutlet"><option value="">—</option></select></div>
       <div class="fg fg-full"><label>Notes</label><textarea id="amendNotes" placeholder="Reason for amendment…"></textarea></div>
       <div class="fg fg-full"><label>Amended by</label><input type="text" id="amendBy" value="Manager"></div>
     </div>
@@ -424,7 +425,7 @@ function switchTab(t){
   });
   if(t==='holidays')loadHolidays();
 }
-async function loadOutletDrop(){try{const r=await fetch("/api/attendance/outlets");const o=await r.json();const sel=document.getElementById("filterOutlet");o.forEach(x=>{const opt=document.createElement("option");opt.value=x.id;opt.textContent=x.name;sel.appendChild(opt);});}catch(e){}}async function loadStaffDrop(){
+async function loadOutletDrop(){try{const r=await fetch("/api/attendance/outlets");const o=await r.json();const sel=document.getElementById("filterOutlet");const amd=document.getElementById("amendOutlet");o.forEach(x=>{const opt=document.createElement("option");opt.value=x.id;opt.textContent=x.name;sel.appendChild(opt);if(amd){const o2=document.createElement("option");o2.value=x.id;o2.textContent=x.name;amd.appendChild(o2);}});}catch(e){}}async function loadStaffDrop(){
   const r=await fetch('/api/staff');const s=await r.json();
   const sel=document.getElementById('filterStaff');
   s.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;sel.appendChild(o);});
@@ -526,6 +527,7 @@ function openAmend(r){
   document.getElementById('amendCO').value=r.clock_out?toLocal(r.clock_out):'';
   document.getElementById('amendBreak').value=r.break_minutes||0;
   document.getElementById('amendPH').value=r.is_public_holiday?'1':'0';
+  document.getElementById('amendOutlet').value=r.outlet_id?String(r.outlet_id):'';
   document.getElementById('amendNotes').value=r.notes||'';
   document.getElementById('amendBy').value='Manager';
   document.getElementById('amendOverlay').classList.add('open');
@@ -533,7 +535,7 @@ function openAmend(r){
 function closeAmend(){document.getElementById('amendOverlay').classList.remove('open')}
 async function saveAmend(){
   const id=document.getElementById('amendId').value;
-  const p={clockIn:toISO(document.getElementById('amendCI').value),clockOut:toISO(document.getElementById('amendCO').value),breakMinutes:+document.getElementById('amendBreak').value||0,isPublicHoliday:document.getElementById('amendPH').value==='1',notes:document.getElementById('amendNotes').value,amendedBy:document.getElementById('amendBy').value};
+  const p={clockIn:toISO(document.getElementById('amendCI').value),clockOut:toISO(document.getElementById('amendCO').value),breakMinutes:+document.getElementById('amendBreak').value||0,isPublicHoliday:document.getElementById('amendPH').value==='1',outletId:+document.getElementById('amendOutlet').value||null,notes:document.getElementById('amendNotes').value,amendedBy:document.getElementById('amendBy').value};
   try{
     const r=await fetch(`/api/attendance/records/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
     const d=await r.json();
