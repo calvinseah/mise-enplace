@@ -102,10 +102,13 @@ router.post('/clock-in', (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Auto-break policy: 1 hour of unpaid break per full 7 hours of a shift,
-// applied only when no break was recorded. 7–13.99h → 1h, 14h+ → 2h, <7h → 0.
+// Auto-break policy (applied at clock-out when no break was recorded):
+//   under 6h → 0    ·    6h to under 8h → 30 min    ·    8h or more → 60 min
 function autoBreakMins(grossMins) {
-  return Math.floor((grossMins / 60) / 7) * 60;
+  const h = grossMins / 60;
+  if (h < 6) return 0;
+  if (h < 8) return 30;
+  return 60;
 }
 
 // Clock out
