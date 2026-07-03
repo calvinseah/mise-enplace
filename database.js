@@ -294,6 +294,7 @@ function createSchema() {
   try { db.run("ALTER TABLE staff ADD COLUMN race TEXT"); } catch(e) {}
   db.run("UPDATE staff SET race='Malay' WHERE race IS NULL OR race=''");
   try { db.run('ALTER TABLE attendance ADD COLUMN geo_distance_m REAL'); } catch(e) {}
+  try { db.run('ALTER TABLE attendance ADD COLUMN missed_clockout INTEGER DEFAULT 0'); } catch(e) {}
   try { db.run('ALTER TABLE roster_schedule ADD COLUMN end_time TEXT'); } catch(e) {}
 
 

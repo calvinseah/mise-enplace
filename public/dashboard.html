@@ -176,6 +176,7 @@ tbody tr:last-child td{border-bottom:none}
 .mob-app-name{font-size:13px;font-weight:600;color:var(--ink)}
 .mob-app-detail{font-size:11px;color:var(--ink-60);margin-top:1px}
 .mob-app-btns{display:flex;gap:5px}
+.mob-naughty-count{flex-shrink:0;font-weight:700;font-size:14px;color:#C0392B;background:rgba(192,57,43,.1);border-radius:8px;padding:4px 9px}
 .mob-ok{height:27px;padding:0 11px;border-radius:7px;background:var(--accent);color:#fff;border:none;font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--font)}
 .mob-no{height:27px;padding:0 9px;border-radius:7px;background:rgba(192,57,43,.08);color:#C0392B;border:1px solid rgba(192,57,43,.2);font-size:11.5px;font-weight:600;cursor:pointer;font-family:var(--font)}
 
@@ -865,6 +866,12 @@ async function backupDB() {
       <div id="mobLeaveList"></div>
     </div>
 
+    <!-- Naughty list: missed clock-outs this month -->
+    <div id="mobNaughtySection" style="display:none">
+      <div class="mob-sec"><div class="mob-sec-title">🚫 Naughty list <span id="mobNaughtyMonth" style="font-weight:400;color:var(--muted);font-size:12px"></span></div></div>
+      <div id="mobNaughtyList"></div>
+    </div>
+
     <!-- Staff on shift -->
     <div class="mob-sec">
       <div class="mob-sec-title">Currently on shift</div>
@@ -912,6 +919,7 @@ if (window.innerWidth <= 768) {
   let allApps = [];
   let allLeave = [];
   let allMissed = [];
+  let naughty = null;
   let selectedOutlet = '';
 
   async function mobInit() {
@@ -959,6 +967,12 @@ if (window.innerWidth <= 768) {
     try {
       const r = await fetch('/api/attendance/missed-clockout');
       if (r.ok) allMissed = await r.json();
+    } catch(e){}
+
+    // Load the naughty list (missed clock-outs tallied this month)
+    try {
+      const r = await fetch('/api/attendance/naughty-list');
+      if (r.ok) naughty = await r.json();
     } catch(e){}
 
     renderMobHome();
@@ -1057,6 +1071,26 @@ if (window.innerWidth <= 768) {
           '</div></div>';
       }).join('');
     } else { leaveSec.style.display = 'none'; }
+
+    // Naughty list — missed clock-outs this month
+    const naughtySec = document.getElementById('mobNaughtySection');
+    const naughtyList = document.getElementById('mobNaughtyList');
+    if (naughty && naughty.people && naughty.people.length) {
+      naughtySec.style.display = 'block';
+      const monthLabel = new Date((naughty.month || '') + '-01').toLocaleDateString('en-SG', {month:'long', year:'numeric'});
+      document.getElementById('mobNaughtyMonth').textContent = monthLabel && monthLabel !== 'Invalid Date' ? '· ' + monthLabel : '';
+      naughtyList.innerHTML = naughty.people.map(p => {
+        const initials = (p.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2);
+        const dates = (p.dates||'').split(',').filter(Boolean)
+          .map(d => new Date(d).toLocaleDateString('en-SG',{day:'numeric',month:'short'})).join(', ');
+        return '<div class="mob-app-row">' +
+          '<div class="mob-app-av">' + initials + '</div>' +
+          '<div class="mob-app-info"><div class="mob-app-name">' + (p.name||'') + '</div>' +
+          '<div class="mob-app-detail">' + dates + '</div></div>' +
+          '<div class="mob-naughty-count">' + p.misses + '×</div>' +
+        '</div>';
+      }).join('');
+    } else if (naughtySec) { naughtySec.style.display = 'none'; }
 
     // Active shifts
     const onShift = active.slice(0,5);

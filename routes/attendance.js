@@ -111,6 +111,24 @@ function autoBreakMins(grossMins) {
   return 60;
 }
 
+// ── Naughty list ─────────────────────────────────────────────────────────────
+// Stamp any shift still open after its own day as a missed clock-out. This runs
+// on a schedule and whenever the list is viewed, so clocking someone out later
+// doesn't erase the record that they missed it.
+function flagMissedClockouts() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    db.run(
+      `UPDATE attendance SET missed_clockout=1
+       WHERE clock_out IS NULL AND substr(clock_in,1,10) < ?
+         AND (missed_clockout IS NULL OR missed_clockout=0)`,
+      [today]
+    );
+  } catch (e) { /* db may not be ready at boot; the interval will catch up */ }
+}
+setTimeout(flagMissedClockouts, 60 * 1000);           // shortly after startup
+setInterval(flagMissedClockouts, 3 * 60 * 60 * 1000); // every 3 hours
+
 // Clock out
 router.post('/clock-out', (req, res) => {
   const { staffId, attendanceId, breakMinutes = 0, clockOutTime } = req.body;
@@ -314,6 +332,26 @@ router.get('/missed-clockout', (req, res) => {
       [today]
     );
     res.json(missed);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Naughty list — staff with missed clock-outs, tallied for a month (default: current)
+router.get('/naughty-list', (req, res) => {
+  try {
+    flagMissedClockouts(); // make sure the tally is up to date when viewed
+    const month = req.query.month || new Date().toISOString().slice(0, 7); // YYYY-MM
+    const people = require('../database').all(
+      `SELECT s.id, s.name, COUNT(*) AS misses,
+              GROUP_CONCAT(DISTINCT substr(a.clock_in,1,10)) AS dates,
+              MAX(a.clock_in) AS last_miss
+       FROM attendance a JOIN staff s ON a.staff_id=s.id
+       WHERE a.missed_clockout=1 AND substr(a.clock_in,1,7)=?
+       GROUP BY s.id
+       ORDER BY misses DESC, last_miss DESC`,
+      [month]
+    );
+    const total = people.reduce((n, r) => n + r.misses, 0);
+    res.json({ month, total, people });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
