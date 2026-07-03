@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contracts — Mise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2A22; --ink-60:#5B6B60; --ink-30:#9AA79E; --ink-08:#E4E8E2;
+    --bg:#F6F4EE; --white:#FFFFFF; --navy:#1B2A4A; --accent:#3D5240; --ember:#B7653B;
+    --font:'Inter',sans-serif; --font-d:'DM Serif Display',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);padding:24px;max-width:760px;margin:0 auto}
+  .title{font-family:var(--font-d);font-size:30px;margin-bottom:4px}
+  .sub{color:var(--ink-60);font-size:14px;margin-bottom:22px}
+  .card{background:var(--white);border:1px solid var(--ink-08);border-radius:16px;padding:20px;margin-bottom:16px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:14px}
+  label{display:block;font-size:12px;color:var(--ink-60);margin:10px 0 4px}
+  select,input[type=text]{width:100%;height:42px;border:1px solid var(--ink-08);border-radius:10px;padding:0 12px;font-size:14px;font-family:var(--font);color:var(--ink);background:var(--white);outline:none}
+  select:focus,input:focus{border-color:var(--accent)}
+  .row{display:flex;gap:12px}.row>*{flex:1}
+  .sig-box{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .sig-preview{width:200px;height:80px;border:1px dashed var(--ink-08);border-radius:10px;display:flex;align-items:center;justify-content:center;background:#FAFAF8;overflow:hidden}
+  .sig-preview img{max-width:100%;max-height:100%}
+  .sig-preview span{color:var(--ink-30);font-size:12px}
+  .btn{height:44px;border:none;border-radius:11px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;padding:0 20px}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-ghost{background:var(--ink-08);color:var(--ink)}
+  .btn-primary:disabled{opacity:.5;cursor:default}
+  .gen-row{display:flex;gap:10px;margin-top:8px}
+  .hint{font-size:12px;color:var(--ink-30);margin-top:8px}
+  .back{display:inline-block;color:var(--accent);text-decoration:none;font-size:13px;margin-bottom:16px}
+</style>
+</head>
+<body>
+  <a class="back" href="/dashboard">← Dashboard</a>
+  <div class="title">Contracts</div>
+  <div class="sub">Generate a pre-filled, pre-signed part-time contract, then send it to OpenSign for the employee's signature.</div>
+
+  <div class="card">
+    <h2>Contract details</h2>
+    <label>Employee (part-time)</label>
+    <select id="staffSel"><option value="">Select staff…</option></select>
+    <label>Employer company</label>
+    <select id="companySel"><option value="">Select company…</option></select>
+    <div class="hint">Contact number and commencement date are left blank on the contract for the employee to complete in OpenSign.</div>
+  </div>
+
+  <div class="card">
+    <h2>Employer signature</h2>
+    <div class="sig-box">
+      <div class="sig-preview" id="sigPreview"><span>No signature yet</span></div>
+      <div>
+        <input type="file" id="sigFile" accept="image/*" style="display:none">
+        <button class="btn btn-ghost" onclick="document.getElementById('sigFile').click()">Upload / change</button>
+        <div style="margin-top:10px">
+          <div class="row">
+            <div><label>Signatory name</label><input type="text" id="sigName" placeholder="e.g. Calvin Seah"></div>
+            <div><label>Designation</label><input type="text" id="sigDesig" placeholder="e.g. Director"></div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:10px" onclick="saveSignature()">Save signature</button>
+      </div>
+    </div>
+    <div class="hint">Stored once and reused on every contract. The employer side is pre-signed; the employee signs in OpenSign.</div>
+  </div>
+
+  <div class="gen-row">
+    <button class="btn btn-primary" id="genBtn" onclick="generate()" disabled>Generate contract</button>
+  </div>
+
+<script>
+let staffList = [], companies = [], sig = { image:null, name:'', designation:'' };
+
+async function init(){
+  try{
+    const d = await fetch('/api/contracts/data').then(r=>r.json());
+    staffList = d.staff||[]; companies = d.companies||[];
+    const ss=document.getElementById('staffSel'), cs=document.getElementById('companySel');
+    staffList.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.name+' · '+s.role;ss.appendChild(o);});
+    companies.forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;cs.appendChild(o);});
+  }catch(e){}
+  try{
+    sig = await fetch('/api/contracts/signature').then(r=>r.json());
+    if(sig.image){document.getElementById('sigPreview').innerHTML='<img src="'+sig.image+'">';}
+    document.getElementById('sigName').value=sig.name||'';
+    document.getElementById('sigDesig').value=sig.designation||'';
+  }catch(e){}
+  ['staffSel','companySel'].forEach(id=>document.getElementById(id).addEventListener('change',refreshBtn));
+  refreshBtn();
+}
+function refreshBtn(){
+  const ok=document.getElementById('staffSel').value && document.getElementById('companySel').value;
+  document.getElementById('genBtn').disabled=!ok;
+}
+
+document.getElementById('sigFile').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ sig.image=r.result; document.getElementById('sigPreview').innerHTML='<img src="'+r.result+'">'; };
+  r.readAsDataURL(f);
+});
+
+async function saveSignature(){
+  sig.name=document.getElementById('sigName').value.trim();
+  sig.designation=document.getElementById('sigDesig').value.trim();
+  try{
+    const r=await fetch('/api/contracts/signature',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(sig)});
+    const d=await r.json();
+    if(d.success) alert('Signature saved.'); else alert(d.error||'Could not save.');
+  }catch(e){ alert('Network error.'); }
+}
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function generate(){
+  const sid=document.getElementById('staffSel').value;
+  const cid=document.getElementById('companySel').value;
+  const company=companies.find(c=>String(c.id)===String(cid))||{};
+  let staff;
+  try{ staff=await fetch('/api/contracts/staff/'+sid).then(r=>r.json()); }
+  catch(e){ alert('Could not load staff details.'); return; }
+
+  const addr = company.address || '19 Rochdale Road\nSingapore 535834';
+  const rate = staff.hourly_rate ? Number(staff.hourly_rate).toFixed(2) : '';
+  const bank = [staff.bank_name, staff.bank_account].filter(Boolean).join(' — ');
+  const line = v => v ? esc(v) : '<span class="blank"></span>';
+
+  const terms = [
+    ['Working Hours','The Employee shall work on a part-time basis as mutually agreed between the parties. Scheduled working hours and days shall be confirmed in writing prior to the commencement of each work period. The Employer reserves the right to adjust working hours with reasonable notice.'],
+    ['Remuneration','The Employee shall be paid at an hourly rate, on a monthly basis by 7 days following each calendar month via bank transfer. The Employer shall provide a monthly pay slip detailing hours worked and total remuneration.'],
+    ['Confidentiality','The Employee agrees to keep all business information, client data, trade secrets, and proprietary information of the Employer strictly confidential, both during and after the term of employment. Breach of this clause may result in immediate termination and legal action.'],
+    ['Code of Conduct','The Employee is expected to conduct themselves professionally at all times, adhere to the Employer\u2019s policies and procedures, treat colleagues, clients, and stakeholders with respect, and maintain the reputation and integrity of the Company.'],
+    ['Termination','Either party may terminate this agreement by providing written notice as follows:<ul><li>During probation (if applicable): 1 week\u2019s notice or payment in lieu</li><li>After confirmation: 2 weeks\u2019 notice or payment in lieu</li><li>The Employer may terminate immediately without notice in cases of gross misconduct, dishonesty, or serious breach of contract.</li></ul>'],
+    ['Intellectual Property','All work product, inventions, creative works, and deliverables produced by the Employee in the course of employment shall remain the sole property of the Company. The Employee waives any moral rights to such works to the fullest extent permitted by law.'],
+    ['Governing Law','This Agreement shall be governed by and construed in accordance with the laws of the Republic of Singapore. Disputes shall be resolved through good-faith negotiation, failing which, through the appropriate Singapore courts or tribunals.'],
+    ['Entire Agreement','This Agreement constitutes the entire agreement between the parties and supersedes all prior discussions or representations. Any amendments must be made in writing and signed by both parties.'],
+  ];
+  const termsHtml = terms.map((t,i)=>'<div class="clause"><div class="cl-h">'+(i+1)+'. '+t[0]+'</div><div class="cl-b">'+t[1]+'</div></div>').join('');
+
+  const empSig = sig.image ? '<img class="sig-img" src="'+sig.image+'">' : '<div class="sig-line"></div>';
+  const empName = [sig.name, sig.designation].filter(Boolean).join(', ');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Contract — ${esc(staff.name)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;color:#1E2A22;font-size:11px;line-height:1.5;margin:0}
+    #doc{width:720px;margin:0 auto;padding:34px 40px}
+    .brand{font-family:'DM Serif Display',serif;font-size:22px;letter-spacing:.01em}
+    .doctype{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#3D5240;margin-top:2px;font-weight:600}
+    .rule{height:2px;background:#1B2A4A;margin:12px 0 18px}
+    .sec{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#3D5240;font-weight:600;margin:18px 0 8px}
+    .party{display:flex;gap:26px}.party>div{flex:1}
+    .plabel{font-weight:600;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#9AA79E;margin-bottom:5px}
+    .frow{display:flex;margin:3px 0}.fk{width:130px;color:#5B6B60}.fv{flex:1;font-weight:500;white-space:pre-line}
+    .blank{display:inline-block;min-width:120px;border-bottom:1px solid #B9C1B8;height:12px}
+    .clause{margin:9px 0}
+    .cl-h{font-weight:600;margin-bottom:2px}
+    .cl-b{color:#33403A}
+    .cl-b ul{margin:4px 0 0 16px}.cl-b li{margin:2px 0}
+    .signrow{display:flex;gap:40px;margin-top:26px}
+    .signrow>div{flex:1}
+    .sig-img{height:52px;display:block;margin-bottom:2px}
+    .sig-line{height:52px;border-bottom:1px solid #1E2A22;margin-bottom:2px}
+    .sig-cap{font-size:9px;color:#5B6B60;border-top:1px solid #1E2A22;padding-top:3px;margin-top:2px}
+    .sig-name{font-weight:600;margin-top:4px;min-height:14px}
+    .foot{margin-top:26px;text-align:center;font-size:9px;color:#9AA79E}
+    @media print{@page{size:A4;margin:0}body{padding:0}}
+  </style></head><body><div id="doc">
+    <div class="brand">The Black Hole Group</div>
+    <div class="doctype">Part-Time Employment Contract</div>
+    <div class="rule"></div>
+
+    <div class="sec">Parties to the Agreement</div>
+    <div class="party">
+      <div>
+        <div class="plabel">Employer</div>
+        <div class="frow"><div class="fk">Company Name</div><div class="fv">${line(company.name)}</div></div>
+        <div class="frow"><div class="fk">Reg. No.</div><div class="fv">${line(company.uen)}</div></div>
+        <div class="frow"><div class="fk">Address</div><div class="fv">${esc(addr)}</div></div>
+      </div>
+      <div>
+        <div class="plabel">Employee</div>
+        <div class="frow"><div class="fk">Full Name</div><div class="fv">${line(staff.name)}</div></div>
+        <div class="frow"><div class="fk">NRIC / FIN</div><div class="fv">${line(staff.nric_full)}</div></div>
+        <div class="frow"><div class="fk">Bank & Account</div><div class="fv">${line(bank)}</div></div>
+        <div class="frow"><div class="fk">Contact No.</div><div class="fv"><span class="blank"></span></div></div>
+      </div>
+    </div>
+
+    <div class="sec">Employment Details</div>
+    <div class="party">
+      <div>
+        <div class="frow"><div class="fk">Position / Role</div><div class="fv">${line(staff.role)}</div></div>
+        <div class="frow"><div class="fk">Employment Type</div><div class="fv">Part-Time</div></div>
+      </div>
+      <div>
+        <div class="frow"><div class="fk">Commencement Date</div><div class="fv"><span class="blank"></span></div></div>
+        <div class="frow"><div class="fk">Hourly Rate (SGD)</div><div class="fv">${rate?'$'+rate:'<span class=\"blank\"></span>'}</div></div>
+      </div>
+    </div>
+
+    <div class="sec">Terms and Conditions</div>
+    ${termsHtml}
+
+    <div class="sec">Signatures</div>
+    <div style="font-size:10px;color:#5B6B60;margin-bottom:6px">By signing below, both parties confirm they have read, understood, and agree to the terms of this contract.</div>
+    <div class="signrow">
+      <div>
+        ${empSig}
+        <div class="sig-cap">Authorised Signatory</div>
+        <div class="sig-name">${esc(empName)}</div>
+        <div class="sig-cap" style="border:none;margin-top:8px">Date: <span class="blank"></span></div>
+      </div>
+      <div>
+        <div class="sig-line"></div>
+        <div class="sig-cap">Employee's Signature</div>
+        <div class="sig-name">Name &amp; NRIC: <span class="blank"></span></div>
+        <div class="sig-cap" style="border:none;margin-top:8px">Date: <span class="blank"></span></div>
+      </div>
+    </div>
+    <div class="foot">The Black Hole Group | Confidential Employment Document</div>
+  </div>
+  <script>window.addEventListener('load',function(){setTimeout(function(){window.print();},250);});<\/script>
+  </body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){alert('Please allow pop-ups to generate the contract.');return;}
+  w.document.write(html); w.document.close();
+}
+
+init();
+</script>
+</body>
+</html>

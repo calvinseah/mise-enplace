@@ -220,6 +220,8 @@ function createSchema() {
   db.run("CREATE TABLE IF NOT EXISTS sessions (sid TEXT PRIMARY KEY, data TEXT, expires INTEGER)");
 
   db.run("CREATE TABLE IF NOT EXISTS maise_suggestions (id INTEGER PRIMARY KEY AUTOINCREMENT, icon TEXT, label TEXT, prompt TEXT, sort_order INTEGER DEFAULT 0)");
+
+  db.run("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT)");
   // Seed the home-page suggestion chips on first run
   const sugRes = db.exec("SELECT COUNT(*) AS c FROM maise_suggestions");
   const sugCount = (sugRes.length && sugRes[0].values.length) ? sugRes[0].values[0][0] : 0;

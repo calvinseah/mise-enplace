@@ -112,6 +112,7 @@ const staffRoutes         = require('./routes/staff');
 const payslipRoutes       = require('./routes/payslip');
 const applicationRoutes   = require('./routes/applications');
 const companyRoutes        = require('./routes/companies');
+const contractRoutes       = require('./routes/contracts');
 const leaveRoutes          = require('./routes/leave');
 const { router: auditRoutes } = require('./routes/audit');
 const maiseKbRoutes = require('./routes/maiseKb');
@@ -155,6 +156,7 @@ app.get('/api/staff/public-search', (req, res) => {
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);
+app.use('/api/contracts',       requireAuthAPI, requireAdmin, contractRoutes);
 app.use('/api/recipes', recipeRoutes); // public read, auth for write handled in route
 app.use('/api/maise-kb',        requireAuthAPI, maiseKbRoutes);
 app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public
@@ -197,6 +199,7 @@ app.get('/maise',           (req, res) => res.sendFile(path.join(__dirname, 'pub
 app.get('/maise-kb',        requireAuth, requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-kb.html')));
 app.get('/leave', (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave.html')));
 app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
+app.get('/contracts',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'contracts.html')));
 
 
 // Temporary admin password reset route
