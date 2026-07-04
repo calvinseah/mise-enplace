@@ -123,7 +123,7 @@ const rosterRoutes        = require('./routes/roster');
 const maiseRoutes         = require('./routes/maise');
 
 // ── Public clock-in API (no auth) ─────────────────────────────────────────────
-const PUBLIC_ATT = ['/active-staff','/current/','/holiday-check','/verify-pin','/clock-in','/clock-out','/outlets'];
+const PUBLIC_ATT = ['/active-staff','/current/','/holiday-check','/verify-pin','/clock-in','/clock-out','/outlets','/my-shifts'];
 app.use('/api/attendance', (req, res, next) => {
   const isPublic = PUBLIC_ATT.some(p => req.path.startsWith(p));
   if (isPublic) return attendanceRoutes(req, res, next);
