@@ -187,4 +187,20 @@ router.delete('/:id', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── POST verify NRIC (public — staff self-service identity check) ─────────────
+router.post('/verify-nric', (req, res) => {
+  const { staffId, nric } = req.body;
+  if (!staffId || !nric) return res.status(400).json({ error: 'staffId and nric required' });
+  try {
+    const s = db.get('SELECT nric_full_enc, nric_last4 FROM staff WHERE id=? AND is_active=1', [staffId]);
+    if (!s) return res.json({ success: false });
+    const given  = String(nric).trim().toUpperCase();
+    const stored = (db.decryptField(s.nric_full_enc) || '').trim().toUpperCase();
+    let ok = stored ? stored === given : false;
+    // Fallback to last-4 match if a full NRIC isn't stored
+    if (!ok && !stored && s.nric_last4) ok = given.slice(-4) === String(s.nric_last4).trim().toUpperCase();
+    res.json({ success: !!ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
