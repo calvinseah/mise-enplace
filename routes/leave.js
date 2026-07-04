@@ -47,6 +47,15 @@ function ensureEntitlements(staffId, year) {
   });
 }
 
+// Staff a manager may act on: those who have clocked in at the manager's outlets.
+// Returns null for admins (no restriction), or an array of staff ids for managers.
+function managerStaffIds(user) {
+  if (!user || user.role !== 'manager' || !user.outlets?.length) return null;
+  const ph = user.outlets.map(() => '?').join(',');
+  return db.all(`SELECT DISTINCT staff_id FROM attendance WHERE outlet_id IN (${ph})`, user.outlets)
+           .map(r => r.staff_id);
+}
+
 // ── GET balances ──────────────────────────────────────────────────────────────
 router.get('/balances', (req, res) => {
   const { staffId, year = new Date().getFullYear() } = req.query;
@@ -75,8 +84,12 @@ router.get('/applications', (req, res) => {
     if (staffId) { sql += ' AND la.staff_id=?'; params.push(staffId); }
     if (status)  { sql += ' AND la.status=?'; params.push(status); }
     if (year)    { sql += ' AND substr(la.start_date,1,4)=?'; params.push(String(year)); }
-    if (user?.role === 'manager' && user?.outlets?.length) {
-      // Managers only see staff in their outlets
+    // Managers only see leave for staff who work at their outlets
+    const mgrIds = managerStaffIds(user);
+    if (mgrIds !== null) {
+      if (!mgrIds.length) return res.json([]);
+      sql += ` AND la.staff_id IN (${mgrIds.map(() => '?').join(',')})`;
+      params.push(...mgrIds);
     }
     sql += ' ORDER BY la.created_at DESC';
     res.json(db.all(sql, params));
@@ -115,6 +128,12 @@ router.put('/:id/review', (req, res) => {
   try {
     const app = db.get('SELECT * FROM leave_applications WHERE id=?', [req.params.id]);
     if (!app) return res.status(404).json({ error: 'Not found' });
+
+    // Managers can only review leave for staff at their own outlets
+    if (user.role === 'manager') {
+      const ids = managerStaffIds(user) || [];
+      if (!ids.includes(app.staff_id)) return res.status(403).json({ error: 'This leave request is outside your outlets' });
+    }
 
     db.run(
       `UPDATE leave_applications SET status=?, reviewed_by=?, reviewed_at=?, reject_reason=? WHERE id=?`,
