@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave — Mise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1E2A22; --ink-60:#5B6B60; --ink-30:#9AA79E; --ink-08:#E4E8E2;
+    --bg:#F6F4EE; --white:#FFFFFF; --green:#3D5240; --ember:#B7653B;
+    --amber:#B7791F; --amber-bg:#FEF6E7; --red:#C0392B; --red-bg:#FBEBE9; --green-bg:#EAF0EA;
+    --font:'Inter',sans-serif; --font-d:'DM Serif Display',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);padding:22px 16px;max-width:820px;margin:0 auto}
+  .back{display:inline-block;color:var(--green);text-decoration:none;font-size:13px;margin-bottom:14px}
+  .title{font-family:var(--font-d);font-size:30px;margin-bottom:2px}
+  .sub{color:var(--ink-60);font-size:14px;margin-bottom:18px}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+  .pill{border:1px solid var(--ink-08);background:var(--white);border-radius:999px;padding:7px 14px;font-size:13px;color:var(--ink-60);cursor:pointer;font-family:var(--font)}
+  .pill.active{background:var(--green);color:#fff;border-color:var(--green)}
+  select,.search{height:38px;border:1px solid var(--ink-08);border-radius:10px;padding:0 12px;font-size:13px;font-family:var(--font);color:var(--ink);background:var(--white);outline:none}
+  .search{flex:1;min-width:160px}
+  .count{font-size:12px;color:var(--ink-30);margin-bottom:10px}
+  .card{background:var(--white);border:1px solid var(--ink-08);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start}
+  .av{width:38px;height:38px;flex-shrink:0;border-radius:10px;background:var(--green-bg);color:var(--green);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+  .body{flex:1;min-width:0}
+  .name{font-weight:600;font-size:14px}
+  .meta{font-size:12.5px;color:var(--ink-60);margin-top:2px}
+  .reason{font-size:12px;color:var(--ink-30);margin-top:4px;font-style:italic}
+  .badge{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:3px 9px;border-radius:999px;display:inline-block;margin-top:6px}
+  .b-pending{background:var(--amber-bg);color:var(--amber)}
+  .b-approved{background:var(--green-bg);color:var(--green)}
+  .b-rejected{background:var(--red-bg);color:var(--red)}
+  .reviewed{font-size:11px;color:var(--ink-30);margin-top:4px}
+  .actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+  .btn{border:none;border-radius:9px;height:32px;padding:0 14px;font-size:12.5px;font-weight:600;font-family:var(--font);cursor:pointer}
+  .b-ok{background:var(--green);color:#fff}
+  .b-no{background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,.2)}
+  .empty{text-align:center;color:var(--ink-30);padding:40px 0;font-size:14px}
+</style>
+</head>
+<body>
+  <a class="back" href="/dashboard">← Dashboard</a>
+  <div class="title">Leave</div>
+  <div class="sub">Review, approve, and track leave applications.</div>
+
+  <div class="filters">
+    <button class="pill active" data-status="all" onclick="setStatus(this)">All</button>
+    <button class="pill" data-status="pending" onclick="setStatus(this)">Pending</button>
+    <button class="pill" data-status="approved" onclick="setStatus(this)">Approved</button>
+    <button class="pill" data-status="rejected" onclick="setStatus(this)">Rejected</button>
+    <select id="yearSel" onchange="loadLeave()"></select>
+    <input type="text" class="search" id="search" placeholder="Search name…" oninput="render()">
+  </div>
+  <div class="count" id="count"></div>
+  <div id="list"></div>
+
+<script>
+let all = [], status = 'all';
+const yearSel = document.getElementById('yearSel');
+const nowYear = new Date().getFullYear();
+for (let y = nowYear; y >= nowYear - 2; y--) { const o=document.createElement('option'); o.value=y; o.textContent=y; yearSel.appendChild(o); }
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function fmt(d){ return d ? new Date(d).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'}) : ''; }
+function setStatus(el){ document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active')); el.classList.add('active'); status=el.dataset.status; render(); }
+
+async function loadLeave(){
+  try{
+    const r = await fetch('/api/leave/applications?year=' + yearSel.value);
+    all = r.ok ? await r.json() : [];
+  }catch(e){ all=[]; }
+  render();
+}
+
+function render(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  let rows = all.slice();
+  if (status !== 'all') rows = rows.filter(a => a.status === status);
+  if (q) rows = rows.filter(a => (a.staff_name||'').toLowerCase().includes(q));
+  document.getElementById('count').textContent = rows.length + (rows.length===1?' application':' applications');
+  const list = document.getElementById('list');
+  if (!rows.length){ list.innerHTML = '<div class="empty">No leave applications' + (status!=='all'?(' ('+status+')'):'') + '.</div>'; return; }
+  list.innerHTML = rows.map(a => {
+    const initials = (a.staff_name||'?').split(' ').map(w=>w[0]).slice(0,2).join('');
+    const range = a.start_date === a.end_date ? fmt(a.start_date) : fmt(a.start_date) + ' – ' + fmt(a.end_date);
+    const badge = '<span class="badge b-'+a.status+'">'+a.status+'</span>';
+    const reviewed = a.reviewed_by ? '<div class="reviewed">'+ (a.status==='approved'?'Approved':'Rejected') +' by '+esc(a.reviewed_by)+'</div>' : '';
+    const reject = a.reject_reason ? '<div class="reason">Reason: '+esc(a.reject_reason)+'</div>' : '';
+    const reason = a.reason ? '<div class="reason">"'+esc(a.reason)+'"</div>' : '';
+    const actions = a.status==='pending'
+      ? '<div class="actions"><button class="btn b-ok" onclick="review('+a.id+',\'approved\')">Approve</button><button class="btn b-no" onclick="review('+a.id+',\'rejected\')">Reject</button></div>'
+      : '';
+    return '<div class="card">'+
+      '<div class="av">'+esc(initials)+'</div>'+
+      '<div class="body">'+
+        '<div class="name">'+esc(a.staff_name||'')+'</div>'+
+        '<div class="meta">'+esc(a.leave_type||'')+' · '+range+' · '+a.days+(a.days===1?' day':' days')+'</div>'+
+        reason + badge + reviewed + reject +
+      '</div>'+ actions +
+    '</div>';
+  }).join('');
+}
+
+async function review(id, newStatus){
+  let reject_reason = null;
+  if (newStatus === 'rejected'){ reject_reason = prompt('Reason for rejection (optional):'); if (reject_reason === null) return; }
+  try{
+    const d = await fetch('/api/leave/'+id+'/review', {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status:newStatus, reject_reason })
+    }).then(r=>r.json());
+    if (d.success){ await loadLeave(); }
+    else alert(d.error || 'Could not update this application.');
+  }catch(e){ alert('Network error — please try again.'); }
+}
+
+loadLeave();
+</script>
+</body>
+</html>
