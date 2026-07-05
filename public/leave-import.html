@@ -97,6 +97,37 @@ document.getElementById('file').addEventListener('change', e=>{
 });
 
 function parseSheet(rows){
+  // Detect the Mise row-based template: a header row with 2+ known leave types across columns
+  let headerIdx = -1, typeCols = null;
+  for(let i=0;i<Math.min(rows.length,6);i++){
+    const matches = [];
+    (rows[i]||[]).forEach((c,idx)=>{ const m = TYPE_MAP[String(c).trim().toLowerCase()]; if(m) matches.push({idx, mise:m}); });
+    if(matches.length>=2){ headerIdx=i; typeCols=matches; break; }
+  }
+  if(headerIdx>=0) return parseRowBased(rows, headerIdx, typeCols);
+  return parseTransposed(rows);
+}
+
+function parseRowBased(rows, headerIdx, typeCols){
+  const typeIdx = new Set(typeCols.map(t=>t.idx));
+  const header = rows[headerIdx];
+  let nameCol = -1;
+  for(let c=0;c<header.length;c++){ if(!typeIdx.has(c) && String(header[c]).trim().toLowerCase().includes('name')){ nameCol=c; break; } }
+  if(nameCol<0){ for(let c=0;c<header.length;c++){ if(!typeIdx.has(c)){ nameCol=c; break; } } }
+  if(nameCol<0) nameCol = 0;
+  people = [];
+  for(let i=headerIdx+1;i<rows.length;i++){
+    const nm = String(rows[i][nameCol]||'').trim();
+    if(!nm) continue;
+    const bal = {};
+    typeCols.forEach(t=>{ const num = parseFloat(rows[i][t.idx]); if(!isNaN(num)) bal[t.mise]=num; });
+    people.push({ sheetName:nm, balances:bal, staffId:'' });
+  }
+  document.getElementById('ignored').textContent = '';
+  autoMatch(); renderPreview();
+}
+
+function parseTransposed(rows){
   // find the names row: the row after a cell that says NAME, else first row with 2+ text cells past col 0
   let nameRowIdx = -1;
   for(let i=0;i<rows.length;i++){ if(rows[i].some(c=>String(c).trim().toUpperCase()==='NAME')){ nameRowIdx=i+1; break; } }
