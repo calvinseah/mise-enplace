@@ -188,6 +188,7 @@ app.get('/dashboard',       requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/staff',           requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'staff.html')));
 app.get('/applications',    requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'applications.html')));
 app.get('/leave-admin',     requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave-admin.html')));
+app.get('/leave-import',    requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave-import.html')));
 app.get('/roster',          requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'roster.html')));
 app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'labour-cost.html')));
 

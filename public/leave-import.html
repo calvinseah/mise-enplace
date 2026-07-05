@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import Leave Balances — Mise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{--ink:#1E2A22;--ink-60:#5B6B60;--ink-30:#9AA79E;--ink-08:#E4E8E2;--bg:#F6F4EE;--white:#FFF;--green:#3D5240;--green-bg:#EAF0EA;--red:#C0392B;--amber:#B7791F;--font:'Inter',sans-serif;--font-d:'DM Serif Display',serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--bg);color:var(--ink);padding:22px 16px;max-width:900px;margin:0 auto}
+  .back{display:inline-block;color:var(--green);text-decoration:none;font-size:13px;margin-bottom:14px}
+  .title{font-family:var(--font-d);font-size:30px;margin-bottom:2px}
+  .sub{color:var(--ink-60);font-size:14px;margin-bottom:18px}
+  .card{background:var(--white);border:1px solid var(--ink-08);border-radius:14px;padding:18px;margin-bottom:16px}
+  .drop{border:1.5px dashed var(--ink-08);border-radius:12px;padding:26px;text-align:center;color:var(--ink-60);cursor:pointer}
+  .drop:hover{border-color:var(--green);background:#FCFCFA}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  label{font-size:12px;color:var(--ink-60)}
+  select,input[type=number]{height:34px;border:1px solid var(--ink-08);border-radius:8px;padding:0 8px;font-size:13px;font-family:var(--font);background:var(--white);color:var(--ink);outline:none}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--ink-08);vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-30);font-weight:600}
+  .bal{font-size:11.5px;color:var(--ink-60);line-height:1.5}
+  .bal b{color:var(--ink);font-weight:600}
+  .tag{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:600}
+  .t-ok{background:var(--green-bg);color:var(--green)}
+  .t-no{background:#FBEBE9;color:var(--red)}
+  .btn{height:42px;border:none;border-radius:11px;font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;padding:0 20px}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:disabled{opacity:.5}
+  .note{font-size:12px;color:var(--ink-30);margin-top:8px}
+  .result{margin-top:12px;font-size:14px}
+  .ignored{font-size:12px;color:var(--amber);margin-top:8px}
+</style>
+</head>
+<body>
+  <a class="back" href="/leave-admin">← Leave</a>
+  <div class="title">Import leave balances</div>
+  <div class="sub">Upload your balance sheet, match each name to a staff member, then save. Numbers are treated as remaining balances.</div>
+
+  <div class="card">
+    <div class="row">
+      <label>Year</label>
+      <select id="yearSel"></select>
+    </div>
+    <div class="drop" id="drop" onclick="document.getElementById('file').click()">
+      <div style="font-size:15px;font-weight:600;color:var(--ink)">Click to choose your Excel file</div>
+      <div style="margin-top:4px">.xlsx — names across the top, leave types down the side</div>
+    </div>
+    <input type="file" id="file" accept=".xlsx,.xls" style="display:none">
+    <div class="ignored" id="ignored"></div>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:12px">Review &amp; match</h2>
+    <div style="overflow-x:auto"><table id="previewTable"></table></div>
+    <div class="note">Adjust any mismatched names using the dropdown. Rows set to "— skip —" won't be saved.</div>
+    <div style="margin-top:16px"><button class="btn btn-primary" id="saveBtn" onclick="save()">Save balances</button></div>
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+const MISE_TYPES = ['Annual Leave','Medical Leave','Hospitalisation Leave','Compassionate Leave','Childcare Leave','Maternity Leave','Paternity Leave','Off in Lieu','Unpaid Leave'];
+const TYPE_MAP = {
+  'annual leave':'Annual Leave','medical leave':'Medical Leave',
+  'hospitalisation leave':'Hospitalisation Leave','hospitalization leave':'Hospitalisation Leave',
+  'compassionate leave':'Compassionate Leave',
+  'children leave sg':'Childcare Leave','childcare leave':'Childcare Leave','child care leave':'Childcare Leave',
+  'off in lieu (off day)':'Off in Lieu','off in lieu':'Off in Lieu','off-in-lieu':'Off in Lieu',
+  'unpaid leave':'Unpaid Leave','maternity leave':'Maternity Leave','maternity':'Maternity Leave',
+  'paternity leave':'Paternity Leave','paternity':'Paternity Leave'
+};
+let staff = [], people = [];
+
+const yearSel = document.getElementById('yearSel');
+const nowY = new Date().getFullYear();
+for(let y=nowY;y>=nowY-1;y--){const o=document.createElement('option');o.value=y;o.textContent=y;yearSel.appendChild(o);}
+
+fetch('/api/staff').then(r=>r.json()).then(s=>{ staff = (s||[]).filter(x=>x.is_active!==0); });
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+document.getElementById('file').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const wb = XLSX.read(new Uint8Array(ev.target.result), {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      parseSheet(rows);
+    }catch(err){ alert('Could not read that file: '+err.message); }
+  };
+  reader.readAsArrayBuffer(f);
+});
+
+function parseSheet(rows){
+  // find the names row: the row after a cell that says NAME, else first row with 2+ text cells past col 0
+  let nameRowIdx = -1;
+  for(let i=0;i<rows.length;i++){ if(rows[i].some(c=>String(c).trim().toUpperCase()==='NAME')){ nameRowIdx=i+1; break; } }
+  if(nameRowIdx<0){
+    for(let i=0;i<rows.length;i++){ const txt=rows[i].filter((c,idx)=>idx>=1 && String(c).trim()!=='' && isNaN(Number(c))); if(txt.length>=2){ nameRowIdx=i; break; } }
+  }
+  if(nameRowIdx<0 || !rows[nameRowIdx]){ alert('Could not find the row of names in this sheet.'); return; }
+  const nameRow = rows[nameRowIdx];
+  let nameStartCol = -1;
+  for(let c=1;c<nameRow.length;c++){ if(String(nameRow[c]).trim()!==''){ nameStartCol=c; break; } }
+  if(nameStartCol<1){ alert('Could not locate the name columns.'); return; }
+
+  const cols = [];
+  for(let c=nameStartCol;c<nameRow.length;c++){ const nm=String(nameRow[c]||'').trim(); if(nm && nm.toUpperCase()!=='NAME') cols.push({c, name:nm}); }
+  people = cols.map(x=>({ sheetName:x.name, balances:{}, staffId:'' }));
+
+  const ignored = new Set();
+  for(let i=nameRowIdx+1;i<rows.length;i++){
+    const row = rows[i]; if(!row) continue;
+    const label = String(row[nameStartCol-1]||'').trim();
+    if(!label) continue;
+    const mise = TYPE_MAP[label.toLowerCase()];
+    if(!mise){ if(label) ignored.add(label); continue; }
+    cols.forEach((x,idx)=>{ const num=parseFloat(row[x.c]); if(!isNaN(num)) people[idx].balances[mise]=num; });
+  }
+  document.getElementById('ignored').textContent = ignored.size ? ('Not imported (no matching type): '+[...ignored].join(', ')) : '';
+  autoMatch();
+  renderPreview();
+}
+
+function autoMatch(){
+  people.forEach(p=>{
+    const first = p.sheetName.toLowerCase().split(/\s+/)[0];
+    // exact full-name, else name containing the sheet name / first name
+    let m = staff.find(s=>s.name.toLowerCase()===p.sheetName.toLowerCase());
+    if(!m) m = staff.find(s=>s.name.toLowerCase().split(/\s+/).includes(first));
+    if(!m) m = staff.find(s=>s.name.toLowerCase().includes(first));
+    p.staffId = m ? String(m.id) : '';
+  });
+}
+
+function renderPreview(){
+  document.getElementById('previewCard').style.display='block';
+  const opts = staffId => '<option value="">— skip —</option>' + staff.map(s=>'<option value="'+s.id+'"'+(String(s.id)===String(staffId)?' selected':'')+'>'+esc(s.name)+'</option>').join('');
+  const t = document.getElementById('previewTable');
+  t.innerHTML = '<tr><th>From sheet</th><th>Match to staff</th><th>Balances to set</th></tr>' + people.map((p,i)=>{
+    const balStr = Object.entries(p.balances).map(([k,v])=>esc(k)+': <b>'+v+'</b>').join(' · ') || '<span style="color:var(--ink-30)">none</span>';
+    const tag = p.staffId ? '<span class="tag t-ok">matched</span>' : '<span class="tag t-no">no match</span>';
+    return '<tr><td>'+esc(p.sheetName)+'<br>'+tag+'</td>'+
+      '<td><select onchange="people['+i+'].staffId=this.value;this.closest(\'tr\').querySelector(\'.tag\').outerHTML=this.value?\'<span class=&quot;tag t-ok&quot;>matched</span>\':\'<span class=&quot;tag t-no&quot;>no match</span>\'">'+opts(p.staffId)+'</select></td>'+
+      '<td class="bal">'+balStr+'</td></tr>';
+  }).join('');
+}
+
+async function save(){
+  const rows = people.filter(p=>p.staffId).map(p=>({ staffId:Number(p.staffId), balances:p.balances }));
+  if(!rows.length){ alert('No rows matched to staff yet.'); return; }
+  const btn=document.getElementById('saveBtn'), out=document.getElementById('result');
+  btn.disabled=true; out.style.color='var(--ink-60)'; out.textContent='Saving…';
+  try{
+    const d = await fetch('/api/leave/entitlements/bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:Number(yearSel.value),rows})}).then(r=>r.json());
+    if(d.success){ out.style.color='var(--green)'; out.textContent='✓ Saved balances for '+d.staffUpdated+' staff ('+d.fieldsUpdated+' entries) for '+d.year+'.'; }
+    else { out.style.color='var(--red)'; out.textContent='Could not save: '+(d.error||'unknown error'); }
+  }catch(e){ out.style.color='var(--red)'; out.textContent='Network error — please try again.'; }
+  btn.disabled=false;
+}
+</script>
+</body>
+</html>

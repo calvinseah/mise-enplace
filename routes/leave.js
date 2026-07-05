@@ -4,16 +4,19 @@ const router  = express.Router();
 const db      = require('../database');
 const { writeLog } = require('./audit');
 
-const LEAVE_TYPES = ['Annual Leave', 'Medical Leave', 'Childcare Leave', 'Maternity Leave', 'Paternity Leave', 'Off in Lieu', 'Unpaid Leave'];
+const LEAVE_TYPES = ['Annual Leave', 'Medical Leave', 'Hospitalisation Leave', 'Compassionate Leave', 'Childcare Leave', 'Maternity Leave', 'Paternity Leave', 'Off in Lieu', 'Unpaid Leave'];
 
 // Singapore statutory defaults by leave type
 const STATUTORY_DEFAULTS = {
-  'Annual Leave':    14,
-  'Medical Leave':   14,
-  'Childcare Leave': 6,
-  'Maternity Leave': 112, // 16 weeks in days
-  'Paternity Leave': 28,  // 4 weeks in days
-  'Unpaid Leave':    0
+  'Annual Leave':          14,
+  'Medical Leave':         14,
+  'Hospitalisation Leave': 60,
+  'Compassionate Leave':   3,
+  'Childcare Leave':       6,
+  'Maternity Leave':       112, // 16 weeks in days
+  'Paternity Leave':       28,  // 4 weeks in days
+  'Off in Lieu':           0,
+  'Unpaid Leave':          0
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -219,6 +222,34 @@ router.post('/verify-nric', (req, res) => {
     // Fallback to last-4 match if a full NRIC isn't stored
     if (!ok && !stored && s.nric_last4) ok = given.slice(-4) === String(s.nric_last4).trim().toUpperCase();
     res.json({ success: !!ok });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST bulk balance import (admin) — sets remaining balances ────────────────
+router.post('/entitlements/bulk', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const year = req.body.year || new Date().getFullYear();
+  const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+  try {
+    let staffUpdated = 0, fieldsUpdated = 0;
+    for (const row of rows) {
+      if (!row.staffId || !row.balances || typeof row.balances !== 'object') continue;
+      ensureEntitlements(row.staffId, year);
+      let any = false;
+      for (const [type, val] of Object.entries(row.balances)) {
+        if (!LEAVE_TYPES.includes(type)) continue;
+        const n = Number(val);
+        if (isNaN(n)) continue;
+        // These are remaining balances: set total to the remaining and reset used to 0
+        db.run(`UPDATE leave_entitlements SET total_days=?, used_days=0 WHERE staff_id=? AND year=? AND leave_type=?`,
+          [n, row.staffId, year, type]);
+        fieldsUpdated++; any = true;
+      }
+      if (any) staffUpdated++;
+    }
+    db.saveDB();
+    writeLog(req.session.user.username, 'bulk_leave_balances', 'leave_entitlement', null, '', { year, staffUpdated, fieldsUpdated });
+    res.json({ success: true, staffUpdated, fieldsUpdated, year });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
