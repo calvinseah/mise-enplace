@@ -968,7 +968,7 @@ if (window.innerWidth <= 768) {
       if (r.ok) allLeave = await r.json();
     } catch(e){}
 
-    // Load open shifts (for the 12h missed clock-out alert) — spans days, unlike today's records
+    // Load open shifts (for the 13h missed clock-out alert) — spans days, unlike today's records
     try {
       const r = await fetch('/api/attendance/missed-clockout');
       if (r.ok) allMissed = await r.json();
@@ -999,9 +999,9 @@ if (window.innerWidth <= 768) {
     const totalHrs = records.reduce((s,r) => s + (r.total_hours||0), 0);
     const active = records.filter(r => !r.clock_out);
     const outletName = selectedOutlet ? (allOutlets.find(o => String(o.id) === String(selectedOutlet))||{}).name : null;
-    // Open shifts where clock-in was more than 12 hours ago (spans days)
+    // Open shifts where clock-in was more than 13 hours ago (spans days)
     const missed = allMissed.filter(m => {
-      if ((Date.now() - new Date(m.clock_in)) <= 12 * 3600000) return false;
+      if ((Date.now() - new Date(m.clock_in)) <= 13 * 3600000) return false;
       if (outletName && m.outlet_name && m.outlet_name !== outletName) return false;
       return true;
     });
@@ -1020,7 +1020,7 @@ if (window.innerWidth <= 768) {
     document.getElementById('mobStatAppsNote').textContent = allApps.length > 0 ? 'Needs review' : '';
     document.getElementById('mobStatLeave').textContent = allLeave.length;
 
-    // Alerts — open shifts past 12h ("missed clock-out") plus any geo-flagged
+    // Alerts — open shifts past 13h ("missed clock-out") plus any geo-flagged
     const alertSec = document.getElementById('mobAlertSection');
     const alertList = document.getElementById('mobAlertList');
     if (alerts.length) {
