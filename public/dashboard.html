@@ -453,8 +453,10 @@ function renderRecords(rows){
   tb.innerHTML=rows.map(r=>{
     th+=r.total_hours||0;tc+=r.total_cost||0;if(r.is_public_holiday)ph++;
     const co=r.clock_out?fmtTime(r.clock_out):`<span class="active-dot" style="color:var(--success)">${icActivity} Active</span>`;
+    const openTooLong = !r.clock_out && r.clock_in && (Date.now()-new Date(r.clock_in)) > 13*3600000;
+    const warn = openTooLong ? `<span title="No clock-out after 13+ hours" style="color:#C0392B;margin-right:5px;cursor:help">⚠️</span>` : '';
     return`<tr>
-      <td><span style="font-weight:500">${r.staff_name}</span></td>
+      <td>${warn}<span style="font-weight:500">${r.staff_name}</span></td>
       <td style="color:var(--ink-60);font-size:12px">${r.outlet_name||'—'}</td>
       <td style="font-variant-numeric:tabular-nums;color:var(--ink-60)">${r.clock_in?r.clock_in.slice(0,10):'—'}</td>
       <td>${r.clock_in?fmtTime(r.clock_in):'—'}</td><td>${co}</td>
@@ -488,13 +490,14 @@ function renderMobileCards(rows) {
     const ci = r.clock_in ? fmtTime(r.clock_in) : '—';
     const co = r.clock_out ? fmtTime(r.clock_out) : null;
     const isActive = !r.clock_out;
+    const openTooLong = isActive && r.clock_in && (Date.now()-new Date(r.clock_in)) > 13*3600000;
     const date = r.clock_in ? new Date(r.clock_in).toLocaleDateString('en-SG',{weekday:'short',day:'numeric',month:'short'}) : '—';
     const cost = r.total_cost ? '$' + Number(r.total_cost).toLocaleString('en-SG',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
     const hrs = r.total_hours ? r.total_hours.toFixed(2) + ' hrs' : '—';
 
     return `<div class="shift-card">
       <div class="shift-card-top">
-        <div class="shift-card-name">${r.staff_name||'—'}</div>
+        <div class="shift-card-name">${openTooLong ? '<span title="No clock-out after 13+ hours" style="color:#C0392B;margin-right:4px">⚠️</span>' : ''}${r.staff_name||'—'}</div>
         ${isActive ? '<span class="active-pill">● Active</span>' : ''}
         ${r.is_public_holiday ? '<span class="ph-pill">PH</span>' : ''}
       </div>
