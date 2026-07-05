@@ -515,7 +515,7 @@ async function loadOutlets(){
   el.innerHTML=o.map(x=>`<div class="outlet-row" id="orow-${x.id}">
     <span class="outlet-name">${x.name}</span>
     <span class="outlet-addr">${x.address||'—'}</span>
-    <button class="btn btn-ghost btn-sm" onclick="editOutlet(${x.id},'${x.name.replace(/'/g,"\\'")}','${(x.address||'').replace(/'/g,"\\'")}')">Edit</button>
+    <button class="btn btn-ghost btn-sm" onclick="editOutlet(${x.id},'${x.name.replace(/'/g,"\\'")}','${(x.address||'').replace(/'/g,"\\'")}',${x.lat},${x.lng},${x.radius_m})">Edit</button>
     <button class="outlet-del" onclick="delOutlet(${x.id})" title="Delete outlet">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
