@@ -37,7 +37,7 @@
 <body>
   <a class="back" href="/dashboard">← Dashboard</a>
   <div class="title">Contracts</div>
-  <div class="sub">Generate a pre-filled, pre-signed part-time contract, then send it to OpenSign for the employee's signature.</div>
+  <div class="sub">Generate a pre-filled, pre-signed part-time contract, then send it to DocuSeal for the employee's signature.</div>
 
   <div class="card">
     <h2>Contract details</h2>
@@ -45,7 +45,9 @@
     <select id="staffSel"><option value="">Select staff…</option></select>
     <label>Employer company</label>
     <select id="companySel"><option value="">Select company…</option></select>
-    <div class="hint">Contact number and commencement date are left blank on the contract for the employee to complete in OpenSign.</div>
+    <label>Employee email <span style="color:var(--ink-30)">(for the DocuSeal signing request)</span></label>
+    <input type="text" id="emailInput" placeholder="employee@email.com" autocomplete="off">
+    <div class="hint">Contact number and commencement date are left blank on the contract for the employee to complete when they sign.</div>
   </div>
 
   <div class="card">
@@ -64,12 +66,14 @@
         <button class="btn btn-ghost" style="margin-top:10px" onclick="saveSignature()">Save signature</button>
       </div>
     </div>
-    <div class="hint">Stored once and reused on every contract. The employer side is pre-signed; the employee signs in OpenSign.</div>
+    <div class="hint">Stored once and reused on every contract. The employer side is pre-signed; the employee signs in DocuSeal.</div>
   </div>
 
   <div class="gen-row">
-    <button class="btn btn-primary" id="genBtn" onclick="generate()" disabled>Generate contract</button>
+    <button class="btn btn-ghost" id="genBtn" onclick="generate()" disabled>Generate PDF (manual)</button>
+    <button class="btn btn-primary" id="sendBtn" onclick="sendViaDocuSeal()" disabled>Generate &amp; Send via DocuSeal</button>
   </div>
+  <div class="hint" id="sendResult" style="margin-top:12px"></div>
 
 <script>
 let staffList = [], companies = [], sig = { image:null, name:'', designation:'' };
@@ -89,11 +93,28 @@ async function init(){
     document.getElementById('sigDesig').value=sig.designation||'';
   }catch(e){}
   ['staffSel','companySel'].forEach(id=>document.getElementById(id).addEventListener('change',refreshBtn));
+  document.getElementById('emailInput').addEventListener('input',refreshBtn);
   refreshBtn();
 }
 function refreshBtn(){
-  const ok=document.getElementById('staffSel').value && document.getElementById('companySel').value;
-  document.getElementById('genBtn').disabled=!ok;
+  const sid=document.getElementById('staffSel').value, cid=document.getElementById('companySel').value;
+  const email=document.getElementById('emailInput').value.trim();
+  document.getElementById('genBtn').disabled=!(sid&&cid);
+  document.getElementById('sendBtn').disabled=!(sid&&cid&&/.+@.+\..+/.test(email));
+}
+
+async function sendViaDocuSeal(){
+  const staffId=document.getElementById('staffSel').value;
+  const companyId=document.getElementById('companySel').value;
+  const email=document.getElementById('emailInput').value.trim();
+  const btn=document.getElementById('sendBtn'), out=document.getElementById('sendResult');
+  btn.disabled=true; out.style.color='var(--ink-60)'; out.textContent='Sending to DocuSeal…';
+  try{
+    const d=await fetch('/api/contracts/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,companyId,email})}).then(r=>r.json());
+    if(d.success){ out.style.color='var(--accent)'; out.textContent='✓ Sent — '+email+' has been emailed a signing request via DocuSeal.'; }
+    else { out.style.color='var(--ember)'; out.textContent='Could not send: '+(d.error||'unknown error'); }
+  }catch(e){ out.style.color='var(--ember)'; out.textContent='Network error — please try again.'; }
+  btn.disabled=false;
 }
 
 document.getElementById('sigFile').addEventListener('change', e=>{
@@ -198,7 +219,6 @@ async function generate(){
         <div class="frow"><div class="fk">Employment Type</div><div class="fv">Part-Time</div></div>
       </div>
       <div>
-        <div class="frow"><div class="fk">Commencement Date</div><div class="fv"><span class="blank"></span></div></div>
         <div class="frow"><div class="fk">Hourly Rate (SGD)</div><div class="fv">${rate?'$'+rate:'<span class=\"blank\"></span>'}</div></div>
       </div>
     </div>
