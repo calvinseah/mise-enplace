@@ -114,6 +114,7 @@ const applicationRoutes   = require('./routes/applications');
 const companyRoutes        = require('./routes/companies');
 const contractRoutes       = require('./routes/contracts');
 const leaveRoutes          = require('./routes/leave');
+const facilitiesRoutes     = require('./routes/facilities');
 const { router: auditRoutes } = require('./routes/audit');
 const maiseKbRoutes = require('./routes/maiseKb');
 const recipeRoutes = require('./routes/recipes');
@@ -161,6 +162,7 @@ app.use('/api/recipes', recipeRoutes); // public read, auth for write handled in
 app.use('/api/maise-kb',        requireAuthAPI, maiseKbRoutes);
 app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public
 app.use('/api/leave',           leaveRoutes); // auth handled inside route
+app.use('/api/facilities',      facilitiesRoutes); // auth handled inside route
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);
@@ -200,6 +202,8 @@ app.get('/recipes',            (req, res) => res.sendFile(path.join(__dirname, '
 app.get('/maise',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-page.html')));
 app.get('/maise-kb',        requireAuth, requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-kb.html')));
 app.get('/leave', (req, res) => res.sendFile(path.join(__dirname, 'public', 'leave.html')));
+app.get('/report-fault', (req, res) => res.sendFile(path.join(__dirname, 'public', 'report-fault.html')));
+app.get('/facilities',      requireAuth,  (req, res) => res.sendFile(path.join(__dirname, 'public', 'facilities.html')));
 app.get('/companies',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'companies.html')));
 app.get('/contracts',       requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'contracts.html')));
 
