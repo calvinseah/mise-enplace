@@ -156,7 +156,7 @@ app.get('/api/staff/public-search', (req, res) => {
 app.use('/api/staff',          requireAuthAPI, staffRoutes);
 app.use('/api/applications',   requireAuthAPI, applicationRoutes);
 app.use('/api/companies',       requireAuthAPI, companyRoutes);
-app.use('/api/contracts',       requireAuthAPI, requireAdmin, contractRoutes);
+app.use('/api/contracts',       requireAuthAPI, requireAdminAPI, contractRoutes);
 app.use('/api/recipes', recipeRoutes); // public read, auth for write handled in route
 app.use('/api/maise-kb',        requireAuthAPI, maiseKbRoutes);
 app.use('/api/audit',           requireAuthAPI, requireAdmin, auditRoutes); // public

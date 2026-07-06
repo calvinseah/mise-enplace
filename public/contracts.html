@@ -110,10 +110,12 @@ async function sendViaDocuSeal(){
   const btn=document.getElementById('sendBtn'), out=document.getElementById('sendResult');
   btn.disabled=true; out.style.color='var(--ink-60)'; out.textContent='Sending to DocuSeal…';
   try{
-    const d=await fetch('/api/contracts/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,companyId,email})}).then(r=>r.json());
-    if(d.success){ out.style.color='var(--accent)'; out.textContent='✓ Sent — '+email+' has been emailed a signing request via DocuSeal.'; }
-    else { out.style.color='var(--ember)'; out.textContent='Could not send: '+(d.error||'unknown error'); }
-  }catch(e){ out.style.color='var(--ember)'; out.textContent='Network error — please try again.'; }
+    const r = await fetch('/api/contracts/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,companyId,email})});
+    let d = null; try { d = await r.json(); } catch(_) {}
+    if(r.ok && d && d.success){ out.style.color='var(--accent)'; out.textContent='✓ Sent — '+email+' has been emailed a signing request via DocuSeal.'; }
+    else if(d && d.error){ out.style.color='var(--ember)'; out.textContent='Could not send: '+d.error; }
+    else { out.style.color='var(--ember)'; out.textContent='Could not send (server returned '+r.status+'). If 404, the contracts route isn\u2019t deployed; if 401/403, log in again as admin.'; }
+  }catch(e){ out.style.color='var(--ember)'; out.textContent='Could not reach the server. Check your connection and that the app is deployed.'; }
   btn.disabled=false;
 }
 
