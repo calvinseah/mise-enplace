@@ -80,19 +80,43 @@ router.post('/verify-pin', async (req, res) => {
 });
 
 // Clock in (with outlet)
+// ── Geo-fencing ───────────────────────────────────────────────────────────────
+function haversineM(lat1, lng1, lat2, lng2) {
+  const R = 6371000, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+// Returns null when geo isn't enforced (logged-in manager/admin, or outlet has no
+// pin), otherwise { within, distance, radius } or { noLocation:true }.
+function geoCheck(req, outletId, lat, lng) {
+  if (req.session?.user) return null;              // managers/admins bypass geo-fencing
+  if (!outletId) return null;
+  const o = db.get('SELECT lat, lng, COALESCE(radius_m,200) AS radius_m FROM outlets WHERE id=?', [outletId]);
+  if (!o || o.lat == null || o.lng == null) return null;   // outlet not pinned → can't enforce
+  if (lat == null || lng == null || isNaN(Number(lat)) || isNaN(Number(lng))) return { noLocation: true };
+  const dist = Math.round(haversineM(Number(o.lat), Number(o.lng), Number(lat), Number(lng)));
+  return { within: dist <= o.radius_m, distance: dist, radius: o.radius_m };
+}
+
 router.post('/clock-in', (req, res) => {
-  const { staffId, outletId } = req.body;
+  const { staffId, outletId, lat, lng } = req.body;
   if (!staffId) return res.status(400).json({ error: 'staffId required' });
   try {
     const active = db.get(`SELECT id FROM attendance WHERE staff_id=? AND clock_out IS NULL`, [staffId]);
     if (active) return res.status(400).json({ error: 'Already clocked in' });
+    const geo = geoCheck(req, outletId, lat, lng);
+    if (geo) {
+      if (geo.noLocation) return res.status(400).json({ error: 'Location is needed to clock in. Please allow location access and try again.' });
+      if (!geo.within) return res.status(403).json({ error: `You're about ${geo.distance}m from the outlet — you must be within ${geo.radius}m to clock in.`, geo_blocked: true, distance: geo.distance });
+    }
     const now   = new Date().toISOString();
     const today = now.slice(0, 10);
     const holiday = db.get(`SELECT * FROM public_holidays WHERE date=?`, [today]);
     db.run(
-      `INSERT INTO attendance (staff_id, outlet_id, clock_in, is_public_holiday)
-       VALUES (?,?,?,?)`,
-      [staffId, outletId || null, now, holiday ? 1 : 0]
+      `INSERT INTO attendance (staff_id, outlet_id, clock_in, is_public_holiday, geo_distance_m)
+       VALUES (?,?,?,?,?)`,
+      [staffId, outletId || null, now, holiday ? 1 : 0, geo ? geo.distance : null]
     );
     const record = db.get(
       `SELECT * FROM attendance WHERE staff_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1`,
@@ -131,7 +155,7 @@ setInterval(flagMissedClockouts, 3 * 60 * 60 * 1000); // every 3 hours
 
 // Clock out
 router.post('/clock-out', (req, res) => {
-  const { staffId, attendanceId, breakMinutes = 0, clockOutTime } = req.body;
+  const { staffId, attendanceId, breakMinutes = 0, clockOutTime, lat, lng } = req.body;
   if (!staffId && !attendanceId) return res.status(400).json({ error: 'staffId or attendanceId required' });
   try {
     let record;
@@ -151,6 +175,11 @@ router.post('/clock-out', (req, res) => {
       );
     }
     if (!record) return res.status(400).json({ error: 'No active clock-in found' });
+    const geo = geoCheck(req, record.outlet_id, lat, lng);
+    if (geo) {
+      if (geo.noLocation) return res.status(400).json({ error: 'Location is needed to clock out. Please allow location access and try again.' });
+      if (!geo.within) return res.status(403).json({ error: `You're about ${geo.distance}m from the outlet — you must be within ${geo.radius}m to clock out.`, geo_blocked: true, distance: geo.distance });
+    }
     const now = clockOutTime ? new Date(clockOutTime) : new Date();
     const grossMins  = (now - new Date(record.clock_in)) / 60000;
     // Use any recorded break (manual or tracked); otherwise auto-apply 1h per full 7h.
@@ -554,6 +583,32 @@ router.post('/apply-oil', (req, res) => {
     db.saveDB();
 
     res.json({ success: true, message: `${oilDays} OIL day${oilDays !== 1 ? 's' : ''} added to ${sName}` });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Manually add a full shift (for staff who never clocked in/out) — admin/manager
+router.post('/manual', (req, res) => {
+  const user = req.session?.user;
+  if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { staffId, outletId, clockIn, clockOut, breakMinutes = 0, isPublicHoliday = false, notes } = req.body;
+  if (!staffId || !clockIn || !clockOut) return res.status(400).json({ error: 'Staff, clock-in and clock-out are required' });
+  try {
+    const staff = db.get('SELECT * FROM staff WHERE id=?', [staffId]);
+    if (!staff) return res.status(404).json({ error: 'Staff not found' });
+    const ci = new Date(clockIn), co = new Date(clockOut);
+    const grossMins = (co - ci) / 60000;
+    if (!(grossMins > 0)) return res.status(400).json({ error: 'Clock-out must be after clock-in' });
+    const brk = Number(breakMinutes) || 0;
+    const totalHours = Math.round((Math.max(0, grossMins - brk) / 60) * 100) / 100;
+    const ph = isPublicHoliday ? 1 : 0;
+    const { cost } = db.computeShiftCost(staff, totalHours, ph);
+    db.run(
+      `INSERT INTO attendance (staff_id, outlet_id, clock_in, clock_out, break_minutes, total_hours, total_cost, is_public_holiday, notes, is_amended, amended_by, amended_at)
+       VALUES (?,?,?,?,?,?,?,?,?,1,?,?)`,
+      [staffId, outletId || null, ci.toISOString(), co.toISOString(), brk, totalHours, cost, ph,
+       notes || 'Manually added', user.username, new Date().toISOString()]
+    );
+    res.json({ success: true, totalHours, cost });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

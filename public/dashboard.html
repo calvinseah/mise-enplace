@@ -356,6 +356,7 @@ tbody tr:last-child td{border-bottom:none}
             Search
           </button>
           <button class="btn btn-ghost" onclick="clearFilters()">Clear</button>
+          <button class="btn btn-ghost" onclick="openAdd()" data-admin-only="1" title="Add a shift for someone who didn't clock in">+ Add shift</button>
         </div>
       </div>
     </div>
@@ -388,6 +389,31 @@ tbody tr:last-child td{border-bottom:none}
 </main>
 
 <!-- Amend modal -->
+<div class="overlay" id="addOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <div class="modal-title">Add shift</div>
+    </div>
+    <div class="form-grid">
+      <div class="fg fg-full"><label>Staff</label><select id="addStaff"><option value="">Select staff…</option></select></div>
+      <div class="fg"><label>Clock in</label><input type="datetime-local" id="addCI"></div>
+      <div class="fg"><label>Clock out</label><input type="datetime-local" id="addCO"></div>
+      <div class="fg"><label>Break (min)</label><input type="number" id="addBreak" min="0" value="0"></div>
+      <div class="fg"><label>Public holiday</label><select id="addPH"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="fg"><label>Outlet</label><select id="addOutlet"><option value="">—</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeAdd()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveAdd()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Add shift
+      </button>
+    </div>
+    <div class="hint" id="addResult" style="padding:0 20px 12px;font-size:13px"></div>
+  </div>
+</div>
+
 <div class="overlay" id="amendOverlay">
   <div class="modal">
     <div class="modal-header">
@@ -428,10 +454,11 @@ function switchTab(t){
   });
   if(t==='holidays')loadHolidays();
 }
-async function loadOutletDrop(){try{const r=await fetch("/api/attendance/outlets");const o=await r.json();const sel=document.getElementById("filterOutlet");const amd=document.getElementById("amendOutlet");o.forEach(x=>{const opt=document.createElement("option");opt.value=x.id;opt.textContent=x.name;sel.appendChild(opt);if(amd){const o2=document.createElement("option");o2.value=x.id;o2.textContent=x.name;amd.appendChild(o2);}});}catch(e){}}async function loadStaffDrop(){
+async function loadOutletDrop(){try{const r=await fetch("/api/attendance/outlets");const o=await r.json();const sel=document.getElementById("filterOutlet");const amd=document.getElementById("amendOutlet");const add=document.getElementById("addOutlet");o.forEach(x=>{const opt=document.createElement("option");opt.value=x.id;opt.textContent=x.name;sel.appendChild(opt);if(amd){const o2=document.createElement("option");o2.value=x.id;o2.textContent=x.name;amd.appendChild(o2);}if(add){const o3=document.createElement("option");o3.value=x.id;o3.textContent=x.name;add.appendChild(o3);}});}catch(e){}}async function loadStaffDrop(){
   const r=await fetch('/api/staff');const s=await r.json();
   const sel=document.getElementById('filterStaff');
-  s.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;sel.appendChild(o);});
+  const add=document.getElementById('addStaff');
+  s.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;sel.appendChild(o);if(add){const o2=document.createElement('option');o2.value=x.id;o2.textContent=x.name;add.appendChild(o2);}});
 }
 async function loadRecords(){
   const from=document.getElementById("filterFrom").value,to=document.getElementById("filterTo").value,sid=document.getElementById("filterStaff").value,oid=document.getElementById("filterOutlet").value;
@@ -572,6 +599,22 @@ async function delHoliday(id){if(!confirm('Remove this holiday?'))return;await f
 function fmtTime(dt){try{return new Date(dt).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true});}catch{return dt.slice(11,16);}}
 function toLocal(iso){if(!iso)return'';const d=new Date(iso),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
 function toISO(l){if(!l)return null;return new Date(l).toISOString();}
+function openAdd(){['addStaff','addCI','addCO','addOutlet'].forEach(i=>document.getElementById(i).value='');document.getElementById('addBreak').value='0';document.getElementById('addPH').value='0';document.getElementById('addResult').textContent='';document.getElementById('addOverlay').classList.add('open');}
+function closeAdd(){document.getElementById('addOverlay').classList.remove('open')}
+async function saveAdd(){
+  const out=document.getElementById('addResult');
+  const staffId=document.getElementById('addStaff').value;
+  const ci=toISO(document.getElementById('addCI').value), co=toISO(document.getElementById('addCO').value);
+  if(!staffId||!ci||!co){out.style.color='#C0392B';out.textContent='Staff, clock-in and clock-out are required.';return;}
+  const p={staffId:+staffId,clockIn:ci,clockOut:co,breakMinutes:+document.getElementById('addBreak').value||0,isPublicHoliday:document.getElementById('addPH').value==='1',outletId:+document.getElementById('addOutlet').value||null};
+  out.style.color='var(--ink-60)';out.textContent='Adding…';
+  try{
+    const r=await fetch('/api/attendance/manual',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
+    const d=await r.json();
+    if(r.ok&&d.success){out.style.color='#2E7D32';out.textContent='✓ Shift added ('+d.totalHours+' hrs paid).';setTimeout(()=>{closeAdd();if(typeof loadRecords==='function')loadRecords();},1000);}
+    else{out.style.color='#C0392B';out.textContent='Could not add: '+(d.error||('server returned '+r.status));}
+  }catch(e){out.style.color='#C0392B';out.textContent='Network error — please try again.';}
+}
 function showAlert(msg,type){
   const el=document.getElementById('alertBox');
   const icon=type==='err'
