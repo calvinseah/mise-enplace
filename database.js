@@ -222,6 +222,14 @@ function createSchema() {
   db.run("CREATE TABLE IF NOT EXISTS maise_suggestions (id INTEGER PRIMARY KEY AUTOINCREMENT, icon TEXT, label TEXT, prompt TEXT, sort_order INTEGER DEFAULT 0)");
 
   db.run("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT)");
+
+  db.run(`CREATE TABLE IF NOT EXISTS contracts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id INTEGER, staff_name TEXT,
+    company_id INTEGER, company_name TEXT,
+    email TEXT, submission_id INTEGER, slug TEXT,
+    status TEXT DEFAULT 'sent', sent_by TEXT, sent_at TEXT, signed_at TEXT
+  )`);
   // Seed the home-page suggestion chips on first run
   const sugRes = db.exec("SELECT COUNT(*) AS c FROM maise_suggestions");
   const sugCount = (sugRes.length && sugRes[0].values.length) ? sugRes[0].values[0][0] : 0;

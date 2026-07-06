@@ -161,8 +161,48 @@ router.post('/send', async (req, res) => {
       const msg = (data && (data.error || data.message)) || ('DocuSeal returned status ' + resp.status);
       return res.status(502).json({ error: msg, detail: data });
     }
+    // Log the sent contract in Mise (DocuSeal holds the document itself)
+    try {
+      const first = Array.isArray(data) ? data[0] : null;
+      db.run(
+        `INSERT INTO contracts (staff_id, staff_name, company_id, company_name, email, submission_id, slug, status, sent_by, sent_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        [staffId, staff.name, companyId, company.name, email,
+         first && first.submission_id ? first.submission_id : null,
+         first && first.slug ? first.slug : null,
+         'sent', req.session?.user?.username || '', new Date().toISOString()]
+      );
+    } catch(e) { /* logging shouldn't block the send */ }
     res.json({ success: true, submission: data });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Sent-contracts log (refreshes signing status from DocuSeal) ───────────────
+router.get('/list', async (req, res) => {
+  try {
+    const rows = db.all('SELECT * FROM contracts ORDER BY sent_at DESC');
+    const key = process.env.DOCUSEAL_API_KEY;
+    if (key) {
+      const api = process.env.DOCUSEAL_API_URL || 'https://api.docuseal.com';
+      const pending = rows.filter(r => r.submission_id && r.status !== 'completed' && r.status !== 'declined' && r.status !== 'expired').slice(0, 30);
+      for (const c of pending) {
+        try {
+          const r = await fetch(api + '/submissions/' + c.submission_id, { headers: { 'X-Auth-Token': key } });
+          if (!r.ok) continue;
+          const s = await r.json();
+          let status = s.status || c.status;
+          const subs = s.submitters || [];
+          if (!s.status && subs.length && subs.every(x => x.completed_at)) status = 'completed';
+          const signedAt = s.completed_at || (subs.find(x => x.completed_at)||{}).completed_at || null;
+          if (status !== c.status || (signedAt && !c.signed_at)) {
+            db.run('UPDATE contracts SET status=?, signed_at=? WHERE id=?', [status, signedAt, c.id]);
+            c.status = status; c.signed_at = signedAt;
+          }
+        } catch(e) { /* keep stored status */ }
+      }
+    }
+    res.json(rows);
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;
