@@ -37,7 +37,7 @@
 <body>
   <a class="back" href="/dashboard">← Dashboard</a>
   <div class="title">Contracts</div>
-  <div class="sub">Generate a pre-filled, pre-signed part-time contract, then send it to DocuSeal for the employee's signature.</div>
+  <div class="sub">Generate a pre-filled, pre-signed part-time contract to download, then upload it to your e-signing tool for the employee's signature.</div>
 
   <div class="card">
     <h2>Contract details</h2>
@@ -45,9 +45,7 @@
     <select id="staffSel"><option value="">Select staff…</option></select>
     <label>Employer company</label>
     <select id="companySel"><option value="">Select company…</option></select>
-    <label>Employee email <span style="color:var(--ink-30)">(for the DocuSeal signing request)</span></label>
-    <input type="text" id="emailInput" placeholder="employee@email.com" autocomplete="off">
-    <div class="hint">Contact number and commencement date are left blank on the contract for the employee to complete when they sign.</div>
+    <div class="hint">Contact number is left blank on the contract for the employee to complete when they sign.</div>
   </div>
 
   <div class="card">
@@ -66,19 +64,11 @@
         <button class="btn btn-ghost" style="margin-top:10px" onclick="saveSignature()">Save signature</button>
       </div>
     </div>
-    <div class="hint">Stored once and reused on every contract. The employer side is pre-signed; the employee signs in DocuSeal.</div>
+    <div class="hint">Stored once and reused on every contract. The employer side is pre-signed; the employee signs after you send it.</div>
   </div>
 
   <div class="gen-row">
-    <button class="btn btn-ghost" id="genBtn" onclick="generate()" disabled>Generate PDF (manual)</button>
-    <button class="btn btn-primary" id="sendBtn" onclick="sendViaDocuSeal()" disabled>Generate &amp; Send via DocuSeal</button>
-  </div>
-  <div class="hint" id="sendResult" style="margin-top:12px"></div>
-
-  <div class="card" id="logCard" style="margin-top:18px">
-    <h2 style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:4px">Sent contracts</h2>
-    <div class="hint" style="margin-bottom:12px">The document lives in DocuSeal; this is Mise's record of what was sent and whether it's signed.</div>
-    <div style="overflow-x:auto"><table id="logTable" style="width:100%;border-collapse:collapse;font-size:13px"></table></div>
+    <button class="btn btn-primary" id="genBtn" onclick="generate()" disabled>Generate PDF</button>
   </div>
 
 <script>
@@ -99,57 +89,12 @@ async function init(){
     document.getElementById('sigDesig').value=sig.designation||'';
   }catch(e){}
   ['staffSel','companySel'].forEach(id=>document.getElementById(id).addEventListener('change',refreshBtn));
-  document.getElementById('emailInput').addEventListener('input',refreshBtn);
   refreshBtn();
-  loadContracts();
 }
 
-async function loadContracts(){
-  const t = document.getElementById('logTable');
-  try{
-    const rows = await fetch('/api/contracts/list').then(r=>r.json());
-    if(!Array.isArray(rows) || !rows.length){ t.innerHTML='<tr><td style="color:var(--ink-30);padding:10px 0">No contracts sent yet.</td></tr>'; return; }
-    const badge = s => {
-      const c = s==='completed' ? '#2E7D32' : (s==='declined'||s==='expired' ? '#C0392B' : '#B7791F');
-      const bg = s==='completed' ? '#EAF3EA' : (s==='declined'||s==='expired' ? '#FBEBE9' : '#FEF6E7');
-      const label = s==='completed' ? 'Signed' : (s.charAt(0).toUpperCase()+s.slice(1));
-      return '<span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;color:'+c+';background:'+bg+'">'+label+'</span>';
-    };
-    t.innerHTML = '<tr style="text-align:left;color:var(--ink-30);font-size:11px;text-transform:uppercase;letter-spacing:.04em"><th style="padding:6px 8px">Staff</th><th style="padding:6px 8px">Company</th><th style="padding:6px 8px">Sent to</th><th style="padding:6px 8px">Status</th><th style="padding:6px 8px">Sent</th><th></th></tr>' +
-      rows.map(r=>{
-        const d = r.sent_at ? new Date(r.sent_at).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'}) : '';
-        const link = r.submission_id ? '<a href="https://docuseal.com/submissions/'+r.submission_id+'" target="_blank" style="color:var(--green);font-size:12px">View →</a>' : '';
-        return '<tr style="border-top:1px solid var(--ink-08)">'+
-          '<td style="padding:9px 8px;font-weight:500">'+esc(r.staff_name||'')+'</td>'+
-          '<td style="padding:9px 8px;color:var(--ink-60)">'+esc(r.company_name||'')+'</td>'+
-          '<td style="padding:9px 8px;color:var(--ink-60)">'+esc(r.email||'')+'</td>'+
-          '<td style="padding:9px 8px">'+badge(r.status||'sent')+'</td>'+
-          '<td style="padding:9px 8px;color:var(--ink-60)">'+d+'</td>'+
-          '<td style="padding:9px 8px">'+link+'</td></tr>';
-      }).join('');
-  }catch(e){ t.innerHTML='<tr><td style="color:var(--ink-30);padding:10px 0">Could not load contracts.</td></tr>'; }
-}
 function refreshBtn(){
   const sid=document.getElementById('staffSel').value, cid=document.getElementById('companySel').value;
-  const email=document.getElementById('emailInput').value.trim();
   document.getElementById('genBtn').disabled=!(sid&&cid);
-  document.getElementById('sendBtn').disabled=!(sid&&cid&&/.+@.+\..+/.test(email));
-}
-
-async function sendViaDocuSeal(){
-  const staffId=document.getElementById('staffSel').value;
-  const companyId=document.getElementById('companySel').value;
-  const email=document.getElementById('emailInput').value.trim();
-  const btn=document.getElementById('sendBtn'), out=document.getElementById('sendResult');
-  btn.disabled=true; out.style.color='var(--ink-60)'; out.textContent='Sending to DocuSeal…';
-  try{
-    const r = await fetch('/api/contracts/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,companyId,email})});
-    let d = null; try { d = await r.json(); } catch(_) {}
-    if(r.ok && d && d.success){ out.style.color='var(--accent)'; out.textContent='✓ Sent — '+email+' has been emailed a signing request via DocuSeal.'; loadContracts(); }
-    else if(d && d.error){ out.style.color='var(--ember)'; out.textContent='Could not send: '+d.error; }
-    else { out.style.color='var(--ember)'; out.textContent='Could not send (server returned '+r.status+'). If 404, the contracts route isn\u2019t deployed; if 401/403, log in again as admin.'; }
-  }catch(e){ out.style.color='var(--ember)'; out.textContent='Could not reach the server. Check your connection and that the app is deployed.'; }
-  btn.disabled=false;
 }
 
 document.getElementById('sigFile').addEventListener('change', e=>{
