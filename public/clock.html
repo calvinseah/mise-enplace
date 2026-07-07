@@ -664,6 +664,17 @@ async function detectLocation(outletId) {
 }
 
 
+async function getCoords(){
+  return new Promise(resolve=>{
+    if(!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      ()  => resolve(null),
+      { timeout: 8000, maximumAge: 60000 }
+    );
+  });
+}
+
 async function doBreak(){
   const btn = document.getElementById('breakBtn');
   const isOnBreak = btn.textContent.includes('End');
@@ -691,14 +702,18 @@ async function doBreak(){
 async function doAction(){
   const btn=document.getElementById('actionBtn'); btn.disabled=true;
   document.getElementById('errMsg').style.display='none';
+  const orig = btn.textContent;
+  btn.textContent = 'Checking location…';
+  const coords = await getCoords();   // {lat,lng} or null (denied/unavailable)
+  btn.textContent = orig;
   try{
     if(isIn){
-      const r=await fetch('/api/attendance/clock-out',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,breakMinutes:breakMins})});
+      const r=await fetch('/api/attendance/clock-out',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,breakMinutes:breakMins,lat:coords?coords.lat:null,lng:coords?coords.lng:null})});
       const d=await r.json();
       if(d.success) showSuccess('Clocked out',`${now12()} · ${d.totalHours?d.totalHours.toFixed(2):'—'} hrs worked.\nGreat shift!`);
       else showErr(d.error||'Error');
     } else {
-      const r=await fetch('/api/attendance/clock-in',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,outletId})});
+      const r=await fetch('/api/attendance/clock-in',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId,outletId,lat:coords?coords.lat:null,lng:coords?coords.lng:null})});
       const d=await r.json();
       if(d.success) showSuccess('Clocked in',`Time: ${now12()}.\nSee you on the floor!`);
       else showErr(d.error||'Error');
