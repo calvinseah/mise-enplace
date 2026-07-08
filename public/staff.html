@@ -541,10 +541,13 @@ async function editOutlet(id, name, addr, lat, lng, radius) {
         <input type="number" id="edit-lat-${id}" value="${lat||''}" placeholder="Latitude (e.g. 1.2836)" step="0.0001" style="flex:1;height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none" />
         <input type="number" id="edit-lng-${id}" value="${lng||''}" placeholder="Longitude (e.g. 103.8607)" step="0.0001" style="flex:1;height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none" />
         <select id="edit-radius-${id}" style="height:28px;padding:0 8px;border:1px solid var(--ink-08);border-radius:8px;font-size:12px;font-family:var(--font);outline:none">
-          <option value="100" ${(radius||200)==100?'selected':''}>100 m</option>
-          <option value="200" ${(radius||200)==200?'selected':''}>200 m</option>
-          <option value="300" ${(radius||200)==300?'selected':''}>300 m</option>
-          <option value="500" ${(radius||200)==500?'selected':''}>500 m</option>
+          <option value="100" ${(radius||1000)==100?'selected':''}>100 m</option>
+          <option value="200" ${(radius||1000)==200?'selected':''}>200 m</option>
+          <option value="300" ${(radius||1000)==300?'selected':''}>300 m</option>
+          <option value="500" ${(radius||1000)==500?'selected':''}>500 m</option>
+          <option value="750" ${(radius||1000)==750?'selected':''}>750 m</option>
+          <option value="1000" ${(radius||1000)==1000?'selected':''}>1 km</option>
+          <option value="2000" ${(radius||1000)==2000?'selected':''}>2 km</option>
         </select>
         <button onclick="useMyLocation(${id})" style="height:28px;padding:0 10px;border-radius:8px;border:1px solid var(--ink-08);background:var(--card2);font-size:11px;font-family:var(--font);cursor:pointer;white-space:nowrap">📍 Use my location</button>
       </div>
@@ -570,7 +573,7 @@ async function saveOutlet(id) {
   const addr = document.getElementById('edit-addr-'+id).value.trim();
   const lat = parseFloat(document.getElementById('edit-lat-'+id).value) || null;
   const lng = parseFloat(document.getElementById('edit-lng-'+id).value) || null;
-  const radius_m = parseInt(document.getElementById('edit-radius-'+id).value) || 200;
+  const radius_m = parseInt(document.getElementById('edit-radius-'+id).value) || 1000;
   if (!name) { showAlert('Outlet name is required', 'err'); return; }
   try {
     const r = await fetch('/api/staff/outlets/'+id, {
