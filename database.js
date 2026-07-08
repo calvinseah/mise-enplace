@@ -230,6 +230,27 @@ function createSchema() {
     email TEXT, submission_id INTEGER, slug TEXT,
     status TEXT DEFAULT 'sent', sent_by TEXT, sent_at TEXT, signed_at TEXT
   )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS faults (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    outlet_id INTEGER, outlet_name TEXT,
+    category TEXT, brand TEXT, description TEXT, priority TEXT DEFAULT 'normal',
+    photo TEXT, reported_by TEXT,
+    status TEXT DEFAULT 'open',
+    resolution_notes TEXT, cost REAL,
+    reported_at TEXT, updated_at TEXT, updated_by TEXT
+  )`);
+  try { db.run('ALTER TABLE faults ADD COLUMN brand TEXT'); } catch(e) {}
+
+  // One-time: widen all outlet geo-fence radii to 1km (runs once; manual edits respected after)
+  try {
+    const done = db.get("SELECT value FROM app_settings WHERE key='geo_radius_1km'");
+    if (!done) {
+      db.run('UPDATE outlets SET radius_m=1000');
+      db.run("INSERT INTO app_settings (key, value) VALUES ('geo_radius_1km','1')");
+      db.saveDB();
+    }
+  } catch(e) {}
   // Seed the home-page suggestion chips on first run
   const sugRes = db.exec("SELECT COUNT(*) AS c FROM maise_suggestions");
   const sugCount = (sugRes.length && sugRes[0].values.length) ? sugRes[0].values[0][0] : 0;

@@ -92,7 +92,7 @@ function haversineM(lat1, lng1, lat2, lng2) {
 function geoCheck(req, outletId, lat, lng) {
   if (req.session?.user) return null;              // managers/admins bypass geo-fencing
   if (!outletId) return null;
-  const o = db.get('SELECT lat, lng, COALESCE(radius_m,200) AS radius_m FROM outlets WHERE id=?', [outletId]);
+  const o = db.get('SELECT lat, lng, COALESCE(radius_m,1000) AS radius_m FROM outlets WHERE id=?', [outletId]);
   if (!o || o.lat == null || o.lng == null) return null;   // outlet not pinned → can't enforce
   if (lat == null || lng == null || isNaN(Number(lat)) || isNaN(Number(lng))) return { noLocation: true };
   const dist = Math.round(haversineM(Number(o.lat), Number(o.lng), Number(lat), Number(lng)));
