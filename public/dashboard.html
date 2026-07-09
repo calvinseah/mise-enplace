@@ -605,7 +605,7 @@ async function deleteShift(){
   if(!id) return;
   if(!confirm('Delete this shift permanently? This cannot be undone.')) return;
   try{
-    const r=await fetch('/api/attendance/records/'+id,{method:'DELETE'});
+    const r=await fetch('/api/attendance/records/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({deleteShift:true})});
     const d=await r.json();
     if(r.ok&&d.success){ closeAmend(); loadRecords(); }
     else alert(d.error||('Could not delete (status '+r.status+')'));

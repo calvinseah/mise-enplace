@@ -235,6 +235,15 @@ router.get('/records', (req, res) => {
 
 // Amend record
 router.put('/records/:id', (req, res) => {
+  if (req.body && req.body.deleteShift === true) {
+    const u = req.session && req.session.user;
+    if (!u || u.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+    try {
+      db.run('DELETE FROM attendance WHERE id=?', [req.params.id]);
+      return res.json({ success: true, deleted: true });
+    } catch(e) { return res.status(500).json({ error: e.message }); }
+  }
+
   const { clockIn, clockOut, breakMinutes, isPublicHoliday, outletId, notes, amendedBy } = req.body;
   try {
     const record = db.get(
