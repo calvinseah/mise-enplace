@@ -144,7 +144,7 @@ function flagMissedClockouts() {
     const today = new Date().toISOString().slice(0, 10);
     db.run(
       `UPDATE attendance SET missed_clockout=1
-       WHERE clock_out IS NULL AND date(clock_in,'+8 hours') < ?
+       WHERE clock_out IS NULL AND substr(clock_in,1,10) < ?
          AND (missed_clockout IS NULL OR missed_clockout=0)`,
       [today]
     );
@@ -213,12 +213,12 @@ router.get('/records', (req, res) => {
              o.name as outlet_name
       FROM attendance a
       JOIN staff s ON a.staff_id=s.id
-      LEFT JOIN public_holidays ph ON date(a.clock_in,'+8 hours')=ph.date
+      LEFT JOIN public_holidays ph ON substr(a.clock_in,1,10)=ph.date
       LEFT JOIN outlets o ON a.outlet_id=o.id
       WHERE 1=1`;
     const params = [];
-    if (from)     { sql += ` AND date(a.clock_in,'+8 hours')>=?`; params.push(from); }
-    if (to)       { sql += ` AND date(a.clock_in,'+8 hours')<=?`; params.push(to); }
+    if (from)     { sql += ` AND substr(a.clock_in,1,10)>=?`; params.push(from); }
+    if (to)       { sql += ` AND substr(a.clock_in,1,10)<=?`; params.push(to); }
     if (staffId)  { sql += ` AND a.staff_id=?`;               params.push(staffId); }
     if (outletId) { sql += ` AND a.outlet_id=?`;              params.push(outletId); }
     sql += ` ORDER BY a.clock_in DESC`;
@@ -317,7 +317,7 @@ router.get('/my-shifts', (req, res) => {
               o.name as outlet_name
        FROM attendance a
        LEFT JOIN outlets o ON a.outlet_id=o.id
-       WHERE a.staff_id=? AND date(a.clock_in,'+8 hours')>=? AND date(a.clock_in,'+8 hours')<=?
+       WHERE a.staff_id=? AND substr(a.clock_in,1,10)>=? AND substr(a.clock_in,1,10)<=?
          AND a.clock_out IS NOT NULL
        ORDER BY a.clock_in DESC`,
       [staff.id, fromDate, toDate]
@@ -356,7 +356,7 @@ router.get('/missed-clockout', (req, res) => {
        JOIN staff s ON a.staff_id = s.id
        LEFT JOIN outlets o ON a.outlet_id = o.id
        WHERE a.clock_out IS NULL
-         AND date(a.clock_in,'+8 hours') < ?
+         AND substr(a.clock_in,1,10) < ?
        ORDER BY a.clock_in DESC`,
       [today]
     );
@@ -371,10 +371,10 @@ router.get('/naughty-list', (req, res) => {
     const month = req.query.month || new Date().toISOString().slice(0, 7); // YYYY-MM
     const people = require('../database').all(
       `SELECT s.id, s.name, COUNT(*) AS misses,
-              GROUP_CONCAT(DISTINCT date(a.clock_in,'+8 hours')) AS dates,
+              GROUP_CONCAT(DISTINCT substr(a.clock_in,1,10)) AS dates,
               MAX(a.clock_in) AS last_miss
        FROM attendance a JOIN staff s ON a.staff_id=s.id
-       WHERE a.missed_clockout=1 AND strftime('%Y-%m',date(a.clock_in,'+8 hours'))=?
+       WHERE a.missed_clockout=1 AND substr(a.clock_in,1,7)=?
        GROUP BY s.id
        ORDER BY misses DESC, last_miss DESC`,
       [month]
@@ -491,7 +491,7 @@ router.get('/geo-flagged', (req, res) => {
        FROM attendance a
        JOIN staff s ON a.staff_id = s.id
        LEFT JOIN outlets o ON a.outlet_id = o.id
-       WHERE a.geo_flagged = 1 AND date(a.clock_in,'+8 hours') = ?
+       WHERE a.geo_flagged = 1 AND substr(a.clock_in,1,10) = ?
        ORDER BY a.clock_in DESC`,
       [today]
     );
