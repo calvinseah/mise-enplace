@@ -107,8 +107,8 @@ router.post('/clock-in', (req, res) => {
     if (active) return res.status(400).json({ error: 'Already clocked in' });
     const geo = geoCheck(req, outletId, lat, lng);
     if (geo) {
-      if (geo.noLocation) ;
-      if (!geo.within) ;
+      if (geo.noLocation) return res.status(400).json({ error: 'Location is needed to clock in. Please allow location access and try again.' });
+      if (!geo.within) return res.status(403).json({ error: `You're about ${geo.distance}m from the outlet — you must be within ${geo.radius}m to clock in.`, geo_blocked: true, distance: geo.distance });
     }
     const now   = new Date().toISOString();
     const today = now.slice(0, 10);
@@ -177,8 +177,8 @@ router.post('/clock-out', (req, res) => {
     if (!record) return res.status(400).json({ error: 'No active clock-in found' });
     const geo = geoCheck(req, record.outlet_id, lat, lng);
     if (geo) {
-      if (geo.noLocation) ;
-      if (!geo.within) ;
+      if (geo.noLocation) return res.status(400).json({ error: 'Location is needed to clock out. Please allow location access and try again.' });
+      if (!geo.within) return res.status(403).json({ error: `You're about ${geo.distance}m from the outlet — you must be within ${geo.radius}m to clock out.`, geo_blocked: true, distance: geo.distance });
     }
     const now = clockOutTime ? new Date(clockOutTime) : new Date();
     const grossMins  = (now - new Date(record.clock_in)) / 60000;
