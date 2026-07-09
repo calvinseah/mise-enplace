@@ -423,9 +423,11 @@ function exportExcel() {
   var to = document.getElementById('psTo').value;
   var company = document.getElementById('psCompany').value;
   var outlet = document.getElementById('psOutlet').value;
+  var staff = document.getElementById('psStaff').value;
   var url = '/api/payroll-summary/export/excel?from=' + from + '&to=' + to;
   if (company) url += '&company_id=' + company;
   if (outlet) url += '&outlet_id=' + outlet;
+  if (staff) url += '&staff_id=' + staff;
   window.location.href = url;
 }
 
@@ -434,9 +436,11 @@ function exportPDF() {
   var to = document.getElementById('psTo').value;
   var company = document.getElementById('psCompany').value;
   var outlet = document.getElementById('psOutlet').value;
+  var staff = document.getElementById('psStaff').value;
   var url = '/api/payroll-summary/export/pdf?from=' + from + '&to=' + to;
   if (company) url += '&company_id=' + company;
   if (outlet) url += '&outlet_id=' + outlet;
+  if (staff) url += '&staff_id=' + staff;
   window.location.href = url;
 }
 
