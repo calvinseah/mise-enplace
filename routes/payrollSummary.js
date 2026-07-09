@@ -53,7 +53,7 @@ function computeAllPayroll(from, to, outletId, staffId) {
     const exempt = !!s.cpf_exempt;
     const cpf = (!exempt && grossPay > 50) ? computeCPF(s, grossPay, to) : null;
     const shg = computeSHG(s, grossPay);          // applies regardless of CPF exemption
-    const sdl = exempt ? 0 : computeSDL(grossPay); // SDL follows the CPF exemption
+    const sdl = computeSDL(grossPay); // SDL is payable on all employees, regardless of CPF exemption
     const empCPF = cpf ? cpf.empCPF : 0;
     const netPay = Math.round((grossPay - empCPF - shg.total) * 100) / 100;
 

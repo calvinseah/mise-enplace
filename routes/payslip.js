@@ -387,7 +387,7 @@ function generatePDF(data, stream) {
     if (reg.length > 0) {
       const regHrs = reg.reduce((s,r) => s + (r.hours||0), 0);
       y = lineRow('Regular hours (' + regHrs.toFixed(1) + ' hrs × $' + (data.hourlyRate||0).toFixed(2) + '/hr)',
-                  '$' + reg.reduce((s,r) => s + (r.cost||0), 0).toFixed(2), y);
+                  '$' + reg.reduce((s,r) => s + (r.amount||0), 0).toFixed(2), y);
     }
     ph.forEach(s => {
       y = lineRow('Public holiday – ' + fmtDate(s.date) + ' (' + (s.hours||0).toFixed(1) + ' hrs × 1.5×)',
