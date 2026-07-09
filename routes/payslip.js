@@ -1,5 +1,7 @@
 'use strict';
 const express = require('express');
+
+function sgDate(iso){ if(!iso) return null; const d = new Date(new Date(iso).getTime() + 8*3600000); return d.toISOString().slice(0,10); }
 const PDFDocument = require('pdfkit');
 const router = express.Router();
 const db = require('../database');
@@ -162,7 +164,7 @@ function computeParttimePayslip(staff, records, from, to, computeShiftCost, comp
 
     const shift = {
       id: r.id,
-      date: r.clock_in.slice(0, 10),
+      date: sgDate(r.clock_in),
       clockIn: r.clock_in,
       clockOut: r.clock_out,
       breakMinutes: r.break_minutes,
@@ -234,7 +236,7 @@ function computeFulltimePayslip(staff, records, from, to, computeShiftCost, comp
 
     const shift = {
       id: r.id,
-      date: r.clock_in.slice(0, 10),
+      date: sgDate(r.clock_in),
       clockIn: r.clock_in,
       clockOut: r.clock_out,
       breakMinutes: r.break_minutes,
