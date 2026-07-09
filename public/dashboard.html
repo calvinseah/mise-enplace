@@ -433,6 +433,7 @@ tbody tr:last-child td{border-bottom:none}
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeAmend()">Cancel</button>
+      <button class="btn btn-ghost" data-admin-only="1" style="color:#C0392B" onclick="deleteShift()">Delete shift</button>
       <button class="btn btn-primary" onclick="saveAmend()">
         <!-- Lucide: check -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 12 4 10"/></svg>
@@ -599,6 +600,17 @@ async function delHoliday(id){if(!confirm('Remove this holiday?'))return;await f
 function fmtTime(dt){try{return new Date(dt).toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit',hour12:true});}catch{return dt.slice(11,16);}}
 function fmtDay(dt){if(!dt)return'—';const d=new Date(dt),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;}
 function fmtDay(dt){if(!dt)return'-';const d=new Date(dt),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+async function deleteShift(){
+  const id=document.getElementById('amendId').value;
+  if(!id) return;
+  if(!confirm('Delete this shift permanently? This cannot be undone.')) return;
+  try{
+    const r=await fetch('/api/attendance/records/'+id,{method:'DELETE'});
+    const d=await r.json();
+    if(r.ok&&d.success){ closeAmend(); loadRecords(); }
+    else alert(d.error||('Could not delete (status '+r.status+')'));
+  }catch(e){ alert('Network error - please try again.'); }
+}
 function toLocal(iso){if(!iso)return'';const d=new Date(iso),p=n=>String(n).padStart(2,'0');return`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;}
 function toISO(l){if(!l)return null;return new Date(l).toISOString();}
 function openAdd(){['addStaff','addCI','addCO','addOutlet'].forEach(i=>document.getElementById(i).value='');document.getElementById('addBreak').value='0';document.getElementById('addPH').value='0';document.getElementById('addResult').textContent='';document.getElementById('addOverlay').classList.add('open');}
