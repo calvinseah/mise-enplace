@@ -12,7 +12,7 @@ function buildContext({ from, to, outletId }) {
   // ── Attendance & labour cost ───────────────────────────────────────────────
   let attSql = `SELECT a.*, s.name, s.role, s.staff_type, s.hourly_rate, s.monthly_salary, o.name as outlet_name
                 FROM attendance a JOIN staff s ON a.staff_id=s.id LEFT JOIN outlets o ON a.outlet_id=o.id
-                WHERE substr(a.clock_in,1,10)>=? AND substr(a.clock_in,1,10)<=? AND a.clock_out IS NOT NULL`;
+                WHERE date(a.clock_in,'+8 hours')>=? AND date(a.clock_in,'+8 hours')<=? AND a.clock_out IS NOT NULL`;
   const ap = [fromDate, toDate];
   if (outletId) { attSql += ` AND a.outlet_id=?`; ap.push(outletId); }
   const attendance = db.all(attSql, ap);
