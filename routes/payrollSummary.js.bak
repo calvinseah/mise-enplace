@@ -13,7 +13,7 @@ function computeAllPayroll(from, to, outletId, staffId) {
 
   for (const s of staff) {
     if (staffId && String(s.id) !== String(staffId)) continue;
-    let sql = `SELECT * FROM attendance WHERE staff_id=? AND date(clock_in,'+8 hours')>=? AND date(clock_in,'+8 hours')<=? AND clock_out IS NOT NULL`;
+    let sql = `SELECT * FROM attendance WHERE staff_id=? AND substr(clock_in,1,10)>=? AND substr(clock_in,1,10)<=? AND clock_out IS NOT NULL`;
     const params = [s.id, from, to];
     if (outletId) { sql += ` AND outlet_id=?`; params.push(outletId); }
     const records = db.all(sql, params);
@@ -92,7 +92,7 @@ router.get('/detail/:staffId', (req, res) => {
   const records = db.all(
     `SELECT a.*, o.name as outlet_name FROM attendance a
      LEFT JOIN outlets o ON a.outlet_id=o.id
-     WHERE a.staff_id=? AND date(a.clock_in,'+8 hours')>=? AND date(a.clock_in,'+8 hours')<=?
+     WHERE a.staff_id=? AND substr(a.clock_in,1,10)>=? AND substr(a.clock_in,1,10)<=?
      ORDER BY a.clock_in`,
     [req.params.staffId, from, to]
   );
