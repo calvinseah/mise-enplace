@@ -87,6 +87,13 @@ function haversineM(lat1, lng1, lat2, lng2) {
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+// Geofence policy. Soft = never blocks, only records distance + raises geo_flagged
+// for the manager review page. Set to true to HARD-BLOCK clock-ins that are beyond
+// the outlet radius. Missing/denied GPS is ALWAYS soft regardless of this flag,
+// because iOS Safari permanently blocks location after one "Don't Allow" — hard-
+// blocking it would lock on-site staff out with no way to re-prompt.
+const BLOCK_WHEN_TOO_FAR = false;
+
 // Returns null when geo isn't enforced (logged-in manager/admin, or outlet has no
 // pin), otherwise { within, distance, radius } or { noLocation:true }.
 function geoCheck(req, outletId, lat, lng) {
@@ -106,17 +113,29 @@ router.post('/clock-in', (req, res) => {
     const active = db.get(`SELECT id FROM attendance WHERE staff_id=? AND clock_out IS NULL`, [staffId]);
     if (active) return res.status(400).json({ error: 'Already clocked in' });
     const geo = geoCheck(req, outletId, lat, lng);
+    // Soft geofence: allow the clock-in, record distance, flag if off-site or no GPS.
+    // Optional hard block only for genuinely too-far (never for missing GPS — iOS trap).
+    let geoFlagged = 0;
     if (geo) {
-      if (geo.noLocation) ;
-      if (!geo.within) ;
+      if (geo.noLocation) {
+        geoFlagged = 1;                         // no GPS → flag for review, still allow
+      } else if (!geo.within) {
+        geoFlagged = 1;                         // off-site → flag for review
+        if (BLOCK_WHEN_TOO_FAR) {
+          return res.status(403).json({
+            error: `You're about ${geo.distance}m from the outlet (allowed ${geo.radius}m). Move closer and try again.`
+          });
+        }
+      }
     }
+    const geoDist = geo && Number.isFinite(geo.distance) ? geo.distance : null;
     const now   = new Date().toISOString();
     const today = now.slice(0, 10);
     const holiday = db.get(`SELECT * FROM public_holidays WHERE date=?`, [today]);
     db.run(
-      `INSERT INTO attendance (staff_id, outlet_id, clock_in, is_public_holiday, geo_distance_m)
-       VALUES (?,?,?,?,?)`,
-      [staffId, outletId || null, now, holiday ? 1 : 0, geo ? geo.distance : null]
+      `INSERT INTO attendance (staff_id, outlet_id, clock_in, is_public_holiday, geo_distance_m, geo_flagged)
+       VALUES (?,?,?,?,?,?)`,
+      [staffId, outletId || null, now, holiday ? 1 : 0, geoDist, geoFlagged]
     );
     const record = db.get(
       `SELECT * FROM attendance WHERE staff_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1`,
@@ -176,9 +195,12 @@ router.post('/clock-out', (req, res) => {
     }
     if (!record) return res.status(400).json({ error: 'No active clock-in found' });
     const geo = geoCheck(req, record.outlet_id, lat, lng);
-    if (geo) {
-      if (geo.noLocation) ;
-      if (!geo.within) ;
+    // Same soft policy on clock-out. Only hard-block genuinely too-far when enabled;
+    // never block on missing GPS.
+    if (geo && !geo.noLocation && !geo.within && BLOCK_WHEN_TOO_FAR) {
+      return res.status(403).json({
+        error: `You're about ${geo.distance}m from the outlet (allowed ${geo.radius}m). Move closer and try again.`
+      });
     }
     const now = clockOutTime ? new Date(clockOutTime) : new Date();
     const grossMins  = (now - new Date(record.clock_in)) / 60000;
