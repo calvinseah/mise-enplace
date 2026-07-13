@@ -1,298 +1,67 @@
 [
   {
-    "name": "Truffle Aioli",
+    "name": "Truffle Aioli (Working Title)",
     "category": "Aioli & Dressings",
     "is_shared": 1,
     "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
+    "notes": "Working Title (closed outlet) recipe. Kept distinct from existing Truffle Aioli.",
     "ingredients": [
-      { "name": "Mayonnaise", "amount": 3000, "unit": "g" },
-      { "name": "Truffle Paste", "amount": 150, "unit": "g" },
-      { "name": "Truffle Oil", "amount": 300, "unit": "g" },
-      { "name": "Parmesan Powder", "amount": 40, "unit": "g" }
+      {
+        "name": "Mayonnaise",
+        "amount": 3000,
+        "unit": "g"
+      },
+      {
+        "name": "Truffle Paste",
+        "amount": 150,
+        "unit": "g"
+      },
+      {
+        "name": "Truffle Oil",
+        "amount": 300,
+        "unit": "g"
+      },
+      {
+        "name": "Parmesan Powder",
+        "amount": 40,
+        "unit": "g"
+      }
     ],
     "steps": [
-      { "title": "Mix & chill", "content": "Mix all ingredients and store in a chiller." }
+      {
+        "title": "Mix & chill",
+        "content": "Mix all ingredients and store in a chiller."
+      }
     ]
   },
   {
-    "name": "Sriracha Mayo",
+    "name": "Garlic Aioli (Working Title)",
     "category": "Aioli & Dressings",
     "is_shared": 1,
     "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
+    "notes": "Working Title (closed outlet) recipe. Kept distinct from existing Garlic Aioli.",
     "ingredients": [
-      { "name": "Mayonnaise", "amount": 3000, "unit": "g" },
-      { "name": "Sriracha", "amount": 750, "unit": "g" },
-      { "name": "Lime Juice", "amount": 150, "unit": "g" }
+      {
+        "name": "Mayonnaise",
+        "amount": 3000,
+        "unit": "g"
+      },
+      {
+        "name": "Garlic Puree",
+        "amount": 60,
+        "unit": "g"
+      },
+      {
+        "name": "Garlic Powder",
+        "amount": 40,
+        "unit": "g"
+      }
     ],
     "steps": [
-      { "title": "Mix & chill", "content": "Mix all ingredients and store in a chiller." }
-    ]
-  },
-  {
-    "name": "Garlic Aioli",
-    "category": "Aioli & Dressings",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Mayonnaise", "amount": 3000, "unit": "g" },
-      { "name": "Garlic Puree", "amount": 60, "unit": "g" },
-      { "name": "Garlic Powder", "amount": 40, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Blend", "content": "Add all ingredients in a food processor and blend till smooth." }
-    ]
-  },
-  {
-    "name": "Pepper Ranch",
-    "category": "Aioli & Dressings",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Mayonnaise", "amount": 1500, "unit": "g" },
-      { "name": "Lime Juice", "amount": 75, "unit": "g" },
-      { "name": "White Pepper Powder", "amount": 30, "unit": "g" },
-      { "name": "Black Pepper Powder", "amount": 30, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Mix & chill", "content": "Mix all ingredients and store in a chiller." }
-    ]
-  },
-  {
-    "name": "Hot Honey",
-    "category": "Sauces",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Honey", "amount": 1000, "unit": "g" },
-      { "name": "Cayenne Powder", "amount": 20, "unit": "g" },
-      { "name": "Apple Cider Vinegar", "amount": 20, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Mix & chill", "content": "Mix all ingredients and store in the chiller." }
-    ]
-  },
-  {
-    "name": "Ribena Glaze",
-    "category": "Sauces",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Ribena", "amount": 2000, "unit": "g" },
-      { "name": "Butter", "amount": 10, "unit": "g" },
-      { "name": "Apple Cider Vinegar", "amount": 20, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Melt & combine", "content": "Melt butter and add to ribena and mix well." }
-    ]
-  },
-  {
-    "name": "Special Sauce",
-    "category": "Sauces",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Mayonnaise", "amount": 2600, "unit": "g" },
-      { "name": "Tomato Ketchup", "amount": 400, "unit": "g" },
-      { "name": "Yellow Mustard", "amount": 700, "unit": "g" },
-      { "name": "White Grape Vinegar", "amount": 50, "unit": "g" },
-      { "name": "Yellow Onion", "amount": 400, "unit": "g" },
-      { "name": "Gherkins", "amount": 670, "unit": "g" },
-      { "name": "Garlic Powder", "amount": 50, "unit": "g" },
-      { "name": "Sweet Paprika", "amount": 80, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Blend", "content": "Add all ingredients in a food processor and blend but not too fine." }
-    ]
-  },
-  {
-    "name": "Peppercorn Sauce",
-    "category": "Sauces",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Cooking Cream", "amount": 2000, "unit": "g" },
-      { "name": "Crushed Black Peppercorn", "amount": 200, "unit": "g" },
-      { "name": "Butter", "amount": 250, "unit": "g" },
-      { "name": "Beef Stock Base", "amount": 120, "unit": "g" },
-      { "name": "Water", "amount": 1200, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Toast pepper", "content": "Toast black pepper on a pan until aromatic." },
-      { "title": "Dissolve stock", "content": "Mix beef stock base with warm water." },
-      { "title": "Build & boil", "content": "Melt butter, add in toasted black pepper, cooking cream then stock water and bring to boil." }
-    ]
-  },
-  {
-    "name": "Garlic Herb Butter",
-    "category": "Prep & Components",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Butter", "amount": 250, "unit": "g" },
-      { "name": "Oil", "amount": 150, "unit": "g" },
-      { "name": "Honey", "amount": 100, "unit": "g" },
-      { "name": "Garlic Puree", "amount": 50, "unit": "g" },
-      { "name": "Chopped Parsley", "amount": 8, "unit": "g" },
-      { "name": "Black Pepper", "amount": 5, "unit": "g" },
-      { "name": "Fine Salt", "amount": 5, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Melt & mix", "content": "Melt butter and mix with all other ingredients." }
-    ]
-  },
-  {
-    "name": "Onion Jam",
-    "category": "Prep & Components",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Yellow Onion", "amount": 4000, "unit": "g" },
-      { "name": "Butter", "amount": 120, "unit": "g" },
-      { "name": "Rosemary", "amount": 2, "unit": "sprig" },
-      { "name": "Balsamic Vinegar", "amount": 400, "unit": "g" },
-      { "name": "Sugar", "amount": 1200, "unit": "g" },
-      { "name": "Salt", "amount": 5, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Slice onions", "content": "Slice yellow onion thinly." },
-      { "title": "Sweat", "content": "Melt butter in a pot and sweat out onions and rosemary until soft." },
-      { "title": "Cook down", "content": "Add the rest of the ingredients and cook down until moisture evaporates to achieve a jam-like consistency." }
-    ]
-  },
-  {
-    "name": "Pickled Cucumber",
-    "category": "Prep & Components",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Japanese Cucumber", "amount": 3000, "unit": "g" },
-      { "name": "Water", "amount": 850, "unit": "g" },
-      { "name": "White Grape Vinegar", "amount": 200, "unit": "g" },
-      { "name": "White Vinegar", "amount": 650, "unit": "g" },
-      { "name": "Sugar", "amount": 85, "unit": "g" },
-      { "name": "Salt", "amount": 85, "unit": "g" },
-      { "name": "Garlic", "amount": 3, "unit": "pcs" },
-      { "name": "Black Peppercorn", "amount": 8, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Slice cucumber", "content": "Slice cucumber thinly with a mandolin and store in a container." },
-      { "title": "Boil brine", "content": "Boil rest of ingredients." },
-      { "title": "Pour hot", "content": "Once at a rolling boil, transfer pickling liquid to the cucumber container immediately. Do not wait till the liquid cools down — the heat is supposed to wilt down the cucumber." },
-      { "title": "Chill", "content": "Once pickles cooled down completely, keep in chiller." }
-    ]
-  },
-  {
-    "name": "Pickled Red Cabbage",
-    "category": "Prep & Components",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Red Cabbage", "amount": 3000, "unit": "g" },
-      { "name": "Water", "amount": 850, "unit": "g" },
-      { "name": "White Grape Vinegar", "amount": 200, "unit": "g" },
-      { "name": "White Vinegar", "amount": 650, "unit": "g" },
-      { "name": "Sugar", "amount": 85, "unit": "g" },
-      { "name": "Salt", "amount": 85, "unit": "g" },
-      { "name": "Garlic", "amount": 3, "unit": "pcs" },
-      { "name": "Black Peppercorn", "amount": 8, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Slice cabbage", "content": "Slice cabbage thinly with a mandolin and store in a container." },
-      { "title": "Boil brine", "content": "Boil rest of ingredients." },
-      { "title": "Pour hot", "content": "Once at a rolling boil, transfer pickling liquid to the cabbage container immediately. Do not wait till the liquid cools down — the heat is supposed to wilt down the cabbage." },
-      { "title": "Chill", "content": "Once pickles cooled down completely, keep in chiller." }
-    ]
-  },
-  {
-    "name": "Chicken Flour (Frying Flour)",
-    "category": "Prep & Components",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Plain Flour", "amount": 200, "unit": "g" },
-      { "name": "Potato Starch", "amount": 50, "unit": "g" },
-      { "name": "Rice Flour", "amount": 100, "unit": "g" },
-      { "name": "Corn Flour", "amount": 50, "unit": "g" },
-      { "name": "Chilli Powder", "amount": 10, "unit": "g" },
-      { "name": "Cumin Powder", "amount": 10, "unit": "g" },
-      { "name": "Cayenne Powder", "amount": 10, "unit": "g" },
-      { "name": "Sweet Paprika", "amount": 10, "unit": "g" },
-      { "name": "Sugar", "amount": 10, "unit": "g" },
-      { "name": "Salt", "amount": 20, "unit": "g" },
-      { "name": "White Pepper", "amount": 5, "unit": "g" },
-      { "name": "Baking Powder", "amount": 10, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Mix", "content": "Mix all ingredients together." }
-    ]
-  },
-  {
-    "name": "Beef Patty",
-    "category": "Meats",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe. Source card says portion into 100g balls.",
-    "ingredients": [
-      { "name": "Minced Beef", "amount": 6000, "unit": "g" },
-      { "name": "Breadcrumbs", "amount": 600, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Mix & portion", "content": "Mix all ingredients, portion into 100g balls and store in chiller." }
-    ]
-  },
-  {
-    "name": "Brined Chicken Thigh",
-    "category": "Meats",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Boneless Chicken Thigh", "amount": 4000, "unit": "g" },
-      { "name": "Brown Sugar", "amount": 50, "unit": "g" },
-      { "name": "Salt", "amount": 65, "unit": "g" },
-      { "name": "Garlic", "amount": 20, "unit": "g" },
-      { "name": "Whole Black Peppercorn", "amount": 10, "unit": "g" },
-      { "name": "Water", "amount": 800, "unit": "g" },
-      { "name": "Ice", "amount": 700, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Make brine", "content": "Dissolve salt and sugar in water and add all other ingredients." },
-      { "title": "Brine", "content": "Brine for 24 hours before use." }
-    ]
-  },
-  {
-    "name": "Chicken Wings",
-    "category": "Meats",
-    "is_shared": 1,
-    "base_servings": 1,
-    "notes": "Working Title (closed outlet) recipe.",
-    "ingredients": [
-      { "name": "Chicken Wings", "amount": 2000, "unit": "g" },
-      { "name": "Sugar", "amount": 40, "unit": "g" },
-      { "name": "Garlic Powder", "amount": 25, "unit": "g" },
-      { "name": "White Pepper", "amount": 20, "unit": "g" },
-      { "name": "Sweet Paprika", "amount": 20, "unit": "g" },
-      { "name": "Chilli Powder", "amount": 25, "unit": "g" },
-      { "name": "Canola Oil", "amount": 120, "unit": "g" },
-      { "name": "Salt", "amount": 25, "unit": "g" },
-      { "name": "MSG", "amount": 15, "unit": "g" }
-    ],
-    "steps": [
-      { "title": "Mix marinade", "content": "Mix all dry and wet ingredients together." },
-      { "title": "Marinate", "content": "Add in chicken wings and marinate for at least 12 hours." }
+      {
+        "title": "Blend",
+        "content": "Add all ingredients in a food processor and blend till smooth."
+      }
     ]
   }
 ]
