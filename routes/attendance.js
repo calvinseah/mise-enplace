@@ -32,7 +32,7 @@ router.get('/current/:staffId', (req, res) => {
 // Holiday check
 router.get('/holiday-check', (req, res) => {
   try {
-    const date = req.query.date || new Date().toISOString().slice(0, 10);
+    const date = req.query.date || sgToday();
     const holiday = db.get(`SELECT * FROM public_holidays WHERE date=?`, [date]);
     res.json({ isHoliday: !!holiday, holiday: holiday || null });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -87,6 +87,23 @@ function haversineM(lat1, lng1, lat2, lng2) {
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
+// ── Singapore time ────────────────────────────────────────────────────────────
+// The server runs UTC; the business runs SGT (UTC+8). Every "what date is this"
+// question must be answered in SGT, or anything before 08:00 local falls on the
+// previous UTC date — which is most of a bakery's shifts. Queries already do this
+// with date(clock_in,'+8 hours'); these helpers are the JS-side equivalent so the
+// two never disagree.
+const SG_OFFSET_MS = 8 * 3600 * 1000;
+function sgDate(iso) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return null;
+  return new Date(t + SG_OFFSET_MS).toISOString().slice(0, 10);
+}
+function sgToday() { return sgDate(new Date().toISOString()); }
+function sgMonth() { return sgToday().slice(0, 7); }
+function sgDaysAgo(n) { return sgDate(new Date(Date.now() - n * 86400000).toISOString()); }
+
 // Geofence policy. Soft = never blocks, only records distance + raises geo_flagged
 // for the manager review page. Set to true to HARD-BLOCK clock-ins that are beyond
 // the outlet radius. Missing/denied GPS is ALWAYS soft regardless of this flag,
@@ -130,7 +147,7 @@ router.post('/clock-in', (req, res) => {
     }
     const geoDist = geo && Number.isFinite(geo.distance) ? geo.distance : null;
     const now   = new Date().toISOString();
-    const today = now.slice(0, 10);
+    const today = sgDate(now);              // SGT date, not the UTC one
     const holiday = db.get(`SELECT * FROM public_holidays WHERE date=?`, [today]);
     db.run(
       `INSERT INTO attendance (staff_id, outlet_id, clock_in, is_public_holiday, geo_distance_m, geo_flagged)
@@ -160,7 +177,7 @@ function autoBreakMins(grossMins) {
 // doesn't erase the record that they missed it.
 function flagMissedClockouts() {
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = sgToday();
     db.run(
       `UPDATE attendance SET missed_clockout=1
        WHERE clock_out IS NULL AND date(clock_in,'+8 hours') < ?
@@ -340,8 +357,8 @@ router.get('/my-shifts', (req, res) => {
     if (!matched.length) return res.status(404).json({ error: 'No staff found with that NRIC.' });
     const staff = matched[0];
 
-    const fromDate = from || new Date(Date.now() - 30*24*60*60*1000).toISOString().slice(0,10);
-    const toDate   = to   || new Date().toISOString().slice(0,10);
+    const fromDate = from || sgDaysAgo(30);
+    const toDate   = to   || sgToday();
 
     const records = require('../database').all(
       `SELECT a.clock_in, a.clock_out, a.total_hours, a.break_minutes, a.is_public_holiday,
@@ -363,7 +380,7 @@ router.get('/my-shifts', (req, res) => {
       to: toDate,
       totalHours: Math.round(totalHours*100)/100,
       shifts: records.map(r => ({
-        date:        r.clock_in.slice(0,10),
+        date:        sgDate(r.clock_in),
         clockIn:     r.clock_in,
         clockOut:    r.clock_out,
         hours:       r.total_hours || 0,
@@ -379,7 +396,7 @@ router.get('/my-shifts', (req, res) => {
 // ── Missed clock-out: staff clocked in but no clock-out from previous days ────
 router.get('/missed-clockout', (req, res) => {
   try {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = sgToday();
     // Find records where clock_in is before today and clock_out is null
     const missed = require('../database').all(
       `SELECT a.id, a.clock_in, a.staff_id, s.name as staff_name, o.name as outlet_name
@@ -399,7 +416,7 @@ router.get('/missed-clockout', (req, res) => {
 router.get('/naughty-list', (req, res) => {
   try {
     flagMissedClockouts(); // make sure the tally is up to date when viewed
-    const month = req.query.month || new Date().toISOString().slice(0, 7); // YYYY-MM
+    const month = req.query.month || sgMonth(); // YYYY-MM
     const people = require('../database').all(
       `SELECT s.id, s.name, COUNT(*) AS misses,
               GROUP_CONCAT(DISTINCT date(a.clock_in,'+8 hours')) AS dates,
@@ -516,7 +533,7 @@ router.post('/break/end', (req, res) => {
 router.get('/geo-flagged', (req, res) => {
   try {
     const db = require('../database');
-    const today = new Date().toISOString().slice(0, 10);
+    const today = sgToday();
     const flagged = db.all(
       `SELECT a.id, a.clock_in, a.geo_distance_m, s.name as staff_name, o.name as outlet_name
        FROM attendance a
