@@ -122,6 +122,7 @@ const revenueRoutes       = require('./routes/revenue');
 const payrollSummaryRoutes= require('./routes/payrollSummary');
 const rosterRoutes        = require('./routes/roster');
 const maiseRoutes         = require('./routes/maise');
+const announcementRoutes  = require('./routes/announcements');
 
 // ── Public clock-in API (no auth) ─────────────────────────────────────────────
 const PUBLIC_ATT = ['/active-staff','/current/','/holiday-check','/verify-pin','/clock-in','/clock-out','/outlets','/my-shifts'];
@@ -166,6 +167,7 @@ app.use('/api/facilities',      facilitiesRoutes); // auth handled inside route
 app.use('/api/revenue',        requireAuthAPI, revenueRoutes);
 app.use('/api/roster',         requireAuthAPI, rosterRoutes);
 app.use('/api/maise',          requireAuthAPI, maiseRoutes);
+app.use('/api/announcements',  announcementRoutes); // staff read is public, admin write checked inside
 
 // ── Admin-only API ────────────────────────────────────────────────────────────
 app.use('/api/payslip',        requireAuthAPI, requireAdminAPI, payslipRoutes);

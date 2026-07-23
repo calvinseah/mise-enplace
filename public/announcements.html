@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Announcements · Mise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1B2A41;--ember:#C4552D;--sage:#8A9A7B;--cream:#F1F0E8;--paper:#fff;--line:#E2DFD3;--muted:#6B7280}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--cream);color:var(--navy);font-family:"DM Sans",system-ui,sans-serif;font-size:15px}
+.wrap{max-width:940px;margin:0 auto;padding:28px 20px 60px}
+h1{font-family:"DM Serif Display",Georgia,serif;font-size:2rem;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.92rem;margin-bottom:26px}
+.card{background:var(--paper);border-radius:14px;padding:22px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+h2{font-family:"DM Serif Display",Georgia,serif;font-size:1.25rem;margin-bottom:16px}
+label{display:block;font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+input,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+  font-family:inherit;font-size:.94rem;color:var(--navy);background:#FCFBF7}
+input:focus,textarea:focus{outline:none;border-color:var(--sage)}
+textarea{resize:vertical;min-height:82px}
+.field{margin-bottom:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.row{grid-template-columns:1fr}}
+.btn{border:0;cursor:pointer;border-radius:999px;padding:11px 22px;font-family:inherit;
+  font-size:.92rem;font-weight:500;background:var(--ember);color:#fff}
+.btn:hover{background:#A9451F}
+.btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn.ghost:hover{background:#F6F4EC;color:var(--navy)}
+.btn.sm{padding:6px 14px;font-size:.82rem}
+.hint{font-size:.8rem;color:var(--muted);margin-top:6px}
+.item{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px;background:#FCFBF7}
+.item.on{border-left:4px solid var(--sage)}
+.item.off{opacity:.62}
+.item-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:6px}
+.item-t{font-family:"DM Serif Display",Georgia,serif;font-size:1.1rem}
+.pill{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.on{background:var(--sage);color:#fff}
+.pill.off{background:#DEDBD0;color:#6B7280}
+.item-b{font-size:.9rem;color:#4E5560;margin-bottom:10px;white-space:pre-wrap}
+.meta{font-size:.78rem;color:var(--muted);margin-bottom:10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--muted);font-size:.92rem;padding:10px 0}
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:.9rem;display:none}
+.msg.ok{background:#E8EFE3;color:#3F5133;display:block}
+.msg.err{background:#F8E6E0;color:#8A3C1E;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Announcements</h1>
+  <p class="sub">Shown to staff as a pop-up when they open Mise — once per person per day.</p>
+
+  <div id="msg" class="msg"></div>
+
+  <div class="card">
+    <h2 id="formTitle">New announcement</h2>
+    <input type="hidden" id="editId">
+    <div class="field">
+      <label for="title">Title</label>
+      <input id="title" maxlength="120" placeholder="Our new cafe opens Monday">
+    </div>
+    <div class="field">
+      <label for="body">Message</label>
+      <textarea id="body" maxlength="600" placeholder="Come by for a free coffee on opening day."></textarea>
+    </div>
+    <div class="field">
+      <label for="image_url">Image URL (optional)</label>
+      <input id="image_url" placeholder="https://...">
+      <p class="hint">Any public image link. Leave blank for a text-only pop-up.</p>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="link_url">Button link (optional)</label>
+        <input id="link_url" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="link_label">Button text</label>
+        <input id="link_label" maxlength="40" placeholder="Find out more">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="starts_on">Show from (optional)</label>
+        <input id="starts_on" type="date">
+      </div>
+      <div class="field">
+        <label for="ends_on">Show until (optional)</label>
+        <input id="ends_on" type="date">
+      </div>
+    </div>
+    <p class="hint" style="margin-bottom:14px">Leave dates blank to show it until you switch it off.</p>
+    <div class="acts">
+      <button class="btn" id="saveBtn">Save announcement</button>
+      <button class="btn ghost" id="cancelBtn" style="display:none">Cancel</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>All announcements</h2>
+    <div id="list"><p class="empty">Loading…</p></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const FIELDS = ['title','body','image_url','link_url','link_label','starts_on','ends_on'];
+
+function flash(text, ok=true){
+  const m = $('msg');
+  m.textContent = text;
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  setTimeout(()=>{ m.className='msg'; }, 3500);
+}
+
+function clearForm(){
+  $('editId').value = '';
+  FIELDS.forEach(f => $(f).value = '');
+  $('formTitle').textContent = 'New announcement';
+  $('saveBtn').textContent = 'Save announcement';
+  $('cancelBtn').style.display = 'none';
+}
+
+async function load(){
+  try {
+    const res = await fetch('/api/announcements', { credentials:'same-origin' });
+    if (!res.ok) throw new Error('Could not load. Are you logged in as admin?');
+    const rows = await res.json();
+    const list = $('list');
+    if (!rows.length){ list.innerHTML = '<p class="empty">Nothing yet. Create one above.</p>'; return; }
+    list.innerHTML = rows.map(r => `
+      <div class="item ${r.active ? 'on':'off'}">
+        <div class="item-h">
+          <div class="item-t">${escapeHtml(r.title)}</div>
+          <span class="pill ${r.active ? 'on':'off'}">${r.active ? 'Live':'Off'}</span>
+        </div>
+        ${r.body ? `<div class="item-b">${escapeHtml(r.body)}</div>` : ''}
+        <div class="meta">
+          ${r.starts_on || r.ends_on
+            ? `Shows ${r.starts_on ? 'from ' + r.starts_on : ''}${r.ends_on ? ' until ' + r.ends_on : ''}`
+            : 'No date limit'}
+        </div>
+        <div class="acts">
+          <button class="btn ghost sm" onclick="toggle(${r.id})">${r.active ? 'Switch off':'Switch on'}</button>
+          <button class="btn ghost sm" onclick='edit(${JSON.stringify(r)})'>Edit</button>
+          <button class="btn ghost sm" onclick="del(${r.id})">Delete</button>
+        </div>
+      </div>`).join('');
+  } catch(e){
+    $('list').innerHTML = `<p class="empty">${escapeHtml(e.message)}</p>`;
+  }
+}
+
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function edit(r){
+  $('editId').value = r.id;
+  FIELDS.forEach(f => $(f).value = r[f] || '');
+  $('formTitle').textContent = 'Edit announcement';
+  $('saveBtn').textContent = 'Update announcement';
+  $('cancelBtn').style.display = 'inline-block';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+async function toggle(id){
+  const res = await fetch(`/api/announcements/${id}/toggle`, { method:'POST', credentials:'same-origin' });
+  if (res.ok) { load(); } else { flash('Could not change that.', false); }
+}
+
+async function del(id){
+  if (!confirm('Delete this announcement?')) return;
+  const res = await fetch(`/api/announcements/${id}`, { method:'DELETE', credentials:'same-origin' });
+  if (res.ok) { flash('Deleted.'); load(); } else { flash('Could not delete.', false); }
+}
+
+$('cancelBtn').onclick = clearForm;
+
+$('saveBtn').onclick = async () => {
+  const payload = {};
+  FIELDS.forEach(f => payload[f] = $(f).value.trim());
+  if (!payload.title) { flash('Give it a title.', false); return; }
+  payload.active = 1;
+
+  const id = $('editId').value;
+  const res = await fetch(id ? `/api/announcements/${id}` : '/api/announcements', {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type':'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify(payload)
+  });
+  if (res.ok) { flash(id ? 'Updated.' : 'Saved — staff will see it next time they open Mise.'); clearForm(); load(); }
+  else {
+    const err = await res.json().catch(()=>({}));
+    flash(err.error || 'Could not save.', false);
+  }
+};
+
+load();
+</script>
+</body>
+</html>
