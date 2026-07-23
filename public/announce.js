@@ -87,7 +87,7 @@
           '<h2>' + esc(a.title) + '</h2>' +
           (a.body ? '<p>' + esc(a.body) + '</p>' : '') +
           '<div class="mise-ann-btns">' + link +
-            '<button type="button" class="mise-ann-btn mise-ann-ok">Got it</button>' +
+            '<button type="button" class="mise-ann-btn mise-ann-ok">Close</button>' +
           '</div>' +
         '</div>' +
       '</div>';
