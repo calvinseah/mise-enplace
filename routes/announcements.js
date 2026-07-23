@@ -13,8 +13,11 @@ function sgToday() {
 }
 
 // ── Schema ────────────────────────────────────────────────────────────────────
-// Created on first load so no separate migration step is needed.
-try {
+// Created on first use, NOT at module load. sql.js finishes loading the database
+// asynchronously, so anything run at require-time fires before the DB exists.
+let tableReady = false;
+function ensureTable() {
+  if (tableReady) return;
   db.run(`CREATE TABLE IF NOT EXISTS announcements (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     title       TEXT NOT NULL,
@@ -30,8 +33,7 @@ try {
     updated_at  TEXT
   )`);
   db.saveDB();
-} catch (e) {
-  console.error('[announcements] table init failed:', e.message);
+  tableReady = true;
 }
 
 function isAdmin(req) { return req.session?.user?.role === 'admin'; }
@@ -45,6 +47,7 @@ function isManager(req) {
 // read this without a session. Returns null when there is nothing to show.
 router.get('/active', (req, res) => {
   try {
+    ensureTable();
     const today = sgToday();
     const row = db.get(
       `SELECT id, title, body, image_url, link_url, link_label
@@ -66,6 +69,7 @@ router.get('/active', (req, res) => {
 router.get('/', (req, res) => {
   if (!isManager(req)) return res.status(401).json({ error: 'Please log in.' });
   try {
+    ensureTable();
     res.json(db.all(`SELECT * FROM announcements ORDER BY id DESC`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -76,6 +80,7 @@ router.post('/', (req, res) => {
   const { title, body, image_url, link_url, link_label, starts_on, ends_on, active } = req.body || {};
   if (!title || !String(title).trim()) return res.status(400).json({ error: 'Title required' });
   try {
+    ensureTable();
     const now = new Date().toISOString();
     db.run(
       `INSERT INTO announcements
@@ -95,6 +100,7 @@ router.put('/:id', (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Admin access required.' });
   const { title, body, image_url, link_url, link_label, starts_on, ends_on, active } = req.body || {};
   try {
+    ensureTable();
     db.run(
       `UPDATE announcements
           SET title=?, body=?, image_url=?, link_url=?, link_label=?,
@@ -113,6 +119,7 @@ router.put('/:id', (req, res) => {
 router.post('/:id/toggle', (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Admin access required.' });
   try {
+    ensureTable();
     const row = db.get(`SELECT active FROM announcements WHERE id=?`, [req.params.id]);
     if (!row) return res.status(404).json({ error: 'Not found' });
     db.run(`UPDATE announcements SET active=?, updated_at=? WHERE id=?`,
@@ -126,6 +133,7 @@ router.post('/:id/toggle', (req, res) => {
 router.delete('/:id', (req, res) => {
   if (!isAdmin(req)) return res.status(403).json({ error: 'Admin access required.' });
   try {
+    ensureTable();
     db.run(`DELETE FROM announcements WHERE id=?`, [req.params.id]);
     db.saveDB();
     res.json({ success: true });
