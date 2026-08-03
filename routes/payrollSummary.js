@@ -11,8 +11,13 @@ function computeAllPayroll(from, to, outletId, staffId) {
   const { computeShiftCost, computeCPF, computeSHG, computeSDL, decryptField } = db;
   const results = [];
 
+  // staffId may be a single id or a comma-separated list ("3,7,9"). Empty = all staff.
+  const idSet = staffId
+    ? new Set(String(staffId).split(',').map(s => s.trim()).filter(Boolean))
+    : null;
+
   for (const s of staff) {
-    if (staffId && String(s.id) !== String(staffId)) continue;
+    if (idSet && !idSet.has(String(s.id))) continue;
     let sql = `SELECT * FROM attendance WHERE staff_id=? AND date(clock_in,'+8 hours')>=? AND date(clock_in,'+8 hours')<=? AND clock_out IS NOT NULL`;
     const params = [s.id, from, to];
     if (outletId) { sql += ` AND outlet_id=?`; params.push(outletId); }

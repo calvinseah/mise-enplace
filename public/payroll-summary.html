@@ -186,6 +186,7 @@ tbody tr:hover{background:var(--surface);cursor:pointer}
       </button>
       <button class="btn btn-ghost btn-sm" onclick="exportExcel()" id="exportExcelBtn" style="display:none">Export Excel</button>
       <button class="btn btn-ghost btn-sm" onclick="exportPDF()" id="exportPDFBtn" style="display:none">Export PDF</button>
+      <span id="selCount" style="font-size:11px;color:var(--ink-60);align-self:center;margin-left:2px"></span>
     </div>
   </div>
 
@@ -194,6 +195,7 @@ tbody tr:hover{background:var(--surface);cursor:pointer}
     <table>
       <thead>
         <tr>
+          <th style="width:34px;text-align:center"><input type="checkbox" id="selAll" onclick="toggleAll(this)" checked title="Select all"></th>
           <th>Name</th>
           <th>Role</th>
           <th>Type</th>
@@ -207,7 +209,7 @@ tbody tr:hover{background:var(--surface);cursor:pointer}
         </tr>
       </thead>
       <tbody id="payrollBody">
-        <tr class="empty-row"><td colspan="10">Select a pay period and click Generate</td></tr>
+        <tr class="empty-row"><td colspan="11">Select a pay period and click Generate</td></tr>
       </tbody>
     </table>
   </div>
@@ -293,7 +295,7 @@ async function generate() {
   if (staff) url += '&staff_id=' + staff;
 
   var tbody = document.getElementById('payrollBody');
-  tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Loading…</td></tr>';
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Loading…</td></tr>';
 
   try {
     var r = await fetch(url);
@@ -305,7 +307,7 @@ async function generate() {
     document.getElementById('exportPDFBtn').style.display = 'inline-flex';
   } catch(e) {
     showAlert('Error loading payroll data', 'err');
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">Error loading data</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Error loading data</td></tr>';
   }
 }
 
@@ -313,7 +315,7 @@ function renderTable(data) {
   var tbody = document.getElementById('payrollBody');
   var rows = (data && data.rows) ? data.rows : (Array.isArray(data) ? data : []);
   if (!rows.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="10">No records found for this period</td></tr>';
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">No records found for this period</td></tr>';
     document.getElementById('cardStaff').textContent = '0';
     document.getElementById('cardHours').textContent = '0h';
     document.getElementById('cardGross').textContent = '$0';
@@ -330,6 +332,9 @@ function renderTable(data) {
     var erCPF = s.erCPF || 0;
     var type = s.staff_type === 'fulltime' ? '<span class="badge badge-ft">FT</span>' : '<span class="badge badge-pt">PT</span>';
     return '<tr onclick="openDetail(' + s.id + ')">' +
+      '<td style="text-align:center" onclick="event.stopPropagation()">' +
+        '<input type="checkbox" class="rowChk" value="' + s.id + '" checked onchange="updateSelCount()">' +
+      '</td>' +
       '<td style="font-weight:600">' + s.name + '</td>' +
       '<td>' + (s.role || '—') + '</td>' +
       '<td>' + type + '</td>' +
@@ -342,6 +347,8 @@ function renderTable(data) {
       '<td style="color:var(--ink-60)">' + (erCPF > 0 ? '$' + erCPF.toFixed(2) : '—') + '</td>' +
     '</tr>';
   }).join('');
+
+  updateSelCount();
 
   var t = (data && data.totals) ? data.totals : { totalHours: totHours, grossPay: totGross, netPay: totNet };
   document.getElementById('cardStaff').textContent = rows.length;
@@ -418,16 +425,46 @@ function closeDetail() {
   document.getElementById('detailOverlay').classList.remove('open');
 }
 
+// ── Row selection for export ────────────────────────────────────────────────
+function toggleAll(master) {
+  document.querySelectorAll('.rowChk').forEach(function(c){ c.checked = master.checked; });
+  updateSelCount();
+}
+function updateSelCount() {
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.rowChk'));
+  var sel = boxes.filter(function(c){ return c.checked; }).length;
+  var master = document.getElementById('selAll');
+  if (master) {
+    master.checked = boxes.length > 0 && sel === boxes.length;
+    master.indeterminate = sel > 0 && sel < boxes.length;
+  }
+  var lbl = document.getElementById('selCount');
+  if (lbl) lbl.textContent = boxes.length ? (sel + ' of ' + boxes.length + ' selected') : '';
+  // Nothing ticked → disable export so you can't download an empty file
+  var ex = document.getElementById('exportExcelBtn'), pf = document.getElementById('exportPDFBtn');
+  if (ex) ex.style.opacity = pf.style.opacity = sel ? '1' : '.5';
+  if (ex) ex.style.pointerEvents = pf.style.pointerEvents = sel ? 'auto' : 'none';
+}
+function selectedStaffIds() {
+  return Array.prototype.slice.call(document.querySelectorAll('.rowChk'))
+    .filter(function(c){ return c.checked; })
+    .map(function(c){ return c.value; });
+}
+
 function exportExcel() {
   var from = document.getElementById('psFrom').value;
   var to = document.getElementById('psTo').value;
   var company = document.getElementById('psCompany').value;
   var outlet = document.getElementById('psOutlet').value;
-  var staff = document.getElementById('psStaff').value;
   var url = '/api/payroll-summary/export/excel?from=' + from + '&to=' + to;
   if (company) url += '&company_id=' + company;
   if (outlet) url += '&outlet_id=' + outlet;
-  if (staff) url += '&staff_id=' + staff;
+  // Ticked rows drive the export. If some but not all are ticked, send that subset;
+  // if all are ticked, omit staff_id so the backend returns everyone (matches "all").
+  var ids = selectedStaffIds();
+  var total = document.querySelectorAll('.rowChk').length;
+  if (!ids.length) { showAlert('Select at least one person to export', 'err'); return; }
+  if (ids.length < total) url += '&staff_id=' + ids.join(',');
   window.location.href = url;
 }
 
@@ -436,11 +473,13 @@ function exportPDF() {
   var to = document.getElementById('psTo').value;
   var company = document.getElementById('psCompany').value;
   var outlet = document.getElementById('psOutlet').value;
-  var staff = document.getElementById('psStaff').value;
   var url = '/api/payroll-summary/export/pdf?from=' + from + '&to=' + to;
   if (company) url += '&company_id=' + company;
   if (outlet) url += '&outlet_id=' + outlet;
-  if (staff) url += '&staff_id=' + staff;
+  var ids = selectedStaffIds();
+  var total = document.querySelectorAll('.rowChk').length;
+  if (!ids.length) { showAlert('Select at least one person to export', 'err'); return; }
+  if (ids.length < total) url += '&staff_id=' + ids.join(',');
   window.location.href = url;
 }
 
