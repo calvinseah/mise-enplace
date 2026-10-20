@@ -349,6 +349,20 @@ function createSchema() {
   // Add plain_password column if upgrading existing DB
   try { db.run('ALTER TABLE users ADD COLUMN plain_password TEXT'); } catch(e) {}
 
+  // Self-edit control: link each manager login to its staff record. Logins and
+  // staff are otherwise unconnected, so a manager editing their own hours can't be
+  // detected without this. Auto-fill the link by name for any manager not yet
+  // linked (manual assignments are left untouched); re-runs each boot to pick up
+  // newly created staff/managers.
+  try { db.run('ALTER TABLE users ADD COLUMN staff_id INTEGER'); } catch(e) {}
+  try {
+    db.run(`UPDATE users SET staff_id=(
+              SELECT s.id FROM staff s WHERE lower(trim(s.name))=lower(trim(users.name))
+            )
+            WHERE role='manager' AND staff_id IS NULL
+              AND EXISTS (SELECT 1 FROM staff s WHERE lower(trim(s.name))=lower(trim(users.name)))`);
+  } catch(e) {}
+
   db.run(`CREATE TABLE IF NOT EXISTS user_outlets (
     user_id   INTEGER NOT NULL,
     outlet_id INTEGER NOT NULL,

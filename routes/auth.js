@@ -26,11 +26,21 @@ router.post('/login', async (req, res) => {
       );
     }
 
+    // Link this login to its staff record for the self-edit control. Prefer the
+    // stored users.staff_id; fall back to a name match so the block still applies
+    // before the link has been backfilled.
+    let staffId = user.staff_id || null;
+    if (!staffId && user.role !== 'admin') {
+      const st = db.get(`SELECT id FROM staff WHERE lower(trim(name))=lower(trim(?))`, [user.name || user.username || '']);
+      staffId = st ? st.id : null;
+    }
+
     req.session.user = {
       id:       user.id,
       username: user.username,
       name:     user.name || user.username,
       role:     user.role,
+      staff_id: staffId,
       outlets:  outlets.map(o => o.id),
       outletNames: outlets.map(o => o.name),
     };
@@ -53,20 +63,22 @@ router.get('/status', (req, res) => {
 // ── User management (admin only) ──────────────────────────────────────────────
 router.get('/users', (req, res) => {
   try {
-    const users = db.all(`SELECT id, username, plain_password, role, name, is_active, created_at FROM users ORDER BY role, username`);
+    const users = db.all(`SELECT id, username, plain_password, role, name, staff_id, is_active, created_at FROM users ORDER BY role, username`);
     const withOutlets = users.map(u => {
       const outlets = db.all(
         `SELECT o.id, o.name FROM user_outlets uo JOIN outlets o ON uo.outlet_id=o.id WHERE uo.user_id=?`,
         [u.id]
       );
-      return { ...u, outlets };
+      // Show which staff record this login is linked to (self-edit control).
+      const linked = u.staff_id ? db.get(`SELECT name FROM staff WHERE id=?`, [u.staff_id]) : null;
+      return { ...u, outlets, linked_staff_name: linked ? linked.name : null };
     });
     res.json(withOutlets);
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 router.post('/users', async (req, res) => {
-  const { username, password, role, name, outlet_ids } = req.body;
+  const { username, password, role, name, outlet_ids, staff_id } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
   if (!['admin','manager'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
   try {
@@ -75,8 +87,8 @@ router.post('/users', async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     db.run(
-      `INSERT INTO users (username, password, plain_password, role, name, is_active, created_at) VALUES (?,?,?,?,?,1,?)`,
-      [username.trim().toLowerCase(), hashed, password, role, name || username, new Date().toISOString()]
+      `INSERT INTO users (username, password, plain_password, role, name, staff_id, is_active, created_at) VALUES (?,?,?,?,?,?,1,?)`,
+      [username.trim().toLowerCase(), hashed, password, role, name || username, staff_id || null, new Date().toISOString()]
     );
     const newUser = db.get(`SELECT id FROM users WHERE username=?`, [username.trim().toLowerCase()]);
 
@@ -90,7 +102,7 @@ router.post('/users', async (req, res) => {
 });
 
 router.put('/users/:id', async (req, res) => {
-  const { name, role, password, is_active, outlet_ids } = req.body;
+  const { name, role, password, is_active, outlet_ids, staff_id } = req.body;
   try {
     const user = db.get(`SELECT * FROM users WHERE id=?`, [req.params.id]);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -104,6 +116,7 @@ router.put('/users/:id', async (req, res) => {
     if (name !== undefined)      db.run(`UPDATE users SET name=? WHERE id=?`,      [name, req.params.id]);
     if (role !== undefined)      db.run(`UPDATE users SET role=? WHERE id=?`,      [role, req.params.id]);
     if (is_active !== undefined) db.run(`UPDATE users SET is_active=? WHERE id=?`, [is_active ? 1 : 0, req.params.id]);
+    if (staff_id !== undefined)  db.run(`UPDATE users SET staff_id=? WHERE id=?`, [staff_id || null, req.params.id]);
     if (password) {
       const hashed = await bcrypt.hash(password, 10);
       db.run(`UPDATE users SET password=?, plain_password=? WHERE id=?`, [hashed, password, req.params.id]);

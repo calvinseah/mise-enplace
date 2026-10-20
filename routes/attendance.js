@@ -283,6 +283,12 @@ router.put('/records/:id', (req, res) => {
     } catch(e) { return res.status(500).json({ error: e.message }); }
   }
 
+  // Must be logged in to amend. The route previously had no server-side gate for
+  // ordinary edits — the manager UI was the only thing restricting access, which
+  // is not a control. Require an authenticated session here.
+  const actor = req.session && req.session.user;
+  if (!actor) return res.status(401).json({ error: 'Please log in to amend a shift.' });
+
   const { clockIn, clockOut, breakMinutes, isPublicHoliday, outletId, notes, amendedBy } = req.body;
   try {
     const record = db.get(
@@ -291,6 +297,28 @@ router.put('/records/:id', (req, res) => {
       [req.params.id]
     );
     if (!record) return res.status(404).json({ error: 'Record not found' });
+
+    // ── Self-edit block (segregation of duties) ───────────────────────────────
+    // A manager must not be able to change their OWN hours. Each manager login is
+    // linked to a staff record (users.staff_id, carried on the session); if that
+    // matches this record's staff_id, refuse. Fall back to a name match when the
+    // link isn't set yet, so the control still applies. Admins are exempt so they
+    // can still correct a manager's own shift.
+    if (actor.role !== 'admin') {
+      let selfStaffId = actor.staff_id || null;
+      if (!selfStaffId) {
+        const self = db.get(
+          `SELECT id FROM staff WHERE lower(trim(name))=lower(trim(?))`,
+          [actor.name || actor.username || '']
+        );
+        selfStaffId = self ? self.id : null;
+      }
+      if (selfStaffId && selfStaffId === record.staff_id) {
+        return res.status(403).json({
+          error: "You can't edit your own hours. Please ask an admin to make this change."
+        });
+      }
+    }
     const ci  = new Date(clockIn || record.clock_in);
     const co  = clockOut ? new Date(clockOut) : null;
     let totalHours = record.total_hours;
@@ -310,7 +338,7 @@ router.put('/records/:id', (req, res) => {
        isPublicHoliday !== undefined ? (isPublicHoliday ? 1 : 0) : record.is_public_holiday,
        outletId !== undefined ? outletId : record.outlet_id,
        notes !== undefined ? notes : record.notes,
-       amendedBy || 'Manager', new Date().toISOString(),
+       actor.name || actor.username || amendedBy || 'Manager', new Date().toISOString(),
        req.params.id]
     );
     res.json({ success: true });
