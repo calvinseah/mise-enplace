@@ -292,32 +292,20 @@ router.put('/records/:id', (req, res) => {
   const { clockIn, clockOut, breakMinutes, isPublicHoliday, outletId, notes, amendedBy } = req.body;
   try {
     const record = db.get(
-      `SELECT a.*, s.staff_type, s.monthly_salary, s.hourly_rate
+      `SELECT a.*, s.staff_type, s.monthly_salary, s.hourly_rate, s.edit_locked
        FROM attendance a JOIN staff s ON a.staff_id=s.id WHERE a.id=?`,
       [req.params.id]
     );
     if (!record) return res.status(404).json({ error: 'Record not found' });
 
-    // ── Self-edit block (segregation of duties) ───────────────────────────────
-    // A manager must not be able to change their OWN hours. Each manager login is
-    // linked to a staff record (users.staff_id, carried on the session); if that
-    // matches this record's staff_id, refuse. Fall back to a name match when the
-    // link isn't set yet, so the control still applies. Admins are exempt so they
-    // can still correct a manager's own shift.
-    if (actor.role !== 'admin') {
-      let selfStaffId = actor.staff_id || null;
-      if (!selfStaffId) {
-        const self = db.get(
-          `SELECT id FROM staff WHERE lower(trim(name))=lower(trim(?))`,
-          [actor.name || actor.username || '']
-        );
-        selfStaffId = self ? self.id : null;
-      }
-      if (selfStaffId && selfStaffId === record.staff_id) {
-        return res.status(403).json({
-          error: "You can't edit your own hours. Please ask an admin to make this change."
-        });
-      }
+    // ── Edit lock ─────────────────────────────────────────────────────────────
+    // Admin-managed list of protected staff. A locked person's hours can only be
+    // amended by an admin, never by a manager (this is how a manager is kept from
+    // editing their own hours — lock their record). Admins are exempt.
+    if (actor.role !== 'admin' && record.edit_locked) {
+      return res.status(403).json({
+        error: "This person's hours are locked and can only be changed by an admin."
+      });
     }
     const ci  = new Date(clockIn || record.clock_in);
     const co  = clockOut ? new Date(clockOut) : null;
@@ -685,6 +673,33 @@ router.post('/manual', (req, res) => {
        notes || 'Manually added', user.username, new Date().toISOString()]
     );
     res.json({ success: true, totalHours, cost });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Edit-lock management (admin only) ─────────────────────────────────────────
+// Lock a staff member so managers cannot amend their attendance (admins always
+// can). This is the admin-controlled protected list.
+router.get('/edit-locks', (req, res) => {
+  const u = req.session && req.session.user;
+  if (!u || u.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    res.json(db.all(
+      `SELECT id, name, role, edit_locked FROM staff WHERE is_active=1
+       ORDER BY edit_locked DESC, name`
+    ));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/edit-lock', (req, res) => {
+  const u = req.session && req.session.user;
+  if (!u || u.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { staffId, locked } = req.body;
+  if (!staffId) return res.status(400).json({ error: 'staffId required' });
+  try {
+    db.run('UPDATE staff SET edit_locked=? WHERE id=?', [locked ? 1 : 0, staffId]);
+    const sName = db.get('SELECT name FROM staff WHERE id=?', [staffId])?.name || '';
+    writeLog(u.username, locked ? 'edit_lock' : 'edit_unlock', 'staff', staffId, sName, {});
+    res.json({ success: true, staffId, locked: locked ? 1 : 0 });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 

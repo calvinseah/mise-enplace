@@ -85,6 +85,9 @@ function createSchema() {
   if (!cols.includes('bank_account_enc')) db.run(`ALTER TABLE staff ADD COLUMN bank_account_enc TEXT`);
   if (!cols.includes('pin_active'))       db.run(`ALTER TABLE staff ADD COLUMN pin_active INTEGER NOT NULL DEFAULT 1`);
   if (!cols.includes('mbmf'))             db.run(`ALTER TABLE staff ADD COLUMN mbmf INTEGER NOT NULL DEFAULT 0`);
+  // edit_locked: when 1, this person's attendance can only be amended by an admin,
+  // never by a manager. Admin-managed list for protecting sensitive timesheets.
+  if (!cols.includes('edit_locked'))      db.run(`ALTER TABLE staff ADD COLUMN edit_locked INTEGER NOT NULL DEFAULT 0`);
 
   db.run(`CREATE TABLE IF NOT EXISTS attendance (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -251,6 +254,23 @@ function createSchema() {
       db.saveDB();
     }
   } catch(e) {}
+  // One-time: seed the edit-lock list with the current managers so their own hours
+  // are protected from manager edits immediately. Runs once; admin lock/unlock
+  // changes made afterwards are respected (not re-seeded).
+  try {
+    const lockSeeded = get("SELECT value FROM app_settings WHERE key='edit_lock_seed'");
+    if (!lockSeeded) {
+      const lockNames = [
+        'Muhammad Zakaria Johari',
+        'Mohammad Shafrizael Bin Shafruddin',
+        'Muhammad Nur Hillman Bin Johari',
+        'Muhammad Hariz Hazmi Bin Mohd Zubir',
+      ];
+      lockNames.forEach(n => db.run("UPDATE staff SET edit_locked=1 WHERE lower(trim(name))=lower(trim(?))", [n]));
+      db.run("INSERT OR REPLACE INTO app_settings (key, value) VALUES ('edit_lock_seed','1')");
+      db.saveDB();
+    }
+  } catch(e) {}
   // Seed the home-page suggestion chips on first run
   const sugRes = db.exec("SELECT COUNT(*) AS c FROM maise_suggestions");
   const sugCount = (sugRes.length && sugRes[0].values.length) ? sugRes[0].values[0][0] : 0;
@@ -348,20 +368,6 @@ function createSchema() {
   )`);
   // Add plain_password column if upgrading existing DB
   try { db.run('ALTER TABLE users ADD COLUMN plain_password TEXT'); } catch(e) {}
-
-  // Self-edit control: link each manager login to its staff record. Logins and
-  // staff are otherwise unconnected, so a manager editing their own hours can't be
-  // detected without this. Auto-fill the link by name for any manager not yet
-  // linked (manual assignments are left untouched); re-runs each boot to pick up
-  // newly created staff/managers.
-  try { db.run('ALTER TABLE users ADD COLUMN staff_id INTEGER'); } catch(e) {}
-  try {
-    db.run(`UPDATE users SET staff_id=(
-              SELECT s.id FROM staff s WHERE lower(trim(s.name))=lower(trim(users.name))
-            )
-            WHERE role='manager' AND staff_id IS NULL
-              AND EXISTS (SELECT 1 FROM staff s WHERE lower(trim(s.name))=lower(trim(users.name)))`);
-  } catch(e) {}
 
   db.run(`CREATE TABLE IF NOT EXISTS user_outlets (
     user_id   INTEGER NOT NULL,
