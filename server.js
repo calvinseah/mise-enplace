@@ -400,13 +400,64 @@ app.post('/api/admin/auto-clockout', requireAuthAPI, (req, res) => {
 
 
 // ── Daily flag report via WhatsApp at 9:00 AM SGT (01:00 UTC) ─────────────────
-// Reuses the same Twilio WhatsApp setup as the fault alerts. Recipient defaults
-// to DAILY_REPORT_WHATSAPP_TO, falling back to the fault-alert recipient
-// (TWILIO_WHATSAPP_TO). Set INCLUDE_LONG_SHIFTS=true to also flag shifts over 12h.
-const INCLUDE_LONG_SHIFTS = false;
-const LONG_SHIFT_HOURS = 12;
+// A scheduled (business-initiated) WhatsApp message must use an approved template,
+// so this sends an approved Utility template (ContentSid) with the day's counts as
+// variables — {{1}} date, {{2}} missed clock-outs, {{3}} geo-flagged — and a link
+// to the dashboard for the full list. Recipient: DAILY_REPORT_WHATSAPP_TO, falling
+// back to the fault-alert recipient (TWILIO_WHATSAPP_TO).
+const DAILY_REPORT_CONTENT_SID = process.env.DAILY_REPORT_CONTENT_SID || 'HX273b35b8f410b59bc8a18ecb7c260e01';
 
-async function sendWhatsAppReport(body) {
+function fmtSGT(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-SG', {
+      timeZone: 'Asia/Singapore', weekday: 'short', day: '2-digit', month: 'short',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    });
+  } catch { return iso; }
+}
+
+// Pull the day's flags. Returns the SGT date label plus the missed/geo rows.
+function computeDailyFlags() {
+  const db = require('./database');
+  const todaySG = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+  const dateStr = new Date().toLocaleDateString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+
+  // Missed clock-outs — still open from before today (SGT)
+  const missed = db.all(
+    `SELECT a.clock_in, s.name AS staff, o.name AS outlet
+     FROM attendance a JOIN staff s ON a.staff_id=s.id
+     LEFT JOIN outlets o ON a.outlet_id=o.id
+     WHERE a.clock_out IS NULL AND date(a.clock_in,'+8 hours') < ?
+     ORDER BY a.clock_in`, [todaySG]);
+
+  // Geo-flagged clock-ins — yesterday (SGT)
+  const geo = db.all(
+    `SELECT a.clock_in, a.geo_distance_m, s.name AS staff, o.name AS outlet
+     FROM attendance a JOIN staff s ON a.staff_id=s.id
+     LEFT JOIN outlets o ON a.outlet_id=o.id
+     WHERE a.geo_flagged=1 AND date(a.clock_in,'+8 hours') = date(?, '-1 day')
+     ORDER BY a.clock_in`, [todaySG]);
+
+  return { dateStr, missed, geo };
+}
+
+// A plain-text detail list of the flags (shown in the manual test response; the
+// WhatsApp itself only carries the counts + dashboard link via the template).
+function flagsDetail({ dateStr, missed, geo }) {
+  const lines = [`Mise daily report — ${dateStr}`, ''];
+  lines.push(`Missed clock-outs (${missed.length})`);
+  missed.forEach(r => lines.push(`- ${r.staff}: in ${fmtSGT(r.clock_in)}${r.outlet ? ` (${r.outlet})` : ''}`));
+  lines.push('');
+  lines.push(`Geo-flagged clock-ins yesterday (${geo.length})`);
+  geo.forEach(r => {
+    const dist = (r.geo_distance_m == null) ? 'location not shared' : `${r.geo_distance_m}m from outlet`;
+    lines.push(`- ${r.staff}: ${fmtSGT(r.clock_in)}${r.outlet ? ` (${r.outlet})` : ''}, ${dist}`);
+  });
+  return lines.join('\n').trim();
+}
+
+// Send the approved WhatsApp template with the day's counts as ContentVariables.
+async function sendDailyReportWhatsApp(vars) {
   const sid   = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from  = process.env.TWILIO_WHATSAPP_FROM;
@@ -416,6 +467,7 @@ async function sendWhatsAppReport(body) {
   if (!token) missing.push('TWILIO_AUTH_TOKEN');
   if (!from)  missing.push('TWILIO_WHATSAPP_FROM');
   if (!to)    missing.push('DAILY_REPORT_WHATSAPP_TO (or TWILIO_WHATSAPP_TO)');
+  if (!DAILY_REPORT_CONTENT_SID) missing.push('DAILY_REPORT_CONTENT_SID');
   if (missing.length) {
     console.log('[Daily report] Not configured — missing:', missing.join(', '));
     return { configured: false, missing, from: from || null, results: [] };
@@ -429,7 +481,11 @@ async function sendWhatsAppReport(body) {
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ From: from, To: dest, Body: body }).toString(),
+        body: new URLSearchParams({
+          From: from, To: dest,
+          ContentSid: DAILY_REPORT_CONTENT_SID,
+          ContentVariables: JSON.stringify(vars),
+        }).toString(),
       });
       let data = {}; try { data = await resp.json(); } catch (e) {}
       results.push({ to: dest, http: resp.status, ok: resp.ok, sid: data.sid || null,
@@ -440,84 +496,29 @@ async function sendWhatsAppReport(body) {
       console.error('[Daily report] send failed:', e.message);
     }
   }
-  return { configured: true, from, results };
+  return { configured: true, from, contentSid: DAILY_REPORT_CONTENT_SID, results };
 }
 
-function fmtSGT(iso) {
-  try {
-    return new Date(iso).toLocaleString('en-SG', {
-      timeZone: 'Asia/Singapore', weekday: 'short', day: '2-digit', month: 'short',
-      hour: '2-digit', minute: '2-digit', hour12: true,
-    });
-  } catch { return iso; }
-}
-
-function buildDailyReport() {
-  const db = require('./database');
-  const todaySG = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
-  const header = '📋 Mise daily report — ' +
-    new Date().toLocaleDateString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-
-  // 1) Missed clock-outs — still open from before today (SGT)
-  const missed = db.all(
-    `SELECT a.clock_in, s.name AS staff, o.name AS outlet
-     FROM attendance a JOIN staff s ON a.staff_id=s.id
-     LEFT JOIN outlets o ON a.outlet_id=o.id
-     WHERE a.clock_out IS NULL AND date(a.clock_in,'+8 hours') < ?
-     ORDER BY a.clock_in`, [todaySG]);
-
-  // 2) Geo-flagged clock-ins — yesterday (SGT)
-  const geo = db.all(
-    `SELECT a.clock_in, a.geo_distance_m, s.name AS staff, o.name AS outlet
-     FROM attendance a JOIN staff s ON a.staff_id=s.id
-     LEFT JOIN outlets o ON a.outlet_id=o.id
-     WHERE a.geo_flagged=1 AND date(a.clock_in,'+8 hours') = date(?, '-1 day')
-     ORDER BY a.clock_in`, [todaySG]);
-
-  // 3) Optional — shifts over 12h completed yesterday (SGT)
-  let long = [];
-  if (INCLUDE_LONG_SHIFTS) {
-    long = db.all(
-      `SELECT a.clock_in, a.total_hours, s.name AS staff, o.name AS outlet
-       FROM attendance a JOIN staff s ON a.staff_id=s.id
-       LEFT JOIN outlets o ON a.outlet_id=o.id
-       WHERE a.clock_out IS NOT NULL AND a.total_hours > ?
-         AND date(a.clock_in,'+8 hours') = date(?, '-1 day')
-       ORDER BY a.total_hours DESC`, [LONG_SHIFT_HOURS, todaySG]);
+function reportVariables(flags) {
+  // {{2}} carries the names + outlets of missed clock-outs (comma-separated —
+  // WhatsApp template variables can't contain line breaks). {{3}} is the
+  // geo-flagged count. Capped so one bad day can't make an over-long variable.
+  const CAP = 15;
+  let missedStr;
+  if (!flags.missed.length) {
+    missedStr = 'None';
+  } else {
+    const names = flags.missed.slice(0, CAP).map(r => `${r.staff}${r.outlet ? ` (${r.outlet})` : ''}`);
+    missedStr = names.join(', ');
+    if (flags.missed.length > CAP) missedStr += `, +${flags.missed.length - CAP} more`;
   }
-
-  const CAP = 20;
-  const lines = [header, ''];
-
-  if (missed.length) {
-    lines.push(`⏰ Missed clock-outs (${missed.length})`);
-    missed.slice(0, CAP).forEach(r => lines.push(`• ${r.staff} — in ${fmtSGT(r.clock_in)}${r.outlet ? ` (${r.outlet})` : ''}`));
-    if (missed.length > CAP) lines.push(`  …and ${missed.length - CAP} more`);
-    lines.push('');
-  }
-  if (geo.length) {
-    lines.push(`📍 Geo-flagged clock-ins yesterday (${geo.length})`);
-    geo.slice(0, CAP).forEach(r => {
-      const dist = (r.geo_distance_m == null) ? 'location not shared' : `${r.geo_distance_m}m from outlet`;
-      lines.push(`• ${r.staff} — ${fmtSGT(r.clock_in)}${r.outlet ? ` (${r.outlet})` : ''}, ${dist}`);
-    });
-    if (geo.length > CAP) lines.push(`  …and ${geo.length - CAP} more`);
-    lines.push('');
-  }
-  if (INCLUDE_LONG_SHIFTS && long.length) {
-    lines.push(`🕛 Shifts over ${LONG_SHIFT_HOURS}h yesterday (${long.length})`);
-    long.slice(0, CAP).forEach(r => lines.push(`• ${r.staff} — ${r.total_hours}h${r.outlet ? ` (${r.outlet})` : ''}`));
-    lines.push('');
-  }
-  if (!missed.length && !geo.length && !(INCLUDE_LONG_SHIFTS && long.length)) {
-    lines.push('✅ All clear — no missed clock-outs or geo-flagged clock-ins.');
-  }
-  return lines.join('\n').trim();
+  return { '1': flags.dateStr, '2': missedStr, '3': String(flags.geo.length) };
 }
 
 async function runDailyReport() {
   try {
-    await sendWhatsAppReport(buildDailyReport());
+    const flags = computeDailyFlags();
+    await sendDailyReportWhatsApp(reportVariables(flags));
     console.log('[Daily report] Sent.');
   } catch (e) { console.error('[Daily report] Error:', e.message); }
 }
@@ -540,9 +541,10 @@ function scheduleDailyReport() {
 app.post('/api/admin/daily-report', requireAuthAPI, async (req, res) => {
   if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
-    const body = buildDailyReport();
-    const delivery = await sendWhatsAppReport(body);
-    res.json({ success: true, preview: body, delivery });
+    const flags = computeDailyFlags();
+    const vars = reportVariables(flags);
+    const delivery = await sendDailyReportWhatsApp(vars);
+    res.json({ success: true, variables: vars, detail: flagsDetail(flags), delivery });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
