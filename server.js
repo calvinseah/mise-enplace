@@ -411,19 +411,36 @@ async function sendWhatsAppReport(body) {
   const token = process.env.TWILIO_AUTH_TOKEN;
   const from  = process.env.TWILIO_WHATSAPP_FROM;
   const to    = process.env.DAILY_REPORT_WHATSAPP_TO || process.env.TWILIO_WHATSAPP_TO;
-  if (!sid || !token || !from || !to) { console.log('[Daily report] Twilio not configured — skipped'); return; }
+  const missing = [];
+  if (!sid)   missing.push('TWILIO_ACCOUNT_SID');
+  if (!token) missing.push('TWILIO_AUTH_TOKEN');
+  if (!from)  missing.push('TWILIO_WHATSAPP_FROM');
+  if (!to)    missing.push('DAILY_REPORT_WHATSAPP_TO (or TWILIO_WHATSAPP_TO)');
+  if (missing.length) {
+    console.log('[Daily report] Not configured — missing:', missing.join(', '));
+    return { configured: false, missing, from: from || null, results: [] };
+  }
   const auth = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
   const url  = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
+  const results = [];
   for (const raw of to.split(',').map(s => s.trim()).filter(Boolean)) {
     const dest = raw.startsWith('whatsapp:') ? raw : 'whatsapp:' + raw;
     try {
-      await fetch(url, {
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ From: from, To: dest, Body: body }).toString(),
       });
-    } catch (e) { console.error('[Daily report] send failed:', e.message); }
+      let data = {}; try { data = await resp.json(); } catch (e) {}
+      results.push({ to: dest, http: resp.status, ok: resp.ok, sid: data.sid || null,
+                     twilioStatus: data.status || null, code: data.code || null, message: data.message || null });
+      if (!resp.ok) console.error('[Daily report] Twilio error for', dest, '→', data.code, data.message);
+    } catch (e) {
+      results.push({ to: dest, ok: false, error: e.message });
+      console.error('[Daily report] send failed:', e.message);
+    }
   }
+  return { configured: true, from, results };
 }
 
 function fmtSGT(iso) {
@@ -524,8 +541,8 @@ app.post('/api/admin/daily-report', requireAuthAPI, async (req, res) => {
   if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
     const body = buildDailyReport();
-    await sendWhatsAppReport(body);
-    res.json({ success: true, preview: body });
+    const delivery = await sendWhatsAppReport(body);
+    res.json({ success: true, preview: body, delivery });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
