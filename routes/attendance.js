@@ -247,7 +247,7 @@ router.get('/records', (req, res) => {
   try {
     const { from, to, staffId, outletId } = req.query;
     let sql = `
-      SELECT a.*, s.name as staff_name, s.role, s.staff_type,
+      SELECT a.*, s.name as staff_name, s.role, s.staff_type, s.edit_locked,
              ph.name as holiday_name,
              o.name as outlet_name
       FROM attendance a

@@ -556,6 +556,13 @@ function updateStats(rows,h,c,ph){
 function clearFilters(){document.getElementById('filterStaff').value='';document.getElementById('attendanceBody').innerHTML='<tr><td colspan="10" class="empty">Select filters and click Search</td></tr>';updateStats([],0,0,0);}
 
 function openAmend(r){
+  // Locked records: managers can't edit them. Show the message on the main page
+  // and don't open the modal. (Only block when we know the user isn't an admin;
+  // the server enforces it regardless.)
+  if(r.edit_locked && window.IS_ADMIN===false){
+    showAlert("This person's hours are locked — only an admin can change them.",'err');
+    return;
+  }
   document.getElementById('amendId').value=r.id;
   document.getElementById('amendCI').value=toLocal(r.clock_in);
   document.getElementById('amendCO').value=r.clock_out?toLocal(r.clock_out):'';
@@ -574,7 +581,7 @@ async function saveAmend(){
     const r=await fetch(`/api/attendance/records/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(p)});
     const d=await r.json();
     if(d.success){closeAmend();showAlert('Record updated','ok');loadRecords();}
-    else showAlert(d.error||'Error','err');
+    else{ if(r.status===403) closeAmend(); showAlert(d.error||'Error','err'); }
   }catch(e){showAlert('Network error','err');}
 }
 async function loadHolidays(){
@@ -801,6 +808,7 @@ loadStaffDrop();loadOutletDrop();loadRecords();
     const r=await fetch('/api/me');
     if(!r.ok){location.href='/login';return;}
     const u=await r.json();
+    window.IS_ADMIN = (u.role==='admin');   // used to gate edit-locked records
     // Hide admin-only nav items for managers
     if(u.role!=='admin'){
       document.querySelectorAll('[data-admin-only]').forEach(el=>el.style.display='none');
