@@ -384,8 +384,15 @@ const svgGlobe=`<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stro
 const svgDot=(c)=>`<svg width="8" height="8" viewBox="0 0 24 24" fill="${c}" stroke="none"><circle cx="12" cy="12" r="8"/></svg>`;
 
 let allStaff=[];
+let lockedIds=new Set();
 async function loadStaff(){
   const r=await fetch('/api/staff');allStaff=await r.json();
+  // Pull the edit-lock list (admin only; managers get 403 → stays empty, and the
+  // lock buttons are admin-only anyway).
+  try{
+    const lr=await fetch('/api/attendance/edit-locks');
+    if(lr.ok){const locks=await lr.json();lockedIds=new Set(locks.filter(s=>s.edit_locked).map(s=>s.id));}
+  }catch(e){}
   renderStaff(allStaff);
 }
 function onStaffSearch(){
@@ -414,6 +421,7 @@ function renderStaff(s, q){
       <td>${bankEl}</td>
       <td><div class="actions">
         <button class="btn btn-ghost btn-sm" onclick='openEdit(${x.id})' data-admin-only="1">Edit</button>
+        <button class="btn btn-ghost btn-sm" data-admin-only="1" style="color:${lockedIds.has(x.id)?'var(--warn)':'var(--ink-60)'}" onclick='toggleEditLock(${x.id},${lockedIds.has(x.id)?1:0})'>${lockedIds.has(x.id)?'Unlock hours':'Lock hours'}</button>
         <button class="btn btn-ghost btn-sm" onclick='openPayslipHistory(${x.id},"${x.name.replace(/"/g,"&quot;")}")'>Payslips</button>
         <button class="btn btn-ghost btn-sm" onclick='openLeaveEntitlements(${x.id},"${x.name.replace(/"/g,"&quot;")}")' data-admin-only="1">Leave</button>
         ${x.staff_type==='fulltime'?`<button class="btn btn-ghost btn-sm" onclick='openOIL(${x.id},"${x.name.replace(/"/g,"&quot;")}")' data-admin-only="1">OIL</button>`:''}
@@ -505,6 +513,15 @@ async function toggleStatus(id,active){
   if(!confirm(`${active?'Deactivate':'Reactivate'} this staff member?`))return;
   await fetch(`/api/staff/${id}/status`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({is_active:!active})});
   showAlert('Updated','ok');loadStaff();
+}
+async function toggleEditLock(id,locked){
+  if(!confirm(locked
+    ? "Unlock this person's hours? Managers will be able to edit their attendance again."
+    : "Lock this person's hours? Managers will no longer be able to edit their attendance (admins still can)."))return;
+  const r=await fetch('/api/attendance/edit-lock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({staffId:id,locked:locked?0:1})});
+  const d=await r.json();
+  if(d.success){showAlert(locked?'Hours unlocked':'Hours locked','ok');loadStaff();}
+  else showAlert(d.error||'Error','err');
 }
 
 /* Outlets */
