@@ -405,7 +405,7 @@ app.post('/api/admin/auto-clockout', requireAuthAPI, (req, res) => {
 // variables — {{1}} date, {{2}} missed clock-outs, {{3}} geo-flagged — and a link
 // to the dashboard for the full list. Recipient: DAILY_REPORT_WHATSAPP_TO, falling
 // back to the fault-alert recipient (TWILIO_WHATSAPP_TO).
-const DAILY_REPORT_CONTENT_SID = process.env.DAILY_REPORT_CONTENT_SID || 'HX273b35b8f410b59bc8a18ecb7c260e01';
+const DAILY_REPORT_CONTENT_SID = process.env.DAILY_REPORT_CONTENT_SID || 'HX29edac4c373dc6ddf57ef95591b94acf';
 
 function fmtSGT(iso) {
   try {
