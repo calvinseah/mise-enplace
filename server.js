@@ -325,38 +325,35 @@ function scheduleAutoBackup() {
 }
 
 // ── Auto clock-out at 11:59pm SGT daily ──────────────────────────────────────
-function runAutoClockout() {
+// Closes any shift left open, setting clock-out to 23:59 SGT of the day it began.
+// opts.onlyStale=true limits it to shifts that began before TODAY — safe to run
+// at any time, since it never touches a shift someone is still on today.
+function runAutoClockout(opts = {}) {
   const db = require('./database');
-  // 23:59 SGT = 15:59 UTC
-  const now = new Date();
-  const clockOutISO = (() => {
-    const d = new Date();
-    d.setUTCHours(15, 59, 0, 0);
-    // If it's past 15:59 UTC today, use today; otherwise use yesterday
-    if (d > now) d.setUTCDate(d.getUTCDate() - 1);
-    return d.toISOString();
-  })();
-
+  const onlyStale = !!opts.onlyStale;
   try {
-    const open = db.all(`SELECT a.id, a.staff_id, a.clock_in FROM attendance a WHERE a.clock_out IS NULL`);
-    if (!open.length) { console.log('[Auto clock-out] No open shifts found'); return 0; }
+    let sql = `SELECT a.id, a.staff_id, a.clock_in FROM attendance a WHERE a.clock_out IS NULL`;
+    if (onlyStale) sql += ` AND date(a.clock_in,'+8 hours') < date('now','+8 hours')`;
+    const open = db.all(sql);
+    if (!open.length) { console.log('[Auto clock-out] No open shifts'); return 0; }
 
-    const { computeShiftCost } = db;
     let count = 0;
     for (const record of open) {
       const clockIn = new Date(record.clock_in);
-      // Set clock-out to 23:59 SGT on the same SGT date as clock-in
-      const sgtDate = new Date(clockIn.getTime() + 8 * 3600000).toISOString().slice(0,10);
+      // 23:59 SGT on the SGT date the shift began (15:59 UTC).
+      const sgtDate = new Date(clockIn.getTime() + 8 * 3600000).toISOString().slice(0, 10);
       const clockOut = new Date(sgtDate + 'T15:59:00.000Z');
+      if (clockOut <= clockIn) continue; // never close a shift before it started
 
-      const durationMs = Math.max(0, clockOut - clockIn);
-      const totalMins = durationMs / 60000;
-      const breakMins = db.get(`SELECT COALESCE(SUM(duration_mins),0) as total FROM breaks WHERE attendance_id=?`, [record.id])?.total || 0;
-      const netMins = Math.max(0, totalMins - breakMins);
-      const totalHours = Math.round(netMins / 60 * 100) / 100;
+      const grossMins = (clockOut - clockIn) / 60000;
+      const breakMins = db.get(`SELECT COALESCE(SUM(duration_mins),0) AS total FROM breaks WHERE attendance_id=?`, [record.id])?.total || 0;
+      const totalHours = Math.round(Math.max(0, grossMins - breakMins) / 60 * 100) / 100;
 
       const staff = db.get(`SELECT * FROM staff WHERE id=?`, [record.staff_id]);
-      const cost = staff ? Math.round(computeShiftCost(staff, totalHours, clockOut.toISOString(), false) * 100) / 100 : 0;
+      const isPH = db.get(`SELECT 1 AS x FROM public_holidays WHERE date=?`, [sgtDate]) ? 1 : 0;
+      // computeShiftCost returns an object — take its .cost (the previous code
+      // multiplied the whole object and passed the wrong args, producing NaN).
+      const { cost } = staff ? db.computeShiftCost(staff, totalHours, isPH) : { cost: 0 };
 
       db.run(
         `UPDATE attendance SET clock_out=?, break_minutes=?, total_hours=?, total_cost=?, notes=? WHERE id=?`,
@@ -365,8 +362,8 @@ function runAutoClockout() {
       db.run(`UPDATE breaks SET break_end=?, duration_mins=0 WHERE attendance_id=? AND break_end IS NULL`, [clockOut.toISOString(), record.id]);
       count++;
     }
-    if (count) { db.saveDB(); }
-    console.log(`[Auto clock-out] ${count} staff processed at 23:59 SGT`);
+    if (count) db.saveDB();
+    console.log(`[Auto clock-out] Closed ${count} shift(s) at 23:59 SGT`);
     return count;
   } catch(e) {
     console.error('[Auto clock-out] Error:', e.message);
@@ -389,12 +386,40 @@ function scheduleAutoClockout() {
 }
 
 
-// Manual auto clock-out trigger (admin only, for testing)
+// Manual auto clock-out trigger (admin only). onlyStale so it can be run any time
+// of day without closing shifts people are currently on.
 app.post('/api/admin/auto-clockout', requireAuthAPI, (req, res) => {
   if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
-    const count = runAutoClockout();
-    res.json({ success: true, count, message: `${count} staff clocked out` });
+    const count = runAutoClockout({ onlyStale: true });
+    res.json({ success: true, count, message: `${count} stale shift(s) closed` });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// One-time backlog cleanup (admin only): delete open shifts that began before
+// YESTERDAY. These are incomplete error records (someone clocked in and never
+// out, days/weeks ago). Deleting them — rather than auto-closing — avoids
+// manufacturing phantom multi-hour shifts and cost in already-settled months.
+// Yesterday's open shifts are left alone (tonight's auto clock-out closes those).
+app.post('/api/admin/clear-stale-shifts', requireAuthAPI, (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    const db = require('./database');
+    const stale = db.all(
+      `SELECT a.id, a.clock_in, s.name AS staff, o.name AS outlet
+       FROM attendance a JOIN staff s ON a.staff_id=s.id
+       LEFT JOIN outlets o ON a.outlet_id=o.id
+       WHERE a.clock_out IS NULL AND date(a.clock_in,'+8 hours') < date('now','+8 hours','-1 day')
+       ORDER BY a.clock_in`);
+    for (const r of stale) {
+      db.run('DELETE FROM breaks WHERE attendance_id=?', [r.id]);
+      db.run('DELETE FROM attendance WHERE id=?', [r.id]);
+    }
+    if (stale.length) db.saveDB();
+    res.json({
+      success: true, deleted: stale.length,
+      shifts: stale.map(r => `${r.staff}${r.outlet ? ` (${r.outlet})` : ''} — ${r.clock_in}`),
+    });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
@@ -422,12 +447,16 @@ function computeDailyFlags() {
   const todaySG = new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
   const dateStr = new Date().toLocaleDateString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
 
-  // Missed clock-outs — still open from before today (SGT)
+  // Missed clock-outs — yesterday's shifts the person didn't close themselves:
+  // either still open, or auto-closed at 23:59. (Scoped to yesterday so the list
+  // reflects the latest misses rather than piling up, now that nightly auto
+  // clock-out keeps older shifts from lingering.)
   const missed = db.all(
     `SELECT a.clock_in, s.name AS staff, o.name AS outlet
      FROM attendance a JOIN staff s ON a.staff_id=s.id
      LEFT JOIN outlets o ON a.outlet_id=o.id
-     WHERE a.clock_out IS NULL AND date(a.clock_in,'+8 hours') < ?
+     WHERE date(a.clock_in,'+8 hours') = date(?, '-1 day')
+       AND ( a.clock_out IS NULL OR a.notes = 'Auto clocked out at 23:59' )
      ORDER BY a.clock_in`, [todaySG]);
 
   // Geo-flagged clock-ins — yesterday (SGT)
@@ -559,4 +588,5 @@ initDB().then(() => syncAdminPassword()).then(() => {
     console.log(`   Admin:     admin / ${process.env.ADMIN_PASSWORD || 'admin1234'}\n`);
   });
   scheduleDailyReport();   // 9:00 AM SGT WhatsApp flag report
+  scheduleAutoClockout();  // 23:59 SGT nightly auto clock-out
 }).catch(err => { console.error('DB init failed:', err); process.exit(1); });
