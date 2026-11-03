@@ -163,12 +163,13 @@ router.post('/clock-in', (req, res) => {
 });
 
 // Auto-break policy (applied at clock-out when no break was recorded):
-//   under 6h → 0    ·    6h to under 8h → 30 min    ·    8h or more → 60 min
+//   under 6h → 0   ·   6h to under 8h → 30 min   ·   8h+ → 60 min per full 8 hours
+//   (so 8–16h → 60, 16–24h → 120, 24h+ → 180, and so on).
 function autoBreakMins(grossMins) {
   const h = grossMins / 60;
   if (h < 6) return 0;
   if (h < 8) return 30;
-  return 60;
+  return 60 * Math.floor(h / 8);
 }
 
 // ── Naughty list ─────────────────────────────────────────────────────────────
