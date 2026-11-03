@@ -21,12 +21,14 @@ const STATUTORY_DEFAULTS = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function getWorkingDays(start, end) {
+  // Every calendar day in the range counts as a leave day — including weekends
+  // AND public holidays. (The business operates on weekends and public holidays,
+  // so leave taken on those days consumes a leave day like any other.)
   let count = 0;
   const cur = new Date(start);
   const last = new Date(end);
   while (cur <= last) {
-    const dow = cur.getDay();
-    if (dow !== 0 && dow !== 6) count++;
+    count++;
     cur.setDate(cur.getDate() + 1);
   }
   return count;
