@@ -102,10 +102,20 @@ router.get('/applications', (req, res) => {
 });
 
 // ── POST apply for leave ──────────────────────────────────────────────────────
+const MAX_ATTACHMENT_CHARS = 3000000; // ~2.2 MB of base64 ≈ a ~1.6 MB file
+
 router.post('/apply', (req, res) => {
-  const { staffId, leave_type, start_date, end_date, reason } = req.body;
+  const { staffId, leave_type, start_date, end_date, reason, attachment } = req.body;
   if (!staffId || !leave_type || !start_date || !end_date)
     return res.status(400).json({ error: 'Missing required fields' });
+  // Validate attachment up front (optional). Expect { name, type, dataUrl }.
+  if (attachment) {
+    const d = attachment.dataUrl || '';
+    if (typeof d !== 'string' || !/^data:(image\/|application\/pdf)/i.test(d))
+      return res.status(400).json({ error: 'Attachment must be an image or PDF.' });
+    if (d.length > MAX_ATTACHMENT_CHARS)
+      return res.status(400).json({ error: 'Attachment is too large — please keep it under about 1.5 MB (images are auto-compressed on upload).' });
+  }
   try {
     const days = getWorkingDays(start_date, end_date);
     if (days <= 0) return res.status(400).json({ error: 'No working days in selected range' });
@@ -127,13 +137,25 @@ router.post('/apply', (req, res) => {
       }
     }
 
+    const hasAtt = attachment ? 1 : 0;
     db.run(
-      `INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, days, reason, status, created_at)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [staffId, leave_type, start_date, end_date, days, reason || null, 'pending', new Date().toISOString()]
+      `INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, days, reason, status, created_at, has_attachment)
+       VALUES (?,?,?,?,?,?,?,?,?)`,
+      [staffId, leave_type, start_date, end_date, days, reason || null, 'pending', new Date().toISOString(), hasAtt]
     );
+    if (hasAtt) {
+      const appId = db.get('SELECT last_insert_rowid() AS id')?.id;
+      if (appId) {
+        db.run(
+          `INSERT INTO leave_attachments (application_id, filename, mimetype, data, size, created_at)
+           VALUES (?,?,?,?,?,?)`,
+          [appId, attachment.name || null, attachment.type || null, attachment.dataUrl,
+           attachment.dataUrl.length, new Date().toISOString()]
+        );
+      }
+    }
     const sName = db.get('SELECT name FROM staff WHERE id=?', [staffId])?.name || '';
-    writeLog('staff:' + staffId, 'leave_applied', 'leave', null, sName, { leave_type, start_date, end_date, days });
+    writeLog('staff:' + staffId, 'leave_applied', 'leave', null, sName, { leave_type, start_date, end_date, days, attachment: !!hasAtt });
     db.saveDB();
     res.json({ success: true, days });
   } catch(e) { res.status(500).json({ error: e.message }); }
@@ -270,6 +292,29 @@ router.post('/entitlements/bulk', (req, res) => {
     writeLog(req.session.user.username, 'bulk_leave_balances', 'leave_entitlement', null, '', { year, staffUpdated, fieldsUpdated });
     res.json({ success: true, staffUpdated, fieldsUpdated, year });
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── GET leave attachment (admin/manager) — streams the stored file inline ─────
+router.get('/:id/attachment', (req, res) => {
+  const user = req.session?.user;
+  if (!user || (user.role !== 'admin' && user.role !== 'manager'))
+    return res.status(403).json({ error: 'Unauthorised' });
+  try {
+    const app = db.get('SELECT * FROM leave_applications WHERE id=?', [req.params.id]);
+    if (!app) return res.status(404).json({ error: 'Not found' });
+    if (user.role === 'manager') {
+      const ids = managerStaffIds(user) || [];
+      if (!ids.includes(app.staff_id)) return res.status(403).json({ error: 'This leave request is outside your outlets' });
+    }
+    const att = db.get('SELECT * FROM leave_attachments WHERE application_id=? ORDER BY id DESC', [req.params.id]);
+    if (!att || !att.data) return res.status(404).json({ error: 'No attachment' });
+    const m = /^data:([^;]+);base64,(.*)$/s.exec(att.data);
+    if (!m) return res.status(500).json({ error: 'Bad attachment data' });
+    const buf = Buffer.from(m[2], 'base64');
+    res.setHeader('Content-Type', m[1]);
+    res.setHeader('Content-Disposition', 'inline; filename="' + (att.filename || ('attachment-' + req.params.id)) + '"');
+    res.send(buf);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;

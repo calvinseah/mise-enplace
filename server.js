@@ -13,8 +13,8 @@ const { initDB, syncAdminPassword, run: dbRun, get: dbGet } = require('./databas
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '4mb' }));            // raised for leave-document attachments (base64)
+app.use(express.urlencoded({ extended: true, limit: '4mb' }));
 // ── Persistent session store ─────────────────────────────────────────────────
 // Sessions are stored in the app's SQLite DB (which persists across deploys),
 // so restarting or redeploying the server no longer logs everyone out.

@@ -145,6 +145,12 @@ body{font-family:var(--font);background:var(--surface);color:var(--ink);min-heig
         <label>Reason (optional)</label>
         <textarea id="leaveReason" placeholder="e.g. Family trip"></textarea>
       </div>
+      <div class="fg">
+        <label>Supporting document (optional) — MC, letter, etc.</label>
+        <input type="file" id="leaveDoc" accept="image/*,application/pdf" onchange="handleDoc()"
+               style="font-size:13px;font-family:var(--font);color:var(--ink-60)">
+        <div id="docInfo" style="font-size:12px;color:var(--ink-30);margin-top:6px"></div>
+      </div>
       <div id="formMsg" class="msg"></div>
       <button class="submit-btn" onclick="submitLeave()">Submit application</button>
     </div>
@@ -290,6 +296,46 @@ function calcDays() {
 }
 calcDays();
 
+let attachment = null;  // { name, type, dataUrl }
+function fmtBytes(n){ return n < 1024 ? n+' B' : n < 1048576 ? (n/1024).toFixed(0)+' KB' : (n/1048576).toFixed(1)+' MB'; }
+
+function handleDoc(){
+  const input = document.getElementById('leaveDoc');
+  const info = document.getElementById('docInfo');
+  const file = input.files && input.files[0];
+  attachment = null;
+  if (!file){ info.textContent = ''; return; }
+  info.textContent = 'Processing…';
+  if (file.type && file.type.indexOf('image/') === 0){
+    // Compress: resize to max 1600px on the long edge, re-encode JPEG ~0.72
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1600;
+        let { width:w, height:h } = img;
+        if (w > MAX || h > MAX){ const s = MAX/Math.max(w,h); w = Math.round(w*s); h = Math.round(h*s); }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = cv.toDataURL('image/jpeg', 0.72);
+        attachment = { name: (file.name||'photo').replace(/\.[^.]+$/, '') + '.jpg', type: 'image/jpeg', dataUrl };
+        const approxBytes = Math.round(dataUrl.length * 0.75);
+        info.textContent = 'Image ready — ' + fmtBytes(file.size) + ' → ' + fmtBytes(approxBytes) + ' (compressed)';
+      };
+      img.onerror = () => { attachment = null; info.textContent = 'Could not read that image.'; };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else if (file.type === 'application/pdf'){
+    if (file.size > 1500000){ input.value=''; info.textContent = 'PDF is too large ('+fmtBytes(file.size)+'). Please keep PDFs under 1.5 MB, or upload a photo instead (photos are auto-compressed).'; return; }
+    const reader = new FileReader();
+    reader.onload = e => { attachment = { name: file.name||'document.pdf', type:'application/pdf', dataUrl: e.target.result }; info.textContent = 'PDF ready — ' + fmtBytes(file.size); };
+    reader.readAsDataURL(file);
+  } else {
+    input.value=''; info.textContent = 'Please choose an image or a PDF.';
+  }
+}
+
 async function submitLeave() {
   const type = document.getElementById('leaveType').value;
   const from = document.getElementById('leaveFrom').value;
@@ -311,13 +357,16 @@ async function submitLeave() {
   try {
     const r = await fetch('/api/leave/apply', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ staffId, leave_type: type, start_date: from, end_date: to, reason })
+      body: JSON.stringify({ staffId, leave_type: type, start_date: from, end_date: to, reason, attachment })
     });
     const d = await r.json();
     if (d.success) {
       showMsg('Application submitted — ' + d.days + ' day' + (d.days !== 1 ? 's' : ''), 'ok');
       document.getElementById('leaveType').value = '';
       document.getElementById('leaveReason').value = '';
+      document.getElementById('leaveDoc').value = '';
+      document.getElementById('docInfo').textContent = '';
+      attachment = null;
       document.getElementById('daysBadge').style.display = 'none';
       await loadBalances();
       await loadHistory();

@@ -40,6 +40,7 @@
   .b-no{background:var(--red-bg);color:var(--red);border:1px solid rgba(192,57,43,.2)}
   .empty{text-align:center;color:var(--ink-30);padding:40px 0;font-size:14px}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
   <a class="back" href="/dashboard">← Dashboard</a>
@@ -53,6 +54,7 @@
     <button class="pill" data-status="rejected" onclick="setStatus(this)">Rejected</button>
     <select id="yearSel" onchange="loadLeave()"></select>
     <input type="text" class="search" id="search" placeholder="Search name…" oninput="render()">
+    <button id="exportBtn" class="pill" style="border-color:var(--green);color:var(--green);font-weight:600" onclick="exportReport()">Export report</button>
   </div>
   <div class="count" id="count"></div>
   <div id="list"></div>
@@ -90,6 +92,7 @@ function render(){
     const reviewed = a.reviewed_by ? '<div class="reviewed">'+ (a.status==='approved'?'Approved':'Rejected') +' by '+esc(a.reviewed_by)+'</div>' : '';
     const reject = a.reject_reason ? '<div class="reason">Reason: '+esc(a.reject_reason)+'</div>' : '';
     const reason = a.reason ? '<div class="reason">"'+esc(a.reason)+'"</div>' : '';
+    const doc = a.has_attachment ? '<div style="margin-top:6px"><a href="/api/leave/'+a.id+'/attachment" target="_blank" rel="noopener" style="font-size:12px;font-weight:600;color:var(--green);text-decoration:none">📎 View document</a></div>' : '';
     const actions = a.status==='pending'
       ? '<div class="actions"><button class="btn b-ok" onclick="review('+a.id+',\'approved\')">Approve</button><button class="btn b-no" onclick="review('+a.id+',\'rejected\')">Reject</button></div>'
       : '';
@@ -98,7 +101,7 @@ function render(){
       '<div class="body">'+
         '<div class="name">'+esc(a.staff_name||'')+'</div>'+
         '<div class="meta">'+esc(a.leave_type||'')+' · '+range+' · '+a.days+(a.days===1?' day':' days')+'</div>'+
-        reason + badge + reviewed + reject +
+        reason + doc + badge + reviewed + reject +
       '</div>'+ actions +
     '</div>';
   }).join('');
@@ -115,6 +118,68 @@ async function review(id, newStatus){
     if (d.success){ await loadLeave(); }
     else alert(d.error || 'Could not update this application.');
   }catch(e){ alert('Network error — please try again.'); }
+}
+
+// ── Export per-staff leave transaction report (active full-timers only) ────────
+async function exportReport(){
+  const btn = document.getElementById('exportBtn');
+  const year = yearSel.value;
+  if (btn){ btn.disabled = true; btn.textContent = 'Building…'; }
+  try {
+    const staff = await fetch('/api/staff').then(r=>r.json());
+    const ft = (staff||[]).filter(s => s.staff_type==='fulltime' && s.is_active!==0)
+                          .sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    if (!ft.length){ alert('No active full-time staff to export.'); return; }
+
+    const apps = await fetch('/api/leave/applications?year='+year).then(r=>r.ok?r.json():[]);
+    const byStaff = {};
+    (apps||[]).forEach(a=>{ (byStaff[a.staff_id] = byStaff[a.staff_id] || []).push(a); });
+
+    const prText = { citizen:'Citizen (SG)', pr:'Permanent Resident', foreigner:'Foreigner' };
+    const wb = XLSX.utils.book_new();
+    const usedNames = {};
+
+    for (const s of ft){
+      let bals = [];
+      try { bals = await fetch('/api/leave/balances?staffId='+s.id+'&year='+year).then(r=>r.ok?r.json():[]); } catch(e){ bals=[]; }
+
+      const rows = [];
+      rows.push(['Employee Information']);
+      rows.push(['Employee ID', s.id]);
+      rows.push(['Employee Name', s.name]);
+      rows.push(['Role', s.role]);
+      rows.push(['Employment Type', 'Full-time']);
+      rows.push(['Residency', prText[s.pr_status] || s.pr_status || '']);
+      rows.push(['Join Date', '(not tracked in Mise)']);
+      rows.push(['Confirmation Date', '(not tracked in Mise)']);
+      rows.push(['Resign Date', '']);
+      rows.push([]);
+
+      rows.push(['Leave Balance  (as at '+new Date().toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'})+')']);
+      rows.push(['Leave Type','Period Start','Period End','Total Entitlement','Taken','Balance']);
+      (bals||[]).slice().sort((a,b)=> (a.leave_type||'').localeCompare(b.leave_type||''))
+        .forEach(b=> rows.push([b.leave_type, '01 Jan '+year, '31 Dec '+year, b.total_days, b.used_days, b.remaining]));
+      rows.push([]);
+
+      rows.push(['Leave Applications']);
+      rows.push(['Amount Taken','Leave Type','Date Applied','Start Date','End Date','Status','Reason','Reviewed By','Reviewed At']);
+      const list = (byStaff[s.id] || []).slice().sort((a,b)=> (a.start_date||'').localeCompare(b.start_date||''));
+      if (!list.length) rows.push(['(no applications for '+year+')']);
+      list.forEach(a=> rows.push([a.days, a.leave_type, fmt(a.created_at), a.start_date, a.end_date, a.status,
+                                  a.reason||'', a.reviewed_by||'', fmt(a.reviewed_at)]));
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{wch:16},{wch:18},{wch:14},{wch:12},{wch:12},{wch:12},{wch:30},{wch:16},{wch:14}];
+
+      let nm = (s.name || ('Staff '+s.id)).replace(/[\\\/\?\*\[\]:]/g,' ').trim().slice(0,28) || ('Staff '+s.id);
+      let base = nm, n = 2;
+      while (usedNames[nm.toLowerCase()]){ nm = base.slice(0,26)+' '+(n++); }
+      usedNames[nm.toLowerCase()] = 1;
+      XLSX.utils.book_append_sheet(wb, ws, nm);
+    }
+    XLSX.writeFile(wb, 'Mise_Leave_Report_'+year+'.xlsx');
+  } catch(e){ alert('Could not build the report: '+(e.message||e)); }
+  finally { if (btn){ btn.disabled=false; btn.textContent='Export report'; } }
 }
 
 loadLeave();

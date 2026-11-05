@@ -181,6 +181,22 @@ function createSchema() {
     FOREIGN KEY(staff_id) REFERENCES staff(id)
   )`);
 
+  // Leave supporting documents (MCs, letters). Kept in a separate table so the
+  // main leave list never has to pull the (potentially large) base64 blobs.
+  db.run(`CREATE TABLE IF NOT EXISTS leave_attachments (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL,
+    filename       TEXT,
+    mimetype       TEXT,
+    data           TEXT NOT NULL,
+    size           INTEGER,
+    created_at     TEXT NOT NULL,
+    FOREIGN KEY(application_id) REFERENCES leave_applications(id)
+  )`);
+  // Flag on the application so the list can show a "document" marker cheaply.
+  const laCols = all(`PRAGMA table_info(leave_applications)`).map(r => r.name);
+  if (!laCols.includes('has_attachment')) db.run(`ALTER TABLE leave_applications ADD COLUMN has_attachment INTEGER NOT NULL DEFAULT 0`);
+
   db.run(`CREATE TABLE IF NOT EXISTS audit_log (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     actor       TEXT NOT NULL,
