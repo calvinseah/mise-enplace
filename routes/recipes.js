@@ -90,6 +90,49 @@ router.get('/assign-tipo', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// Upsert the Tipo 2026 recipe book from a bundled seed. Unlike import-seed this
+// REPLACES any recipe with the same name (so edits take effect) and tags every
+// recipe to all Tipo outlets. Idempotent — safe to re-run after each update.
+// Trigger:  /api/recipes/import-tipo-2026?token=mise-recipes-2026
+router.get('/import-tipo-2026', (req, res) => {
+  if (req.query.token !== 'mise-recipes-2026') return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const seedPath = path.join(__dirname, '..', 'recipes-tipo-2026.json');
+    if (!fs.existsSync(seedPath)) return res.status(404).json({ error: 'recipes-tipo-2026.json not found' });
+    const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    const now = new Date().toISOString();
+    let upserted = 0; const names = [];
+    for (const r of seed) {
+      if (!r.name || !r.category) continue;
+      // Remove any existing recipe of the same name (and its children).
+      const ex = db.get('SELECT id FROM recipes WHERE name=?', [r.name]);
+      if (ex) {
+        db.run('DELETE FROM recipe_ingredients WHERE recipe_id=?', [ex.id]);
+        db.run('DELETE FROM recipe_steps WHERE recipe_id=?', [ex.id]);
+        db.run('DELETE FROM recipe_outlets WHERE recipe_id=?', [ex.id]);
+        db.run('DELETE FROM recipes WHERE id=?', [ex.id]);
+      }
+      db.run(
+        'INSERT INTO recipes (name,category,outlet_id,description,icon,base_servings,allergens,notes,is_shared,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)',
+        [r.name, r.category, null, r.description || '', r.icon || ICONS[r.category] || '🍽️',
+         r.base_servings || 1, JSON.stringify(r.allergens || []), r.notes || '', 0, 'import', now, now]
+      );
+      const idRow = db.get('SELECT id FROM recipes WHERE name=? AND created_at=? ORDER BY id DESC LIMIT 1', [r.name, now]);
+      const id = idRow ? idRow.id : db.get('SELECT MAX(id) as id FROM recipes').id;
+      for (const oid of TIPO_OUTLETS) db.run('INSERT OR IGNORE INTO recipe_outlets (recipe_id,outlet_id) VALUES (?,?)', [id, oid]);
+      (r.ingredients || []).forEach((ing, i) =>
+        db.run('INSERT INTO recipe_ingredients (recipe_id,sort_order,name,amount,unit,cost_per_unit) VALUES (?,?,?,?,?,?)',
+          [id, i, ing.name, ing.amount, ing.unit || null, ing.cost_per_unit || 0]));
+      (r.steps || []).forEach((step, i) =>
+        db.run('INSERT INTO recipe_steps (recipe_id,sort_order,title,content,timer_seconds) VALUES (?,?,?,?,?)',
+          [id, i, step.title, step.content, step.timer_seconds || null]));
+      upserted++; names.push(r.name);
+    }
+    db.saveDB();
+    res.json({ success: true, upserted, outlets: TIPO_OUTLETS, names });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // Get single recipe with ingredients + steps
 router.get('/:id', (req, res) => {
   try {

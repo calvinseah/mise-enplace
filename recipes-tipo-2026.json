@@ -1,0 +1,1272 @@
+[
+ {
+  "name": "Beef Ragu",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Sweet paprika powder",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic powder",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Onion powder",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Black pepper",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 15,
+    "unit": "g"
+   },
+   {
+    "name": "Demi glace",
+    "amount": 390,
+    "unit": "g"
+   },
+   {
+    "name": "Hossen tomatoes",
+    "amount": 4,
+    "unit": "tin"
+   },
+   {
+    "name": "Celery",
+    "amount": 200,
+    "unit": "g"
+   },
+   {
+    "name": "Carrot",
+    "amount": 200,
+    "unit": "g"
+   },
+   {
+    "name": "Onion",
+    "amount": 1,
+    "unit": "kg"
+   },
+   {
+    "name": "Water",
+    "amount": 5,
+    "unit": "L"
+   },
+   {
+    "name": "Vegetables powder",
+    "amount": 3,
+    "unit": "g"
+   },
+   {
+    "name": "Beef chuck (4–6kg)",
+    "amount": 4,
+    "unit": "kg"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Sauté all the vegetables in a large pot till aroma comes out and onion is slightly golden brown"
+   },
+   {
+    "title": "Step 2",
+    "content": "Add 3 tin of hossen tomatoes with veal jus and demi glace inside the pot and let it boil"
+   },
+   {
+    "title": "Step 3",
+    "content": "Grill all trimmed beef chuck, season with salt and pepper, and after grilling put in the pot together"
+   },
+   {
+    "title": "Step 4",
+    "content": "After the sauce is boiling, add all the seasoning powder and stir properly"
+   },
+   {
+    "title": "Step 5",
+    "content": "Slow the fire and let the beef ragu cook about 6 hours"
+   },
+   {
+    "title": "Step 6",
+    "content": "Set the oven temperature 86°C infinite and put beef ragu inside oven overnight"
+   },
+   {
+    "title": "Step 7",
+    "content": "After taking out from the oven, separate all the pulled beef aside and hand blend the beef ragu sauce till smooth"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Hot Honey",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Chilli flakes",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Cayenne pepper",
+    "amount": 5,
+    "unit": "g"
+   },
+   {
+    "name": "Honey",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "White grape vinegar",
+    "amount": 80,
+    "unit": "ml"
+   },
+   {
+    "name": "Salt",
+    "amount": 5,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Gently warm honey in a saucepan over low heat until runny and just steaming. Don't let it boil"
+   },
+   {
+    "title": "Step 2",
+    "content": "Add the chilli flakes and stir through. Keep on the lowest heat for 15 minutes so the heat infuses"
+   },
+   {
+    "title": "Step 3",
+    "content": "Take off heat and stir in the vinegar and salt"
+   },
+   {
+    "title": "Step 4",
+    "content": "Pour into squeeze bottles and seal while still warm"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Chicken Rosemary Sausage",
+  "category": "Meats",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Minced chicken",
+    "amount": 3000,
+    "unit": "g"
+   },
+   {
+    "name": "Dried rosemary",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic powder",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Onion powder",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Cayenne powder",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "White pepper",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 30,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all the ingredients into a mixing bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Make sure all mixed well and portion into the sous vide bag"
+   },
+   {
+    "title": "Step 3",
+    "content": "Keep inside chiller"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Mid Wings Marinade",
+  "category": "Meats",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Chicken mid wings",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic powder",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Onion powder",
+    "amount": 8,
+    "unit": "g"
+   },
+   {
+    "name": "Vegetable powder",
+    "amount": 5,
+    "unit": "g"
+   },
+   {
+    "name": "Light soy sauce",
+    "amount": 15,
+    "unit": "ml"
+   },
+   {
+    "name": "Paprika powder",
+    "amount": 5,
+    "unit": "g"
+   },
+   {
+    "name": "White pepper",
+    "amount": 3,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 3,
+    "unit": "g"
+   },
+   {
+    "name": "Sugar",
+    "amount": 10,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in a big bowl thoroughly until evenly coated"
+   },
+   {
+    "title": "Step 2",
+    "content": "Cover and marinate for at least 2 hours, preferably overnight, in a chiller"
+   },
+   {
+    "title": "Step 3",
+    "content": "Bake: arrange marinated wings on a baking tray and bake in a preheated oven at 180°C for 10 minutes"
+   },
+   {
+    "title": "Step 4",
+    "content": "Cool and store: cool rapidly and refrigerate promptly"
+   },
+   {
+    "title": "Step 5",
+    "content": "Fry before serving: deep fry at 180°C for approximately 3 minutes until thoroughly heated"
+   },
+   {
+    "title": "Step 6",
+    "content": "Finish and serve: toss the fried wings with hot honey until evenly coated"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Parmesan Balls",
+  "category": "Snacks",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Grated parmesan cheese",
+    "amount": 2000,
+    "unit": "g"
+   },
+   {
+    "name": "Egg white (200–400g depending on cheese type)",
+    "amount": 200,
+    "unit": "g"
+   },
+   {
+    "name": "Black pepper",
+    "amount": 10,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in the big bowl and allow to hydrate"
+   },
+   {
+    "title": "Step 2",
+    "content": "Form into 20–25g balls and put into large metal insert, line with parchment paper"
+   },
+   {
+    "title": "Step 3",
+    "content": "Store in chiller"
+   }
+  ],
+  "notes": "Egg white 200–400g depending on the type of cheese. Waterloo rolls at 20g, Aliwal at 25g."
+ },
+ {
+  "name": "Garlic Parmesan Cream Sauce (Pizza)",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Mayonnaise",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Whipping cream",
+    "amount": 83,
+    "unit": "g"
+   },
+   {
+    "name": "Grated parmesan cheese",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic confit",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Dijon mustard",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Lemon juice",
+    "amount": 7,
+    "unit": "g"
+   },
+   {
+    "name": "Sugar",
+    "amount": 20,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in a clean mixing bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Whisk thoroughly until all ingredients are evenly combined and the sauce has a smooth, consistent texture"
+   },
+   {
+    "title": "Step 3",
+    "content": "Transfer to a clean container, cover and refrigerate for at least 30 minutes before serving"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Pesto Sauce",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Basil leaves",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Almond",
+    "amount": 260,
+    "unit": "g"
+   },
+   {
+    "name": "EVOO",
+    "amount": 510,
+    "unit": "g"
+   },
+   {
+    "name": "Parmesan powder",
+    "amount": 260,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic",
+    "amount": 260,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all the ingredients and blend, lastly cover with parmesan cheese on top"
+   },
+   {
+    "title": "Step 2",
+    "content": "After all done, keep individually in a rectangle container"
+   },
+   {
+    "title": "Step 3",
+    "content": "Keep in chiller with label"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Truffle Aioli",
+  "category": "Aioli & Dressings",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Mayonnaise",
+    "amount": 3000,
+    "unit": "g"
+   },
+   {
+    "name": "Truffle pate",
+    "amount": 250,
+    "unit": "g"
+   },
+   {
+    "name": "Truffle oil",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 10,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Blend all ingredients / whisk using a large mixing bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Keep in chiller with label"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Pomodoro Sauce",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Whole peeled tomato",
+    "amount": 5000,
+    "unit": "g"
+   },
+   {
+    "name": "Diced onion",
+    "amount": 150,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Basil",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Sugar",
+    "amount": 60,
+    "unit": "g"
+   },
+   {
+    "name": "Oregano",
+    "amount": 20,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Sauté all diced onion and garlic"
+   },
+   {
+    "title": "Step 2",
+    "content": "Add all whole peeled tomato in large pot and boil the tomato till getting soft"
+   },
+   {
+    "title": "Step 3",
+    "content": "When tomato starts soft, take hand blender and blend till smooth"
+   },
+   {
+    "title": "Step 4",
+    "content": "Continue to heat and reduce the sauce"
+   },
+   {
+    "title": "Step 5",
+    "content": "Once the sauce gets thick, add all the ingredients and keep stirring till all mix well"
+   },
+   {
+    "title": "Step 6",
+    "content": "Let pomodoro sauce cool down and keep in the chiller with label"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Basil Oil",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Spinach",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Basil",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Canola oil",
+    "amount": 500,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Blend all ingredients about 5 minutes till hot/smoke comes out"
+   },
+   {
+    "title": "Step 2",
+    "content": "Once done, strain & let it cool before transferring to squeeze bottle"
+   },
+   {
+    "title": "Step 3",
+    "content": "Keep in chiller with label"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Egg Yolk",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Egg yolk",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Cream",
+    "amount": 500,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all in the mixing bowl and whisk well"
+   },
+   {
+    "title": "Step 2",
+    "content": "Keep in chiller with label"
+   }
+  ],
+  "notes": "Carbonara base."
+ },
+ {
+  "name": "Salted Water",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Vegetable powder",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Water (boiling)",
+    "amount": 5000,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "In large pot boil water"
+   },
+   {
+    "title": "Step 2",
+    "content": "Once the water is boiling, pour into the 6ltr cambro"
+   },
+   {
+    "title": "Step 3",
+    "content": "Stir and make sure all mix well"
+   },
+   {
+    "title": "Step 4",
+    "content": "Once cold, put label and keep at room temperature"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Garlic Confit",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Garlic peeled",
+    "amount": 10000,
+    "unit": "g"
+   },
+   {
+    "name": "Canola oil",
+    "amount": 6000,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 25,
+    "unit": "g"
+   },
+   {
+    "name": "Black pepper",
+    "amount": 10,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Separate into 3 trays, season salt & black pepper. Cover with aluminium foil"
+   },
+   {
+    "title": "Step 2",
+    "content": "Bake in oven 180°C for 1 hour"
+   },
+   {
+    "title": "Step 3",
+    "content": "Once done, put aside and let it cool"
+   },
+   {
+    "title": "Step 4",
+    "content": "Strain the garlic and blend till smooth"
+   },
+   {
+    "title": "Step 5",
+    "content": "Portion into rectangle container and label accordingly"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Tiramisu",
+  "category": "Desserts",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Egg yolk",
+    "amount": 30,
+    "unit": "nos"
+   },
+   {
+    "name": "Sugar",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Nescafe gold",
+    "amount": 60,
+    "unit": "g"
+   },
+   {
+    "name": "Water",
+    "amount": 2.4,
+    "unit": "L"
+   },
+   {
+    "name": "Cream cheese",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "Whip cream",
+    "amount": 2,
+    "unit": "L"
+   },
+   {
+    "name": "Sponge fingers",
+    "amount": 4,
+    "unit": "pkt"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Prepare the egg mixture",
+    "content": "In large mixing bowl combine 30 egg yolk with 400g sugar. Whisk or beat until the mixture becomes pale, thick, and creamy. Set aside in chiller"
+   },
+   {
+    "title": "Prepare the coffee",
+    "content": "Mix 2.4 L hot water with 100g sugar and 60g coffee powder. Stir well till slightly boil"
+   },
+   {
+    "title": "Prepare the cream mixture",
+    "content": "In a separate bowl, whip 1kg cream cheese till smooth. Add gradually 2 L whip cream until soft peaks form and fully combined. Fold in the egg-sugar mixture carefully to keep it light and airy — this is your tiramisu cream"
+   },
+   {
+    "title": "Assemble the tiramisu",
+    "content": "Quickly dip ladyfinger biscuits into the hot/warm coffee syrup, do not soak them too long to avoid sogginess. Arrange a layer of soaked biscuits in your tray or dish. Spread a layer of tiramisu cream evenly on top. Repeat the process (biscuits-cream) until the dish is full, finishing with cream layer on top"
+   },
+   {
+    "title": "Chill and serve",
+    "content": "Cover the tiramisu and refrigerate for at least 4-5 hours (overnight is best) to let the flavours meld. Before serving, dust generously with cocoa powder"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Whipped Feta",
+  "category": "Dips",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Cream cheese",
+    "amount": 200,
+    "unit": "g"
+   },
+   {
+    "name": "Feta cheese",
+    "amount": 250,
+    "unit": "g"
+   },
+   {
+    "name": "Cream",
+    "amount": 70,
+    "unit": "g"
+   },
+   {
+    "name": "Honey",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 2,
+    "unit": "g"
+   },
+   {
+    "name": "White pepper",
+    "amount": 1,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Bring the cream cheese and feta cheese to room temperature and crumble the feta"
+   },
+   {
+    "title": "Step 2",
+    "content": "Blend the cream cheese and feta cheese until smooth and creamy"
+   },
+   {
+    "title": "Step 3",
+    "content": "Add the cream and mix until light and spreadable"
+   },
+   {
+    "title": "Step 4",
+    "content": "Add the honey and mix until evenly combined"
+   },
+   {
+    "title": "Step 5",
+    "content": "Season with salt and white pepper, then mix well"
+   },
+   {
+    "title": "Step 6",
+    "content": "Taste, adjust seasoning if needed, and chill before serving"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Caramelised Cherry Tomatoes",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Cherry tomatoes",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "Pomace",
+    "amount": 20,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Black pepper",
+    "amount": 2,
+    "unit": "g"
+   },
+   {
+    "name": "Honey",
+    "amount": 20,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Preheat the combi oven to 180°C in bake mode"
+   },
+   {
+    "title": "Step 2",
+    "content": "Toss the cherry tomatoes with pomace oil, salt, black pepper, and honey"
+   },
+   {
+    "title": "Step 3",
+    "content": "Spread the tomatoes evenly on a baking tray"
+   },
+   {
+    "title": "Step 4",
+    "content": "Bake in the combi oven for 5-7 minutes until caramelised and slightly blistered"
+   },
+   {
+    "title": "Step 5",
+    "content": "Once cooled down, transfer into the container and label accordingly"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Chili Paste",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Dried chili",
+    "amount": 500,
+    "unit": "g"
+   },
+   {
+    "name": "Water",
+    "amount": 1000,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Boil water and chili together in the big pot till totally soft"
+   },
+   {
+    "title": "Step 2",
+    "content": "Strain all the chili and blend it"
+   },
+   {
+    "title": "Step 3",
+    "content": "Let the chili cool down then keep in the chiller"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Harissa Paste",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Chili paste",
+    "amount": 60,
+    "unit": "g"
+   },
+   {
+    "name": "Red pepper",
+    "amount": 160,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic peeled",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Tomato paste",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Cumin powder",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Coriander powder",
+    "amount": 10,
+    "unit": "g"
+   },
+   {
+    "name": "Sweet paprika",
+    "amount": 5,
+    "unit": "g"
+   },
+   {
+    "name": "Lemon",
+    "amount": 0.5,
+    "unit": "g"
+   },
+   {
+    "name": "EVOO",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 5,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Blend all the ingredients till smooth"
+   },
+   {
+    "title": "Step 2",
+    "content": "Transfer into the container and store in chiller"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Harissa Honey",
+  "category": "Sauces",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Harissa paste",
+    "amount": 350,
+    "unit": "g"
+   },
+   {
+    "name": "Honey",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "Cayenne pepper",
+    "amount": 20,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in the big bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Stir until all mix well and transfer into the container"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Harissa Wings",
+  "category": "Meats",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Chicken mid wings",
+    "amount": 6000,
+    "unit": "g"
+   },
+   {
+    "name": "Harissa paste",
+    "amount": 350,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 30,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in the big bowl and allow to marinade for 30 minutes"
+   },
+   {
+    "title": "Step 2",
+    "content": "Place in large trays, line with parchment paper and cover with foil"
+   },
+   {
+    "title": "Step 3",
+    "content": "Place in oven at 180°C for 20 minutes"
+   },
+   {
+    "title": "Step 4",
+    "content": "Allow to cool down and store in plastic insert"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Dry Batter",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Flour",
+    "amount": 1000,
+    "unit": "g"
+   },
+   {
+    "name": "Corn flour",
+    "amount": 400,
+    "unit": "g"
+   },
+   {
+    "name": "Baking powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 40,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Onion powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Paprika powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Black pepper powder",
+    "amount": 15,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in the big bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Stir until all mix well and transfer into the container"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Shakshuka Paste",
+  "category": "Prep & Components",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Tomato paste",
+    "amount": 150,
+    "unit": "g"
+   },
+   {
+    "name": "Cumin powder",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Coriander powder",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Paprika powder",
+    "amount": 50,
+    "unit": "g"
+   },
+   {
+    "name": "Cayenne powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Canola oil",
+    "amount": 350,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all ingredients in the big bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Stir until all mix well and transfer into the container"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Lamb Merguez Sausage",
+  "category": "Meats",
+  "base_servings": 1,
+  "ingredients": [
+   {
+    "name": "Minced lamb",
+    "amount": 3000,
+    "unit": "g"
+   },
+   {
+    "name": "Cumin powder",
+    "amount": 25,
+    "unit": "g"
+   },
+   {
+    "name": "Coriander powder",
+    "amount": 25,
+    "unit": "g"
+   },
+   {
+    "name": "Fennel powder",
+    "amount": 25,
+    "unit": "g"
+   },
+   {
+    "name": "Paprika powder",
+    "amount": 30,
+    "unit": "g"
+   },
+   {
+    "name": "Garlic powder",
+    "amount": 25,
+    "unit": "g"
+   },
+   {
+    "name": "Harissa paste",
+    "amount": 250,
+    "unit": "g"
+   },
+   {
+    "name": "Salt",
+    "amount": 30,
+    "unit": "g"
+   }
+  ],
+  "steps": [
+   {
+    "title": "Step 1",
+    "content": "Mix all the ingredients into mixing bowl"
+   },
+   {
+    "title": "Step 2",
+    "content": "Make sure all mixed well and portion into the sous vide bag"
+   },
+   {
+    "title": "Step 3",
+    "content": "Keep inside chiller"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "name": "Pasta Cooking Time (Reference)",
+  "category": "Other",
+  "base_servings": 1,
+  "ingredients": [],
+  "steps": [
+   {
+    "title": "Mafalde",
+    "content": "Cook 6 minutes"
+   },
+   {
+    "title": "Gamelli",
+    "content": "Cook 5 minutes"
+   },
+   {
+    "title": "Conchiglie",
+    "content": "Cook 4 minutes"
+   },
+   {
+    "title": "Fussili",
+    "content": "Cook 5 minutes"
+   },
+   {
+    "title": "Fettuccine",
+    "content": "Cook 2 minutes"
+   },
+   {
+    "title": "Linguine",
+    "content": "Cook 3 minutes"
+   },
+   {
+    "title": "Creste",
+    "content": "Cook 5 minutes"
+   },
+   {
+    "title": "Radiotori",
+    "content": "Cook 5 minutes"
+   },
+   {
+    "title": "Campanelle",
+    "content": "Cook 5 minutes"
+   }
+  ],
+  "notes": "Reference chart — blanch times from salted water."
+ }
+]
