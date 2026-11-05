@@ -73,7 +73,7 @@ router.get('/balances', (req, res) => {
     );
     res.json(balances.map(b => ({
       ...b,
-      remaining: Math.max(0, b.total_days - b.used_days)
+      remaining: b.total_days - b.used_days
     })));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -109,6 +109,23 @@ router.post('/apply', (req, res) => {
   try {
     const days = getWorkingDays(start_date, end_date);
     if (days <= 0) return res.status(400).json({ error: 'No working days in selected range' });
+
+    // Advance-notice rule: Annual Leave and Childcare Leave must be applied at
+    // least 21 days (3 weeks) ahead of the leave start date. Other types
+    // (medical, hospitalisation, compassionate, off-in-lieu, etc.) are exempt.
+    const ADVANCE_NOTICE_TYPES = ['Annual Leave', 'Childcare Leave'];
+    const ADVANCE_NOTICE_DAYS  = 21;
+    if (ADVANCE_NOTICE_TYPES.includes(leave_type)) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const start = new Date(start_date + 'T00:00:00');
+      const daysAhead = Math.round((start - today) / 86400000);
+      if (daysAhead < ADVANCE_NOTICE_DAYS) {
+        return res.status(400).json({
+          error: `${leave_type} must be applied at least ${ADVANCE_NOTICE_DAYS} days in advance (earliest start date: ` +
+                 new Date(today.getTime() + ADVANCE_NOTICE_DAYS * 86400000).toISOString().slice(0, 10) + ').'
+        });
+      }
+    }
 
     db.run(
       `INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, days, reason, status, created_at)

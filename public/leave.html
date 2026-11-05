@@ -297,6 +297,17 @@ async function submitLeave() {
   const reason = document.getElementById('leaveReason').value;
   if (!type) { showMsg('Please select a leave type', 'err'); return; }
   if (!from || !to) { showMsg('Please select dates', 'err'); return; }
+  // Annual Leave and Childcare Leave need 21 days' notice
+  if (type === 'Annual Leave' || type === 'Childcare Leave') {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const start = new Date(from + 'T00:00:00');
+    const daysAhead = Math.round((start - today) / 86400000);
+    if (daysAhead < 21) {
+      const earliest = new Date(today.getTime() + 21 * 86400000).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' });
+      showMsg(type + ' must be applied at least 21 days in advance (earliest start: ' + earliest + ')', 'err');
+      return;
+    }
+  }
   try {
     const r = await fetch('/api/leave/apply', {
       method: 'POST', headers: {'Content-Type':'application/json'},
