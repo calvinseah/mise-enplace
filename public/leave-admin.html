@@ -55,6 +55,7 @@
     <select id="yearSel" onchange="loadLeave()"></select>
     <input type="text" class="search" id="search" placeholder="Search name…" oninput="render()">
     <button id="exportBtn" class="pill" style="border-color:var(--green);color:var(--green);font-weight:600" onclick="exportReport()">Export report</button>
+    <button id="recalcBtn" class="pill" style="border-color:var(--ember);color:var(--ember);font-weight:600" onclick="recalcBalances()">Recalculate balances</button>
   </div>
   <div class="count" id="count"></div>
   <div id="list"></div>
@@ -118,6 +119,22 @@ async function review(id, newStatus){
     if (d.success){ await loadLeave(); }
     else alert(d.error || 'Could not update this application.');
   }catch(e){ alert('Network error — please try again.'); }
+}
+
+// ── Recalculate used-day balances from approved applications ──────────────────
+async function recalcBalances(){
+  const year = yearSel.value;
+  if (!confirm('Recalculate every staff member’s used leave for '+year+' from their approved applications (counting leave from 29 Jul '+year+' onward, to match the imported balances)?\n\nThis overwrites the current used-day counts and fixes any drift from import/approval order. Totals are not changed.')) return;
+  const btn = document.getElementById('recalcBtn');
+  if (btn){ btn.disabled = true; btn.textContent = 'Recalculating…'; }
+  try {
+    const d = await fetch('/api/leave/entitlements/recalc', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ year })
+    }).then(r=>r.json());
+    if (d.success) alert('Done — recalculated '+d.groups+' balance line(s) for '+d.year+', counting approved leave from '+d.since+' onward.');
+    else alert(d.error || 'Could not recalculate.');
+  } catch(e){ alert('Network error — please try again.'); }
+  finally { if (btn){ btn.disabled=false; btn.textContent='Recalculate balances'; } }
 }
 
 // ── Export per-staff leave transaction report (active full-timers only) ────────

@@ -294,6 +294,38 @@ router.post('/entitlements/bulk', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── POST recalc used_days from approved applications (admin) ──────────────────
+// Rebuilds each entitlement's used_days = SUM of approved leave (that type/year)
+// with start_date on/after `since` (default the 29 Jul migration baseline, so
+// leave already reflected in the imported 28 Jul balance is not double-counted).
+// Unpaid Leave never consumes a balance. Totals (entitlements) are left untouched.
+// Idempotent: safe to run any time; fixes drift from import/approve ordering.
+router.post('/entitlements/recalc', (req, res) => {
+  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const year  = String(req.body.year || new Date().getFullYear());
+  const since = req.body.since || (year + '-07-29');
+  try {
+    const sums = db.all(
+      `SELECT staff_id, leave_type, SUM(days) AS d
+         FROM leave_applications
+        WHERE status='approved' AND leave_type<>'Unpaid Leave'
+          AND substr(start_date,1,4)=? AND start_date>=?
+        GROUP BY staff_id, leave_type`, [year, since]);
+    // Reset all used for the year, then apply the recomputed totals.
+    db.run(`UPDATE leave_entitlements SET used_days=0 WHERE year=?`, [year]);
+    let groups = 0;
+    for (const r of sums) {
+      ensureEntitlements(r.staff_id, year);
+      db.run(`UPDATE leave_entitlements SET used_days=? WHERE staff_id=? AND year=? AND leave_type=?`,
+        [r.d, r.staff_id, year, r.leave_type]);
+      groups++;
+    }
+    db.saveDB();
+    writeLog(req.session.user.username, 'recalc_leave_used', 'leave_entitlement', null, '', { year, since, groups });
+    res.json({ success: true, year, since, groups });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── GET leave attachment (admin/manager) — streams the stored file inline ─────
 router.get('/:id/attachment', (req, res) => {
   const user = req.session?.user;
