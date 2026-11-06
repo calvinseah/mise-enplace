@@ -56,6 +56,29 @@
     <input type="text" class="search" id="search" placeholder="Search name…" oninput="render()">
     <button id="exportBtn" class="pill" style="border-color:var(--green);color:var(--green);font-weight:600" onclick="exportReport()">Export report</button>
     <button id="recalcBtn" class="pill" style="border-color:var(--ember);color:var(--ember);font-weight:600" onclick="recalcBalances()">Recalculate balances</button>
+    <button id="addLeaveBtn" class="pill" style="background:var(--green);border-color:var(--green);color:#fff;font-weight:600" onclick="openAddLeave()">+ Add leave</button>
+  </div>
+
+  <div id="addModal" style="display:none;position:fixed;inset:0;background:rgba(30,42,34,.5);z-index:999;align-items:center;justify-content:center;padding:20px">
+    <div style="background:var(--white);border-radius:16px;max-width:440px;width:100%;padding:22px;max-height:90vh;overflow:auto">
+      <div style="font-family:var(--font-d);font-size:22px;margin-bottom:4px">Add leave for staff</div>
+      <div style="font-size:12.5px;color:var(--ink-60);margin-bottom:16px">Manager entry — bypasses the 3-week notice rule. Created as pending for you to approve below.</div>
+      <label style="font-size:12px;color:var(--ink-60);font-weight:600">Staff</label>
+      <select id="alStaff" style="width:100%;margin:4px 0 12px"></select>
+      <label style="font-size:12px;color:var(--ink-60);font-weight:600">Leave type</label>
+      <select id="alType" style="width:100%;margin:4px 0 12px"></select>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1"><label style="font-size:12px;color:var(--ink-60);font-weight:600">From</label><input type="date" id="alFrom" style="width:100%;margin-top:4px;height:38px;border:1px solid var(--ink-08);border-radius:10px;padding:0 12px;font-family:var(--font);color:var(--ink);background:var(--white)"></div>
+        <div style="flex:1"><label style="font-size:12px;color:var(--ink-60);font-weight:600">To</label><input type="date" id="alTo" style="width:100%;margin-top:4px;height:38px;border:1px solid var(--ink-08);border-radius:10px;padding:0 12px;font-family:var(--font);color:var(--ink);background:var(--white)"></div>
+      </div>
+      <label style="font-size:12px;color:var(--ink-60);font-weight:600;margin-top:12px;display:block">Reason</label>
+      <textarea id="alReason" rows="2" style="width:100%;margin:4px 0 8px;border:1px solid var(--ink-08);border-radius:10px;padding:8px 12px;font-family:var(--font);resize:vertical"></textarea>
+      <div id="alMsg" style="font-size:12.5px;margin:4px 0;min-height:16px"></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn b-ok" style="flex:1" onclick="submitAddLeave()">Add leave</button>
+        <button class="pill" style="flex:1" onclick="closeAddLeave()">Cancel</button>
+      </div>
+    </div>
   </div>
   <div class="count" id="count"></div>
   <div id="list"></div>
@@ -119,6 +142,40 @@ async function review(id, newStatus){
     if (d.success){ await loadLeave(); }
     else alert(d.error || 'Could not update this application.');
   }catch(e){ alert('Network error — please try again.'); }
+}
+
+// ── Add leave for a staff member (manager override — bypasses 21-day rule) ────
+const LEAVE_TYPES = ['Annual Leave','Medical Leave','Hospitalisation Leave','Compassionate Leave','Childcare Leave','Maternity Leave','Paternity Leave','Off in Lieu','Unpaid Leave'];
+async function openAddLeave(){
+  const sel = document.getElementById('alStaff');
+  if (!sel.dataset.loaded){
+    try {
+      const staff = await fetch('/api/staff').then(r=>r.json());
+      (staff||[]).filter(s=>s.is_active!==0).sort((a,b)=>(a.name||'').localeCompare(b.name||''))
+        .forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.name+' ('+s.staff_type+')'; sel.appendChild(o); });
+      const ts=document.getElementById('alType'); LEAVE_TYPES.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; ts.appendChild(o); });
+      sel.dataset.loaded='1';
+    } catch(e){}
+  }
+  document.getElementById('alMsg').textContent='';
+  document.getElementById('addModal').style.display='flex';
+}
+function closeAddLeave(){ document.getElementById('addModal').style.display='none'; }
+async function submitAddLeave(){
+  const staffId=document.getElementById('alStaff').value, leave_type=document.getElementById('alType').value;
+  const from=document.getElementById('alFrom').value, to=document.getElementById('alTo').value;
+  const reason=document.getElementById('alReason').value.trim();
+  const msg=document.getElementById('alMsg');
+  if(!staffId||!leave_type||!from||!to){ msg.style.color='var(--red)'; msg.textContent='Please fill staff, type and both dates.'; return; }
+  if(to<from){ msg.style.color='var(--red)'; msg.textContent='End date is before start date.'; return; }
+  try{
+    const d=await fetch('/api/leave/apply',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({staffId,leave_type,start_date:from,end_date:to,reason})}).then(r=>r.json());
+    if(d.success){ msg.style.color='var(--green)'; msg.textContent='Added — '+d.days+' day(s). Approve it in the list below.';
+      document.getElementById('alFrom').value=''; document.getElementById('alTo').value=''; document.getElementById('alReason').value='';
+      setTimeout(()=>{ closeAddLeave(); loadLeave(); }, 1000); }
+    else { msg.style.color='var(--red)'; msg.textContent=d.error||'Could not add leave.'; }
+  }catch(e){ msg.style.color='var(--red)'; msg.textContent='Network error — please try again.'; }
 }
 
 // ── Recalculate used-day balances from approved applications ──────────────────
