@@ -104,6 +104,55 @@ router.get('/applications', (req, res) => {
 // ── POST apply for leave ──────────────────────────────────────────────────────
 const MAX_ATTACHMENT_CHARS = 3000000; // ~2.2 MB of base64 ≈ a ~1.6 MB file
 
+// ── Leave-application alert to admin via WhatsApp (Twilio approved template) ───
+// Dormant unless configured: needs TWILIO_ACCOUNT_SID / _AUTH_TOKEN / _WHATSAPP_FROM,
+// a recipient (LEAVE_NOTIFY_WHATSAPP_TO, else DAILY_REPORT_WHATSAPP_TO / TWILIO_WHATSAPP_TO),
+// and an approved template id in LEAVE_NOTIFY_CONTENT_SID. Fire-and-forget; never blocks apply.
+async function notifyLeaveWhatsApp(info) {
+  const sid   = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const from  = process.env.TWILIO_WHATSAPP_FROM;
+  const to    = process.env.LEAVE_NOTIFY_WHATSAPP_TO || process.env.DAILY_REPORT_WHATSAPP_TO || process.env.TWILIO_WHATSAPP_TO;
+  const contentSid = process.env.LEAVE_NOTIFY_CONTENT_SID;
+  const missing = [];
+  if (!sid) missing.push('TWILIO_ACCOUNT_SID');
+  if (!token) missing.push('TWILIO_AUTH_TOKEN');
+  if (!from) missing.push('TWILIO_WHATSAPP_FROM');
+  if (!to) missing.push('LEAVE_NOTIFY_WHATSAPP_TO (or daily-report / TWILIO_WHATSAPP_TO)');
+  if (!contentSid) missing.push('LEAVE_NOTIFY_CONTENT_SID');
+  if (missing.length) { console.log('[Leave notify] not configured — missing:', missing.join(', ')); return { configured: false, missing, results: [] }; }
+  const clean = s => String(s == null ? '' : s).replace(/\s*\n\s*/g, ' ').trim().slice(0, 200);
+  const vars = JSON.stringify({ '1': clean(info.name), '2': clean(info.leave_type),
+    '3': clean(info.range), '4': String(info.days), '5': clean(info.reason) || '—' });
+  const auth = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
+  const url  = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
+  const results = [];
+  for (const raw of to.split(',').map(s => s.trim()).filter(Boolean)) {
+    const dest = raw.startsWith('whatsapp:') ? raw : 'whatsapp:' + raw;
+    try {
+      const resp = await fetch(url, { method: 'POST',
+        headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ From: from, To: dest, ContentSid: contentSid, ContentVariables: vars }).toString() });
+      let d = {}; try { d = await resp.json(); } catch(e){}
+      results.push({ to: dest, http: resp.status, ok: resp.ok, sid: d.sid || null, twilioStatus: d.status || null, code: d.code || null, message: d.message || null });
+      if (!resp.ok) console.error('[Leave notify] Twilio', d.code, d.message);
+    } catch (e) { results.push({ to: dest, ok: false, error: e.message }); console.error('[Leave notify] send failed:', e.message); }
+  }
+  return { configured: true, from, contentSid, results };
+}
+
+// ── Test the leave WhatsApp alert (admin or token) — sends a sample, no record ─
+//   /api/leave/notify-test?token=mise-recipes-2026
+router.get('/notify-test', async (req, res) => {
+  const ok = req.query.token === 'mise-recipes-2026' || req.session?.user?.role === 'admin';
+  if (!ok) return res.status(403).json({ error: 'Forbidden' });
+  try {
+    const out = await notifyLeaveWhatsApp({ name: 'TEST — Jane Doe', leave_type: 'Annual Leave',
+      range: '2026-12-24 to 2026-12-26', days: 3, reason: 'Sample alert (test)' });
+    res.json(out || { configured: false });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 router.post('/apply', (req, res) => {
   const { staffId, leave_type, start_date, end_date, reason, attachment } = req.body;
   if (!staffId || !leave_type || !start_date || !end_date)
@@ -125,7 +174,10 @@ router.post('/apply', (req, res) => {
     // (medical, hospitalisation, compassionate, off-in-lieu, etc.) are exempt.
     const ADVANCE_NOTICE_TYPES = ['Annual Leave', 'Childcare Leave'];
     const ADVANCE_NOTICE_DAYS  = 21;
-    if (ADVANCE_NOTICE_TYPES.includes(leave_type)) {
+    // Admins/managers can enter short-notice leave on a staff member's behalf,
+    // so the 21-day rule only binds staff self-service (no logged-in reviewer).
+    const isReviewer = req.session?.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager');
+    if (!isReviewer && ADVANCE_NOTICE_TYPES.includes(leave_type)) {
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const start = new Date(start_date + 'T00:00:00');
       const daysAhead = Math.round((start - today) / 86400000);
@@ -157,6 +209,11 @@ router.post('/apply', (req, res) => {
     const sName = db.get('SELECT name FROM staff WHERE id=?', [staffId])?.name || '';
     writeLog('staff:' + staffId, 'leave_applied', 'leave', null, sName, { leave_type, start_date, end_date, days, attachment: !!hasAtt });
     db.saveDB();
+    // Alert admin on WhatsApp (non-blocking) — only for genuine staff submissions,
+    // not when a reviewer is entering leave on someone's behalf.
+    if (!isReviewer) notifyLeaveWhatsApp({ name: sName, leave_type,
+      range: (start_date === end_date ? start_date : start_date + ' to ' + end_date),
+      days, reason: reason || '' }).catch(() => {});
     res.json({ success: true, days });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });

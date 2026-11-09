@@ -200,6 +200,7 @@ app.get('/labour-cost',     requireAuth,  (req, res) => res.sendFile(path.join(_
 app.get('/payslip',         requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payslip.html')));
 app.get('/payroll-summary', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'payroll-summary.html')));
 app.get('/users',           requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+app.get('/announcements',   requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'announcements.html')));
 app.get('/recipes',            (req, res) => res.sendFile(path.join(__dirname, 'public', 'recipes.html')));
 app.get('/maise',           (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-page.html')));
 app.get('/maise-kb',        requireAuth, requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'maise-kb.html')));
