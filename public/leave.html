@@ -345,8 +345,8 @@ async function submitLeave() {
   const reason = document.getElementById('leaveReason').value;
   if (!type) { showMsg('Please select a leave type', 'err'); return; }
   if (!from || !to) { showMsg('Please select dates', 'err'); return; }
-  // Annual Leave and Childcare Leave need 21 days' notice
-  if (type === 'Annual Leave' || type === 'Childcare Leave') {
+  // Annual Leave needs 21 days' notice
+  if (type === 'Annual Leave') {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const start = new Date(from + 'T00:00:00');
     const daysAhead = Math.round((start - today) / 86400000);
