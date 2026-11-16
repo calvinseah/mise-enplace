@@ -20,16 +20,20 @@ const STATUTORY_DEFAULTS = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// A working day is any calendar day that is NOT a gazetted public holiday.
+// Weekends count — F&B staff are rostered on weekends — so leave can be applied
+// for any day the outlet operates. Public holidays are excluded (handled as
+// off-in-lieu, not leave). Dates are compared as plain YYYY-MM-DD strings, so no
+// timezone conversion is involved.
 function getWorkingDays(start, end) {
-  // Every calendar day in the range counts as a leave day — including weekends
-  // AND public holidays. (The business operates on weekends and public holidays,
-  // so leave taken on those days consumes a leave day like any other.)
+  const ph = new Set(db.all('SELECT date FROM public_holidays').map(r => r.date));
   let count = 0;
-  const cur = new Date(start);
-  const last = new Date(end);
+  const cur  = new Date(start + 'T00:00:00Z');
+  const last = new Date(end   + 'T00:00:00Z');
   while (cur <= last) {
-    count++;
-    cur.setDate(cur.getDate() + 1);
+    const iso = cur.toISOString().slice(0, 10);
+    if (!ph.has(iso)) count++;
+    cur.setUTCDate(cur.getUTCDate() + 1);
   }
   return count;
 }
@@ -61,6 +65,12 @@ function managerStaffIds(user) {
            .map(r => r.staff_id);
 }
 
+// ── GET public holidays (public — so the leave page can count days the same way)
+router.get('/holidays', (req, res) => {
+  try { res.json(db.all('SELECT date FROM public_holidays ORDER BY date').map(r => r.date)); }
+  catch(e) { res.json([]); }
+});
+
 // ── GET balances ──────────────────────────────────────────────────────────────
 router.get('/balances', (req, res) => {
   const { staffId, year = new Date().getFullYear() } = req.query;
@@ -73,7 +83,7 @@ router.get('/balances', (req, res) => {
     );
     res.json(balances.map(b => ({
       ...b,
-      remaining: b.total_days - b.used_days
+      remaining: Math.max(0, b.total_days - b.used_days)
     })));
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -102,118 +112,22 @@ router.get('/applications', (req, res) => {
 });
 
 // ── POST apply for leave ──────────────────────────────────────────────────────
-const MAX_ATTACHMENT_CHARS = 3000000; // ~2.2 MB of base64 ≈ a ~1.6 MB file
-
-// ── Leave-application alert to admin via WhatsApp (Twilio approved template) ───
-// Dormant unless configured: needs TWILIO_ACCOUNT_SID / _AUTH_TOKEN / _WHATSAPP_FROM,
-// a recipient (LEAVE_NOTIFY_WHATSAPP_TO, else DAILY_REPORT_WHATSAPP_TO / TWILIO_WHATSAPP_TO),
-// and an approved template id in LEAVE_NOTIFY_CONTENT_SID. Fire-and-forget; never blocks apply.
-async function notifyLeaveWhatsApp(info) {
-  const sid   = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from  = process.env.TWILIO_WHATSAPP_FROM;
-  const to    = process.env.LEAVE_NOTIFY_WHATSAPP_TO || process.env.DAILY_REPORT_WHATSAPP_TO || process.env.TWILIO_WHATSAPP_TO;
-  const contentSid = process.env.LEAVE_NOTIFY_CONTENT_SID;
-  const missing = [];
-  if (!sid) missing.push('TWILIO_ACCOUNT_SID');
-  if (!token) missing.push('TWILIO_AUTH_TOKEN');
-  if (!from) missing.push('TWILIO_WHATSAPP_FROM');
-  if (!to) missing.push('LEAVE_NOTIFY_WHATSAPP_TO (or daily-report / TWILIO_WHATSAPP_TO)');
-  if (!contentSid) missing.push('LEAVE_NOTIFY_CONTENT_SID');
-  if (missing.length) { console.log('[Leave notify] not configured — missing:', missing.join(', ')); return { configured: false, missing, results: [] }; }
-  const clean = s => String(s == null ? '' : s).replace(/\s*\n\s*/g, ' ').trim().slice(0, 200);
-  const vars = JSON.stringify({ '1': clean(info.name), '2': clean(info.leave_type),
-    '3': clean(info.range), '4': String(info.days), '5': clean(info.reason) || '—' });
-  const auth = 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64');
-  const url  = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
-  const results = [];
-  for (const raw of to.split(',').map(s => s.trim()).filter(Boolean)) {
-    const dest = raw.startsWith('whatsapp:') ? raw : 'whatsapp:' + raw;
-    try {
-      const resp = await fetch(url, { method: 'POST',
-        headers: { 'Authorization': auth, 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ From: from, To: dest, ContentSid: contentSid, ContentVariables: vars }).toString() });
-      let d = {}; try { d = await resp.json(); } catch(e){}
-      results.push({ to: dest, http: resp.status, ok: resp.ok, sid: d.sid || null, twilioStatus: d.status || null, code: d.code || null, message: d.message || null });
-      if (!resp.ok) console.error('[Leave notify] Twilio', d.code, d.message);
-    } catch (e) { results.push({ to: dest, ok: false, error: e.message }); console.error('[Leave notify] send failed:', e.message); }
-  }
-  return { configured: true, from, contentSid, results };
-}
-
-// ── Test the leave WhatsApp alert (admin or token) — sends a sample, no record ─
-//   /api/leave/notify-test?token=mise-recipes-2026
-router.get('/notify-test', async (req, res) => {
-  const ok = req.query.token === 'mise-recipes-2026' || req.session?.user?.role === 'admin';
-  if (!ok) return res.status(403).json({ error: 'Forbidden' });
-  try {
-    const out = await notifyLeaveWhatsApp({ name: 'TEST — Jane Doe', leave_type: 'Annual Leave',
-      range: '2026-12-24 to 2026-12-26', days: 3, reason: 'Sample alert (test)' });
-    res.json(out || { configured: false });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
 router.post('/apply', (req, res) => {
-  const { staffId, leave_type, start_date, end_date, reason, attachment } = req.body;
+  const { staffId, leave_type, start_date, end_date, reason } = req.body;
   if (!staffId || !leave_type || !start_date || !end_date)
     return res.status(400).json({ error: 'Missing required fields' });
-  // Validate attachment up front (optional). Expect { name, type, dataUrl }.
-  if (attachment) {
-    const d = attachment.dataUrl || '';
-    if (typeof d !== 'string' || !/^data:(image\/|application\/pdf)/i.test(d))
-      return res.status(400).json({ error: 'Attachment must be an image or PDF.' });
-    if (d.length > MAX_ATTACHMENT_CHARS)
-      return res.status(400).json({ error: 'Attachment is too large — please keep it under about 1.5 MB (images are auto-compressed on upload).' });
-  }
   try {
     const days = getWorkingDays(start_date, end_date);
     if (days <= 0) return res.status(400).json({ error: 'No working days in selected range' });
 
-    // Advance-notice rule: Annual Leave and Childcare Leave must be applied at
-    // least 21 days (3 weeks) ahead of the leave start date. Other types
-    // (medical, hospitalisation, compassionate, off-in-lieu, etc.) are exempt.
-    const ADVANCE_NOTICE_TYPES = ['Annual Leave', 'Childcare Leave'];
-    const ADVANCE_NOTICE_DAYS  = 21;
-    // Admins/managers can enter short-notice leave on a staff member's behalf,
-    // so the 21-day rule only binds staff self-service (no logged-in reviewer).
-    const isReviewer = req.session?.user && (req.session.user.role === 'admin' || req.session.user.role === 'manager');
-    if (!isReviewer && ADVANCE_NOTICE_TYPES.includes(leave_type)) {
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      const start = new Date(start_date + 'T00:00:00');
-      const daysAhead = Math.round((start - today) / 86400000);
-      if (daysAhead < ADVANCE_NOTICE_DAYS) {
-        return res.status(400).json({
-          error: `${leave_type} must be applied at least ${ADVANCE_NOTICE_DAYS} days in advance (earliest start date: ` +
-                 new Date(today.getTime() + ADVANCE_NOTICE_DAYS * 86400000).toISOString().slice(0, 10) + ').'
-        });
-      }
-    }
-
-    const hasAtt = attachment ? 1 : 0;
     db.run(
-      `INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, days, reason, status, created_at, has_attachment)
-       VALUES (?,?,?,?,?,?,?,?,?)`,
-      [staffId, leave_type, start_date, end_date, days, reason || null, 'pending', new Date().toISOString(), hasAtt]
+      `INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, days, reason, status, created_at)
+       VALUES (?,?,?,?,?,?,?,?)`,
+      [staffId, leave_type, start_date, end_date, days, reason || null, 'pending', new Date().toISOString()]
     );
-    if (hasAtt) {
-      const appId = db.get('SELECT last_insert_rowid() AS id')?.id;
-      if (appId) {
-        db.run(
-          `INSERT INTO leave_attachments (application_id, filename, mimetype, data, size, created_at)
-           VALUES (?,?,?,?,?,?)`,
-          [appId, attachment.name || null, attachment.type || null, attachment.dataUrl,
-           attachment.dataUrl.length, new Date().toISOString()]
-        );
-      }
-    }
     const sName = db.get('SELECT name FROM staff WHERE id=?', [staffId])?.name || '';
-    writeLog('staff:' + staffId, 'leave_applied', 'leave', null, sName, { leave_type, start_date, end_date, days, attachment: !!hasAtt });
+    writeLog('staff:' + staffId, 'leave_applied', 'leave', null, sName, { leave_type, start_date, end_date, days });
     db.saveDB();
-    // Alert admin on WhatsApp (non-blocking) — only for genuine staff submissions,
-    // not when a reviewer is entering leave on someone's behalf.
-    if (!isReviewer) notifyLeaveWhatsApp({ name: sName, leave_type,
-      range: (start_date === end_date ? start_date : start_date + ' to ' + end_date),
-      days, reason: reason || '' }).catch(() => {});
     res.json({ success: true, days });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -349,61 +263,6 @@ router.post('/entitlements/bulk', (req, res) => {
     writeLog(req.session.user.username, 'bulk_leave_balances', 'leave_entitlement', null, '', { year, staffUpdated, fieldsUpdated });
     res.json({ success: true, staffUpdated, fieldsUpdated, year });
   } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── POST recalc used_days from approved applications (admin) ──────────────────
-// Rebuilds each entitlement's used_days = SUM of approved leave (that type/year)
-// with start_date on/after `since` (default the 29 Jul migration baseline, so
-// leave already reflected in the imported 28 Jul balance is not double-counted).
-// Unpaid Leave never consumes a balance. Totals (entitlements) are left untouched.
-// Idempotent: safe to run any time; fixes drift from import/approve ordering.
-router.post('/entitlements/recalc', (req, res) => {
-  if (req.session?.user?.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
-  const year  = String(req.body.year || new Date().getFullYear());
-  const since = req.body.since || (year + '-07-29');
-  try {
-    const sums = db.all(
-      `SELECT staff_id, leave_type, SUM(days) AS d
-         FROM leave_applications
-        WHERE status='approved' AND leave_type<>'Unpaid Leave'
-          AND substr(start_date,1,4)=? AND start_date>=?
-        GROUP BY staff_id, leave_type`, [year, since]);
-    // Reset all used for the year, then apply the recomputed totals.
-    db.run(`UPDATE leave_entitlements SET used_days=0 WHERE year=?`, [year]);
-    let groups = 0;
-    for (const r of sums) {
-      ensureEntitlements(r.staff_id, year);
-      db.run(`UPDATE leave_entitlements SET used_days=? WHERE staff_id=? AND year=? AND leave_type=?`,
-        [r.d, r.staff_id, year, r.leave_type]);
-      groups++;
-    }
-    db.saveDB();
-    writeLog(req.session.user.username, 'recalc_leave_used', 'leave_entitlement', null, '', { year, since, groups });
-    res.json({ success: true, year, since, groups });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
-
-// ── GET leave attachment (admin/manager) — streams the stored file inline ─────
-router.get('/:id/attachment', (req, res) => {
-  const user = req.session?.user;
-  if (!user || (user.role !== 'admin' && user.role !== 'manager'))
-    return res.status(403).json({ error: 'Unauthorised' });
-  try {
-    const app = db.get('SELECT * FROM leave_applications WHERE id=?', [req.params.id]);
-    if (!app) return res.status(404).json({ error: 'Not found' });
-    if (user.role === 'manager') {
-      const ids = managerStaffIds(user) || [];
-      if (!ids.includes(app.staff_id)) return res.status(403).json({ error: 'This leave request is outside your outlets' });
-    }
-    const att = db.get('SELECT * FROM leave_attachments WHERE application_id=? ORDER BY id DESC', [req.params.id]);
-    if (!att || !att.data) return res.status(404).json({ error: 'No attachment' });
-    const m = /^data:([^;]+);base64,(.*)$/s.exec(att.data);
-    if (!m) return res.status(500).json({ error: 'Bad attachment data' });
-    const buf = Buffer.from(m[2], 'base64');
-    res.setHeader('Content-Type', m[1]);
-    res.setHeader('Content-Disposition', 'inline; filename="' + (att.filename || ('attachment-' + req.params.id)) + '"');
-    res.send(buf);
-  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 module.exports = router;
