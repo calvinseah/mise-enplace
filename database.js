@@ -439,7 +439,7 @@ async function seedData() {
     ['2026-01-01',"New Year's Day"],['2026-01-17','Chinese New Year'],['2026-01-18','Chinese New Year Holiday'],
     ['2026-03-20','Hari Raya Puasa'],['2026-04-03','Good Friday'],['2026-05-01','Labour Day'],
     ['2026-05-31','Vesak Day'],['2026-05-27','Hari Raya Haji'],['2026-08-10','National Day'],
-    ['2026-11-07','Deepavali'],['2026-12-25','Christmas Day'],
+    ['2026-11-08','Deepavali'],['2026-12-25','Christmas Day'],
   ];
 
 
@@ -466,6 +466,10 @@ async function seedData() {
   for (const [date, name] of holidays) {
     db.run('INSERT OR IGNORE INTO public_holidays (date, name) VALUES (?, ?)', [date, name]);
   }
+  // Correct Deepavali 2026: gazetted date is 8 Nov (was wrongly seeded as 7 Nov).
+  // INSERT OR IGNORE won't overwrite the stale row, so fix it explicitly. Idempotent.
+  db.run("DELETE FROM public_holidays WHERE date='2026-11-07' AND name='Deepavali'");
+  db.run("INSERT OR IGNORE INTO public_holidays (date, name) VALUES ('2026-11-08','Deepavali')");
 }
 
 // ─── ENCRYPTION HELPERS ───────────────────────────────────────────────────────
